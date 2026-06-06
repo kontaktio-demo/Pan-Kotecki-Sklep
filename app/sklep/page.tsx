@@ -20,14 +20,13 @@ export default async function ShopPage({
   const search = sp.szukaj ?? "";
 
   return (
-    <div className="pt-8 md:pt-10">
-      <div className="container-edge mb-6">
-        <nav className="mb-3 flex items-center gap-2 text-sm text-ash">
+    <div className="pt-5 md:pt-7">
+      <div className="container-edge">
+        <nav className="flex items-center gap-2 text-sm text-ash">
           <Link href="/" className="transition-colors hover:text-ink">Strona główna</Link>
           <span>/</span>
           <span className="text-ink">Sklep</span>
         </nav>
-        <h1 className="text-3xl font-semibold md:text-4xl">Sklep</h1>
       </div>
 
       <ShopClient

@@ -1,8 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import type { Product, Category } from "@/lib/products";
 import { formatPrice } from "@/lib/format";
+import { CATEGORY_PHOTOS } from "@/lib/photos";
+import Paw from "@/components/ui/Paw";
 import ProductCard from "./ProductCard";
 
 const SORTS = [
@@ -67,6 +70,39 @@ export default function ShopClient({ products, categories, initialCategory, init
     setSearch("");
   };
 
+  const active = categories.find((c) => c.slug === cat);
+  const activePhoto = active ? CATEGORY_PHOTOS[active.slug] : null;
+
+  const Banner = active && activePhoto ? (
+    <div className="relative flex min-h-[32vh] items-end overflow-hidden rounded-[2rem] md:min-h-[38vh]">
+      <Image src={activePhoto.src} alt={activePhoto.alt} fill priority sizes="100vw" className="object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/35 to-ink/10" />
+      <div className="relative p-7 text-milk md:p-12">
+        <p className="mb-3 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-milk/80">
+          <Paw className="h-4 w-4 text-orange" />
+          Kategoria
+        </p>
+        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">{active.name}</h1>
+        <p className="mt-2 max-w-md text-milk/85">{active.tagline}</p>
+      </div>
+    </div>
+  ) : (
+    <div className="relative overflow-hidden rounded-[2rem] bg-peach px-7 py-10 md:px-12 md:py-14">
+      <div className="paw-pattern pointer-events-none absolute inset-0 opacity-[0.05]" />
+      <div className="relative">
+        <p className="mb-3 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-orange-deep">
+          <Paw className="h-4 w-4" />
+          Sklep
+        </p>
+        <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">Wszystko dla Twojego kota</h1>
+        <p className="mt-3 max-w-lg text-ink-soft">
+          Starannie wybrane zabawki, akcesoria, kubki i drobiazgi — same rzeczy,
+          które dalibyśmy własnym kotom.
+        </p>
+      </div>
+    </div>
+  );
+
   const Sidebar = (
     <div className="flex flex-col gap-7">
       <div>
@@ -126,7 +162,10 @@ export default function ShopClient({ products, categories, initialCategory, init
   );
 
   return (
-    <div className="container-edge grid gap-8 pb-24 lg:grid-cols-[240px_1fr] lg:gap-10">
+    <>
+      <section className="container-edge pt-2 md:pt-4">{Banner}</section>
+
+      <div className="container-edge grid gap-8 pb-24 pt-8 md:pt-10 lg:grid-cols-[240px_1fr] lg:gap-10">
       <aside className="hidden lg:block">
         <div className="sticky top-32">{Sidebar}</div>
       </aside>
@@ -185,6 +224,7 @@ export default function ShopClient({ products, categories, initialCategory, init
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
