@@ -68,7 +68,9 @@ export default function Header() {
           <Logo />
         </Link>
 
-        <SearchForm onSubmit={() => {}} className="hidden flex-1 md:flex" />
+        <div className="hidden flex-1 justify-center px-2 md:flex">
+          <SearchForm onSubmit={() => {}} className="w-full max-w-xl" />
+        </div>
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
           <Link

@@ -3,16 +3,20 @@ import Image from "next/image";
 import { getCategories } from "@/lib/products";
 import { CATEGORY_PHOTOS } from "@/lib/photos";
 import Reveal from "@/components/ui/Reveal";
+import Paw from "@/components/ui/Paw";
 
 export default async function Categories() {
   const categories = await getCategories();
 
   return (
-    <section className="mt-16 bg-peach py-16 md:mt-24 md:py-24">
-      <div className="container-edge">
+    <section className="container-edge pt-16 md:pt-24">
+      <div className="rounded-[2rem] bg-peach px-6 py-12 md:px-12 md:py-16">
         <Reveal className="mb-7">
-          <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-orange-deep">Kategorie</p>
-          <h2 className="text-2xl font-semibold md:text-3xl">Kupuj według kategorii</h2>
+          <p className="mb-2 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-orange-deep">
+            <Paw className="h-3.5 w-3.5" />
+            Kategorie
+          </p>
+          <h2 className="text-2xl font-semibold md:text-3xl">Czego dziś szuka Twój kot?</h2>
         </Reveal>
 
         <Reveal delay={70} className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
