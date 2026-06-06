@@ -73,7 +73,7 @@ export default async function ProductPage({
               priority
             />
             {product.badges && product.badges.length > 0 && (
-              <span className="absolute left-4 top-4 rounded-md bg-coral px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+              <span className="absolute left-4 top-4 rounded-md bg-orange px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
                 {product.badges[0]}
               </span>
             )}

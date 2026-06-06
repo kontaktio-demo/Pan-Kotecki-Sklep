@@ -42,7 +42,7 @@ export default function ProductCard({ product }: { product: Product }) {
           className="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
         />
         {product.badges && product.badges.length > 0 && (
-          <span className="absolute left-3 top-3 rounded-md bg-coral px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-white">
+          <span className="absolute left-3 top-3 rounded-md bg-orange px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-white">
             {product.badges[0]}
           </span>
         )}

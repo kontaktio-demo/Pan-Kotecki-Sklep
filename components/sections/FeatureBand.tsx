@@ -1,0 +1,37 @@
+import Link from "next/link";
+import Reveal from "@/components/ui/Reveal";
+import { BrandMark } from "@/components/layout/Logo";
+
+export default function FeatureBand() {
+  return (
+    <section className="relative mt-16 overflow-hidden rounded-t-[2.5rem] bg-night text-milk md:mt-24 md:rounded-t-[3.5rem]">
+      <div className="paw-pattern pointer-events-none absolute inset-0 opacity-[0.05]" />
+      <div className="container-edge relative grid items-center gap-10 py-16 md:grid-cols-[1.25fr_0.75fr] md:py-24">
+        <Reveal>
+          <p className="mb-4 text-xs font-medium uppercase tracking-[0.22em] text-orange">Pan Kotecki</p>
+          <h2 className="text-3xl font-semibold leading-[1.08] tracking-tight md:text-5xl">
+            Dom, w którym mieszka kot, jest{" "}
+            <span className="text-orange">cieplejszy</span>.
+          </h2>
+          <p className="mt-5 max-w-md leading-relaxed text-milk/65">
+            Wybieramy rzeczy, które wnoszą do domu trochę ciepła i mruczenia —
+            proste, ładne i zrobione z myślą o wspólnym życiu z kotem.
+          </p>
+          <Link
+            href="/o-nas"
+            className="mt-8 inline-flex rounded-lg bg-orange px-7 py-3.5 text-sm font-semibold text-ink transition-colors hover:bg-orange-deep"
+          >
+            Poznaj Pana Koteckiego
+          </Link>
+        </Reveal>
+
+        <Reveal delay={90} className="justify-self-center md:justify-self-end">
+          <div className="relative flex h-52 w-52 items-end justify-center overflow-hidden rounded-full bg-peach shadow-2xl md:h-64 md:w-64 lg:h-72 lg:w-72">
+            <BrandMark className="h-[116%] w-[116%] translate-y-3 text-ink" />
+            <span className="absolute right-3 top-5 text-2xl">🐾</span>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}

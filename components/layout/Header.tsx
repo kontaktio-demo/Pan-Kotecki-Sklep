@@ -47,6 +47,7 @@ function SearchForm({ onSubmit, className = "" }: { onSubmit: () => void; classN
 export default function Header() {
   const items = useCart((s) => s.items);
   const openCart = useCart((s) => s.open);
+  const bump = useCart((s) => s.bump);
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -87,7 +88,12 @@ export default function Header() {
             </svg>
             <span className="hidden sm:inline">Koszyk</span>
             {count > 0 && (
-              <span className="absolute -right-1.5 -top-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-coral px-1 text-[0.7rem] font-semibold text-white tabular-nums">
+              <span
+                key={bump}
+                className={`absolute -right-1.5 -top-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange px-1 text-[0.7rem] font-semibold text-white tabular-nums ${
+                  bump > 0 ? "animate-bump" : ""
+                }`}
+              >
                 {count}
               </span>
             )}

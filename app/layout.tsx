@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/shop/CartDrawer";
+import CatPeek from "@/components/shop/CatPeek";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <main className="flex-1">{children}</main>
         <Footer />
         <CartDrawer />
+        <CatPeek />
       </body>
     </html>
   );

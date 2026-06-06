@@ -16,6 +16,7 @@ export type CartItem = {
 type CartState = {
   items: CartItem[];
   isOpen: boolean;
+  bump: number;
   add: (item: Omit<CartItem, "qty">, qty?: number) => void;
   remove: (slug: string) => void;
   setQty: (slug: string, qty: number) => void;
@@ -30,6 +31,7 @@ export const useCart = create<CartState>()(
     (set) => ({
       items: [],
       isOpen: false,
+      bump: 0,
       add: (item, qty = 1) =>
         set((state) => {
           const existing = state.items.find((i) => i.slug === item.slug);
@@ -38,7 +40,7 @@ export const useCart = create<CartState>()(
                 i.slug === item.slug ? { ...i, qty: i.qty + qty } : i,
               )
             : [...state.items, { ...item, qty }];
-          return { items, isOpen: true };
+          return { items, bump: state.bump + 1 };
         }),
       remove: (slug) =>
         set((state) => ({ items: state.items.filter((i) => i.slug !== slug) })),

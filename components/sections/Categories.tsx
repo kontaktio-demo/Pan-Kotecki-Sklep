@@ -8,12 +8,14 @@ export default async function Categories() {
   const categories = await getCategories();
 
   return (
-    <section className="container-edge pt-16 md:pt-24">
-      <Reveal className="mb-7">
-        <h2 className="text-2xl font-semibold md:text-3xl">Kupuj według kategorii</h2>
-      </Reveal>
+    <section className="mt-16 bg-peach py-16 md:mt-24 md:py-24">
+      <div className="container-edge">
+        <Reveal className="mb-7">
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-orange-deep">Kategorie</p>
+          <h2 className="text-2xl font-semibold md:text-3xl">Kupuj według kategorii</h2>
+        </Reveal>
 
-      <Reveal delay={70} className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+        <Reveal delay={70} className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
         {categories.map((cat) => {
           const photo = CATEGORY_PHOTOS[cat.slug];
           return (
@@ -40,7 +42,8 @@ export default async function Categories() {
             </Link>
           );
         })}
-      </Reveal>
+        </Reveal>
+      </div>
     </section>
   );
 }

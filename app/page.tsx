@@ -3,6 +3,7 @@ import HeroBanner from "@/components/sections/HeroBanner";
 import TrustBar from "@/components/sections/TrustBar";
 import Categories from "@/components/sections/Categories";
 import ProductRow from "@/components/sections/ProductRow";
+import FeatureBand from "@/components/sections/FeatureBand";
 import AboutTeaser from "@/components/sections/AboutTeaser";
 import Newsletter from "@/components/sections/Newsletter";
 
@@ -23,6 +24,7 @@ export default async function Home() {
         subtitle="Najczęściej wybierane przez kotów (i ich ludzi)"
         products={bestsellers}
       />
+      <FeatureBand />
       <AboutTeaser />
       <ProductRow
         title="Nie tylko dla kota"

@@ -1,4 +1,4 @@
-function BrandMark({ className = "" }: { className?: string }) {
+export function BrandMark({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 500 500" className={className} role="img" aria-label="Pan Kotecki">
       <g transform="translate(250,250) scale(1.4618) translate(-341.5,-220.5)" fill="currentColor">
