@@ -30,7 +30,8 @@ GitHub i repo już mamy: `kontaktio-demo/Pan-Kotecki-Sklep`.
 - Wklej całą zawartość pliku `supabase/schema.sql` → **Run**.
 - Potem to samo z `supabase/policies.sql` → **Run**.
 - Potem `supabase/seed.sql` → **Run** (doda 4 kategorie).
-- Sprawdź: **Table Editor** → powinny być tabele (products, orders itd.) i 4 kategorie.
+- Potem `supabase/seed_products.sql` → **Run** (doda 20 produktów startowych).
+- Sprawdź: **Table Editor** → tabele (products, orders itd.), 4 kategorie i 20 produktów.
 
 ### 1C. Bucket na zdjęcia produktów
 - **Storage → New bucket** → nazwa `product-images` → zaznacz **Public bucket** → Create.
