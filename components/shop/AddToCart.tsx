@@ -1,0 +1,88 @@
+"use client";
+
+import { useState } from "react";
+import { useCart } from "@/store/cart";
+
+type Item = {
+  slug: string;
+  name: string;
+  price: number;
+  motif: string;
+  tone: string;
+  image?: string;
+};
+
+function CartIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M3 4h2l2.4 12.2a1.5 1.5 0 0 0 1.5 1.2h8.2a1.5 1.5 0 0 0 1.5-1.2L20.5 8H6.2"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="9.5" cy="20" r="1.4" fill="currentColor" />
+      <circle cx="17.5" cy="20" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function AddToCartCompact({ item }: { item: Item }) {
+  const add = useCart((s) => s.add);
+  const [added, setAdded] = useState(false);
+
+  return (
+    <button
+      onClick={(e) => {
+        e.preventDefault();
+        add(item);
+        setAdded(true);
+        setTimeout(() => setAdded(false), 1200);
+      }}
+      className="mt-3 inline-flex w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-ink px-3 py-2.5 text-sm font-medium text-milk transition-colors duration-200 hover:bg-coral"
+    >
+      <CartIcon />
+      {added ? "Dodano ✓" : "Do koszyka"}
+    </button>
+  );
+}
+
+export function AddToCartFull({ item }: { item: Item }) {
+  const add = useCart((s) => s.add);
+  const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(false);
+
+  return (
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className="flex items-center rounded-lg border border-ink/20">
+        <button
+          onClick={() => setQty((q) => Math.max(1, q - 1))}
+          className="px-5 py-3.5 text-ash transition-colors hover:text-ink"
+          aria-label="Mniej"
+        >
+          −
+        </button>
+        <span className="min-w-8 text-center tabular-nums">{qty}</span>
+        <button
+          onClick={() => setQty((q) => q + 1)}
+          className="px-5 py-3.5 text-ash transition-colors hover:text-ink"
+          aria-label="Więcej"
+        >
+          +
+        </button>
+      </div>
+      <button
+        onClick={() => {
+          add(item, qty);
+          setAdded(true);
+          setTimeout(() => setAdded(false), 1400);
+        }}
+        className="inline-flex flex-1 items-center justify-center gap-2.5 rounded-lg bg-coral px-8 py-4 text-sm font-semibold text-white transition-colors duration-200 hover:bg-coral-deep"
+      >
+        <CartIcon />
+        {added ? "Dodano do koszyka ✓" : "Dodaj do koszyka"}
+      </button>
+    </div>
+  );
+}
