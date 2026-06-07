@@ -317,13 +317,13 @@ begin
   insert into order_items (order_id, product_id, slug, name, price_grosze, qty, image_url)
   select
     v_order,
-    (it->>'product_id')::uuid,
-    it->>'slug',
-    it->>'name',
-    (it->>'price_grosze')::int,
-    (it->>'qty')::int,
-    nullif(it->>'image_url', '')
-  from jsonb_array_elements(p->'items') as it;
+    (elem->>'product_id')::uuid,
+    elem->>'slug',
+    elem->>'name',
+    (elem->>'price_grosze')::int,
+    (elem->>'qty')::int,
+    nullif(elem->>'image_url', '')
+  from jsonb_array_elements(p->'items') as elem;
 
   return jsonb_build_object('order_id', v_order, 'number', v_number);
 end;
