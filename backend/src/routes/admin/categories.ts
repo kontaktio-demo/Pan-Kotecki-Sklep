@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { supabase } from "../../lib/supabase.js";
-import { parseBody, slugify } from "../../lib/util.js";
+import { badId, parseBody, serverError, slugify, writeError } from "../../lib/util.js";
 
 export const categoriesRouter = Router();
 
@@ -14,7 +14,7 @@ const schema = z.object({
 
 categoriesRouter.get("/", async (_req, res) => {
   const { data, error } = await supabase.from("categories").select("*").order("sort_order");
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) return serverError(res, "categories.list", error);
   res.json(data ?? []);
 });
 
@@ -23,23 +23,25 @@ categoriesRouter.post("/", async (req, res) => {
   if (!body) return;
   const slug = body.slug?.trim() ? slugify(body.slug) : slugify(body.name);
   const { data, error } = await supabase.from("categories").insert({ ...body, slug }).select().single();
-  if (error) return res.status(error.code === "23505" ? 409 : 500).json({ error: error.message });
+  if (error) return writeError(res, "categories.create", error);
   res.status(201).json(data);
 });
 
 categoriesRouter.patch("/:id", async (req, res) => {
+  if (badId(res, req.params.id)) return;
   const body = parseBody(schema.partial(), req.body, res);
   if (!body) return;
   const patch: Record<string, unknown> = { ...body };
   if (typeof body.slug === "string") patch.slug = slugify(body.slug);
   const { data, error } = await supabase.from("categories").update(patch).eq("id", req.params.id).select().maybeSingle();
-  if (error) return res.status(error.code === "23505" ? 409 : 500).json({ error: error.message });
+  if (error) return writeError(res, "categories.update", error);
   if (!data) return res.status(404).json({ error: "Nie znaleziono" });
   res.json(data);
 });
 
 categoriesRouter.delete("/:id", async (req, res) => {
+  if (badId(res, req.params.id)) return;
   const { error } = await supabase.from("categories").delete().eq("id", req.params.id);
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) return serverError(res, "categories.delete", error);
   res.json({ ok: true });
 });

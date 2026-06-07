@@ -1,24 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart, cartTotal } from "@/store/cart";
 import { formatPrice, FREE_SHIPPING_FROM } from "@/lib/format";
 import ProductMedia from "./ProductMedia";
+import LockerPicker from "./LockerPicker";
 import { Button } from "@/components/ui/Button";
 
-const DELIVERY = [
-  { id: "kurier", label: "Kurier", sub: "1–2 dni robocze", cost: 14.99 },
-  { id: "paczkomat", label: "Paczkomat 24/7", sub: "1–2 dni robocze", cost: 11.99 },
-  { id: "odbior", label: "Odbiór osobisty", sub: "Łódź, ul. Przykładowa 1", cost: 0 },
-];
+const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
-const PAYMENT = [
-  { id: "blik", label: "BLIK" },
-  { id: "przelew", label: "Przelew online" },
-  { id: "pobranie", label: "Za pobraniem" },
-];
+const DELIVERY = [
+  { id: "paczkomat", label: "Paczkomat InPost 24/7", sub: "1–2 dni robocze", cost: 11.99, method: "inpost_locker" },
+  { id: "kurier", label: "Kurier InPost", sub: "1–2 dni robocze", cost: 14.99, method: "inpost_courier" },
+  { id: "odbior", label: "Odbiór osobisty", sub: "Łódź, ul. Przykładowa 1", cost: 0, method: "pickup" },
+] as const;
 
 const inputCls =
   "w-full rounded-lg border border-line bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-ink";
@@ -29,8 +25,26 @@ export default function CheckoutForm() {
   const clear = useCart((s) => s.clear);
   const subtotal = cartTotal(items);
 
-  const [delivery, setDelivery] = useState("kurier");
-  const [payment, setPayment] = useState("blik");
+  const [delivery, setDelivery] = useState<(typeof DELIVERY)[number]["id"]>("paczkomat");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [street, setStreet] = useState("");
+  const [building, setBuilding] = useState("");
+  const [postal, setPostal] = useState("");
+  const [city, setCity] = useState("");
+  const [locker, setLocker] = useState("");
+  const [lockerLabel, setLockerLabel] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [canceled, setCanceled] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (new URLSearchParams(window.location.search).get("anulowano") === "1") setCanceled(true);
+    } catch {}
+  }, []);
 
   if (items.length === 0) {
     return (
@@ -45,41 +59,92 @@ export default function CheckoutForm() {
   }
 
   const selected = DELIVERY.find((d) => d.id === delivery)!;
-  const freeShipping = subtotal >= FREE_SHIPPING_FROM && delivery !== "odbior";
+  const freeShipping = subtotal >= FREE_SHIPPING_FROM && selected.method !== "pickup";
   const deliveryCost = freeShipping ? 0 : selected.cost;
   const total = subtotal + deliveryCost;
 
-  const placeOrder = (e: React.FormEvent) => {
+  async function placeOrder(e: React.FormEvent) {
     e.preventDefault();
-    const nr = `KOT-${String(Date.now()).slice(-6)}`;
+    setError("");
+
+    if (selected.method === "inpost_locker" && !locker) {
+      setError("Wybierz paczkomat (podaj kod, np. LOD01M).");
+      return;
+    }
+
+    const payload = {
+      items: items.map((i) => ({ slug: i.slug, qty: i.qty })),
+      email: email.trim(),
+      phone: phone.trim(),
+      name: `${firstName} ${lastName}`.trim(),
+      shipping_method: selected.method,
+      shipping_address: {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        ...(selected.method === "inpost_courier"
+          ? { street: street.trim(), building_number: building.trim(), city: city.trim(), post_code: postal.trim() }
+          : {}),
+      },
+      ...(selected.method === "inpost_locker" ? { parcel_locker: locker } : {}),
+    };
+
+    // Tryb demo (lokalnie bez backendu) — zachowanie poglądowe.
+    if (!API) {
+      const nr = `KOT-${String(Date.now()).slice(-6)}`;
+      try {
+        sessionStorage.setItem("kotecki-order", JSON.stringify({ nr, total }));
+      } catch {}
+      clear();
+      router.push(`/kasa/dziekujemy?order=${nr}`);
+      return;
+    }
+
+    setLoading(true);
     try {
-      sessionStorage.setItem("kotecki-order", JSON.stringify({ nr, total }));
-    } catch {}
-    clear();
-    router.push("/kasa/dziekujemy");
-  };
+      const res = await fetch(`${API}/api/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error ?? "Nie udało się złożyć zamówienia. Sprawdź dane i spróbuj ponownie.");
+        setLoading(false);
+        return;
+      }
+      try {
+        sessionStorage.setItem("kotecki-order", JSON.stringify({ nr: data.number, total: data.total ?? total }));
+      } catch {}
+      if (data.checkoutUrl) {
+        // Płatność na bezpiecznej stronie Stripe (karta / BLIK / Przelewy24).
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+      clear();
+      router.push(`/kasa/dziekujemy?order=${encodeURIComponent(data.number)}`);
+    } catch {
+      setError("Błąd połączenia z serwerem. Spróbuj ponownie za chwilę.");
+      setLoading(false);
+    }
+  }
 
   return (
     <form onSubmit={placeOrder} className="container-edge grid gap-10 pb-24 lg:grid-cols-[1.4fr_1fr]">
+      {canceled && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 lg:col-span-2">
+          Płatność została anulowana. Twój koszyk jest nadal aktywny — możesz spróbować ponownie.
+        </div>
+      )}
       <div className="flex flex-col gap-9">
         <fieldset className="flex flex-col gap-4">
           <legend className="mb-2 text-lg font-semibold">Dane kontaktowe</legend>
           <div className="grid gap-4 sm:grid-cols-2">
-            <input required type="email" placeholder="E-mail" className={inputCls} />
-            <input required type="tel" placeholder="Telefon" className={inputCls} />
+            <input required type="email" placeholder="E-mail" className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input required type="tel" placeholder="Telefon" className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} />
           </div>
-        </fieldset>
-
-        <fieldset className="flex flex-col gap-4">
-          <legend className="mb-2 text-lg font-semibold">Adres dostawy</legend>
           <div className="grid gap-4 sm:grid-cols-2">
-            <input required placeholder="Imię" className={inputCls} />
-            <input required placeholder="Nazwisko" className={inputCls} />
-          </div>
-          <input required placeholder="Ulica i numer" className={inputCls} />
-          <div className="grid gap-4 sm:grid-cols-[0.5fr_1fr]">
-            <input required placeholder="Kod pocztowy" className={inputCls} />
-            <input required placeholder="Miejscowość" className={inputCls} />
+            <input required placeholder="Imię" className={inputCls} value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+            <input required placeholder="Nazwisko" className={inputCls} value={lastName} onChange={(e) => setLastName(e.target.value)} />
           </div>
         </fieldset>
 
@@ -87,7 +152,7 @@ export default function CheckoutForm() {
           <legend className="mb-3 text-lg font-semibold">Sposób dostawy</legend>
           <div className="flex flex-col gap-2">
             {DELIVERY.map((d) => {
-              const cost = subtotal >= FREE_SHIPPING_FROM && d.id !== "odbior" ? 0 : d.cost;
+              const cost = subtotal >= FREE_SHIPPING_FROM && d.method !== "pickup" ? 0 : d.cost;
               return (
                 <label
                   key={d.id}
@@ -115,28 +180,38 @@ export default function CheckoutForm() {
           </div>
         </fieldset>
 
-        <fieldset>
-          <legend className="mb-3 text-lg font-semibold">Płatność</legend>
-          <div className="flex flex-col gap-2">
-            {PAYMENT.map((p) => (
-              <label
-                key={p.id}
-                className={`flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm transition-colors ${
-                  payment === p.id ? "border-ink bg-cream" : "border-line hover:border-ink/40"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="payment"
-                  checked={payment === p.id}
-                  onChange={() => setPayment(p.id)}
-                  className="h-4 w-4 accent-coral"
-                />
-                <span className="font-medium">{p.label}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
+        {selected.method === "inpost_locker" && (
+          <fieldset>
+            <legend className="mb-3 text-lg font-semibold">Wybierz paczkomat</legend>
+            <LockerPicker
+              value={locker}
+              label={lockerLabel}
+              onSelect={(code, lbl) => {
+                setLocker(code);
+                setLockerLabel(lbl);
+              }}
+            />
+          </fieldset>
+        )}
+
+        {selected.method === "inpost_courier" && (
+          <fieldset className="flex flex-col gap-4">
+            <legend className="mb-2 text-lg font-semibold">Adres dostawy</legend>
+            <div className="grid gap-4 sm:grid-cols-[1fr_0.4fr]">
+              <input required placeholder="Ulica" className={inputCls} value={street} onChange={(e) => setStreet(e.target.value)} />
+              <input required placeholder="Nr" className={inputCls} value={building} onChange={(e) => setBuilding(e.target.value)} />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-[0.5fr_1fr]">
+              <input required placeholder="Kod pocztowy" className={inputCls} value={postal} onChange={(e) => setPostal(e.target.value)} />
+              <input required placeholder="Miejscowość" className={inputCls} value={city} onChange={(e) => setCity(e.target.value)} />
+            </div>
+          </fieldset>
+        )}
+
+        <div className="rounded-lg border border-line bg-cream/60 px-4 py-3 text-sm text-ink-soft">
+          Płatność: <span className="font-medium text-ink">karta, BLIK lub Przelewy24</span> — wybierzesz ją na
+          bezpiecznej stronie Stripe po kliknięciu „Zamawiam i płacę”.
+        </div>
       </div>
 
       <aside className="h-fit rounded-2xl border border-line bg-white p-6 lg:sticky lg:top-32">
@@ -171,14 +246,17 @@ export default function CheckoutForm() {
           <span className="text-2xl font-semibold tabular-nums">{formatPrice(total)}</span>
         </div>
 
+        {error && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+
         <button
           type="submit"
-          className="mt-6 w-full rounded-lg bg-coral px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-coral-deep"
+          disabled={loading}
+          className="mt-6 w-full rounded-lg bg-coral px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-coral-deep disabled:opacity-60"
         >
-          Zamawiam i płacę
+          {loading ? "Przekierowuję do płatności…" : "Zamawiam i płacę"}
         </button>
         <p className="mt-3 text-center text-xs text-mist">
-          Wersja demonstracyjna — płatność nie zostanie pobrana.
+          Klikając „Zamawiam i płacę" akceptujesz regulamin sklepu.
         </p>
       </aside>
     </form>

@@ -119,10 +119,13 @@ create table if not exists orders (
   parcel_locker    text,
   tracking_number  text,
   label_url        text,
+  shipping_ref     text,                              -- id przesyłki w InPost ShipX
   notes            text,
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now()
 );
+-- dla istniejących baz (gdy tabela już była utworzona wcześniej):
+alter table orders add column if not exists shipping_ref text;
 create index if not exists orders_status_idx on orders (status);
 create index if not exists orders_created_idx on orders (created_at);
 drop trigger if exists orders_set_updated on orders;
@@ -231,3 +234,123 @@ values
 ('notes-dziennik-kota', 'Notes „Dziennik Kota”', (select id from categories where slug = 'dla-wlasciciela'), 3500, 'Na notatki, plany i kocie obserwacje.', 'Notes w twardej oprawie z gładkim papierem i wstążką-zakładką. Minimalna okładka z kocim akcentem. Leży płasko po otwarciu.', ARRAY['Format A5', '192 strony', 'Gumka i zakładka']::text[], '{}'::text[], false, true, 19),
 ('bluza-mow-do-kota', 'Bluza „Mów do kota”', (select id from categories where slug = 'dla-wlasciciela'), 15900, 'Miękka bluza dla zespołu „kot ważniejszy”.', 'Ciężka, miękka w środku bluza z kapturem i drobnym haftem. Krój oversize, materiał, z którego nie chce się wychodzić — zupełnie jak kot z legowiska.', ARRAY['Bawełna z pętelką 320 g/m²', 'Krój oversize', 'Rozmiary S–XXL']::text[], '{}'::text[], false, true, 20)
 on conflict (slug) do nothing;
+
+-- ===== 5. ATOMOWE SKŁADANIE ZAMÓWIENIA (RPC) =====
+-- Jedna transakcja: dekrement stanu + licznik promocji + zamówienie + pozycje.
+-- Chroni przed oversell i wyścigami (TOCTOU). Wywołuje tylko backend (service_role).
+
+-- Idempotencja webhooków Stripe — każde zdarzenie przetwarzamy dokładnie raz.
+create table if not exists stripe_events (
+  id          text primary key,
+  received_at timestamptz not null default now()
+);
+alter table stripe_events enable row level security;
+
+create or replace function create_order(p jsonb)
+returns jsonb
+language plpgsql
+as $$
+declare
+  it        jsonb;
+  v_qty     int;
+  v_order   uuid;
+  v_number  text := p->>'number';
+  v_promo   uuid := nullif(p->>'promo_id', '')::uuid;
+  v_rows    int;
+begin
+  for it in select * from jsonb_array_elements(p->'items')
+  loop
+    v_qty := (it->>'qty')::int;
+    update products
+       set stock_qty = stock_qty - v_qty
+     where id = (it->>'product_id')::uuid
+       and (stock_qty is null or stock_qty >= v_qty);
+    get diagnostics v_rows = row_count;
+    if v_rows = 0 then
+      raise exception 'OUT_OF_STOCK:%', (it->>'slug') using errcode = 'P0001';
+    end if;
+  end loop;
+
+  if v_promo is not null then
+    update promotions
+       set used_count = used_count + 1
+     where id = v_promo
+       and active = true
+       and (usage_limit is null or used_count < usage_limit);
+    get diagnostics v_rows = row_count;
+    if v_rows = 0 then
+      raise exception 'PROMO_EXHAUSTED' using errcode = 'P0001';
+    end if;
+  end if;
+
+  insert into orders (
+    number, customer_id, email, phone, status, payment_status,
+    subtotal_grosze, discount_grosze, shipping_grosze, total_grosze, currency,
+    promo_code, shipping_method, shipping_address, parcel_locker
+  ) values (
+    v_number,
+    nullif(p->>'customer_id', '')::uuid,
+    p->>'email',
+    nullif(p->>'phone', ''),
+    'pending', 'unpaid',
+    (p->>'subtotal_grosze')::int,
+    (p->>'discount_grosze')::int,
+    (p->>'shipping_grosze')::int,
+    (p->>'total_grosze')::int,
+    coalesce(nullif(p->>'currency', ''), 'PLN'),
+    nullif(p->>'promo_code', ''),
+    p->>'shipping_method',
+    case when jsonb_typeof(p->'shipping_address') = 'object' then p->'shipping_address' else null end,
+    nullif(p->>'parcel_locker', '')
+  )
+  returning id into v_order;
+
+  insert into order_items (order_id, product_id, slug, name, price_grosze, qty, image_url)
+  select
+    v_order,
+    (it->>'product_id')::uuid,
+    it->>'slug',
+    it->>'name',
+    (it->>'price_grosze')::int,
+    (it->>'qty')::int,
+    nullif(it->>'image_url', '')
+  from jsonb_array_elements(p->'items') as it;
+
+  return jsonb_build_object('order_id', v_order, 'number', v_number);
+end;
+$$;
+
+revoke all on function create_order(jsonb) from public, anon, authenticated;
+grant execute on function create_order(jsonb) to service_role;
+
+-- Zwolnienie zamówienia (porzucona/odrzucona płatność): zwrot stanu i promocji.
+create or replace function release_order(p_order uuid)
+returns void
+language plpgsql
+as $$
+declare
+  v_status  text;
+  v_payment text;
+  v_promo   text;
+  it        record;
+begin
+  select status, payment_status, promo_code into v_status, v_payment, v_promo
+    from orders where id = p_order for update;
+  if not found then return; end if;
+  if v_payment = 'paid' or v_status in ('cancelled', 'refunded') then return; end if;
+
+  for it in select product_id, qty from order_items where order_id = p_order loop
+    update products set stock_qty = stock_qty + it.qty
+      where id = it.product_id and stock_qty is not null;
+  end loop;
+
+  if v_promo is not null then
+    update promotions set used_count = greatest(used_count - 1, 0) where code = v_promo;
+  end if;
+
+  update orders set status = 'cancelled', payment_status = 'failed' where id = p_order;
+end;
+$$;
+
+revoke all on function release_order(uuid) from public, anon, authenticated;
+grant execute on function release_order(uuid) to service_role;

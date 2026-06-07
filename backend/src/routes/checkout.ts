@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { supabase } from "../lib/supabase.js";
 import { orderNumber, parseBody, serverError } from "../lib/util.js";
+import { stripe, siteUrl } from "../lib/stripe.js";
 
 export const checkoutRouter = Router();
 
@@ -108,47 +109,90 @@ checkoutRouter.post("/", async (req, res) => {
     customerId = created?.id ?? null;
   }
 
-  // 5) Zamówienie + pozycje
-  const { data: order, error: orderErr } = await supabase
-    .from("orders")
-    .insert({
+  // 5) Zamówienie + pozycje + ATOMOWY dekrement stanu i licznik promocji.
+  //    Wszystko w jednej transakcji Postgres (RPC) — brak oversell i wyścigów.
+  const { data: result, error: rpcErr } = await supabase.rpc("create_order", {
+    p: {
       number: orderNumber(),
       customer_id: customerId,
       email,
       phone: body.phone ?? null,
-      status: "pending",
-      payment_status: "unpaid",
       subtotal_grosze: subtotal,
       discount_grosze: discount,
       shipping_grosze: shipping,
       total_grosze: total,
       currency: "PLN",
       promo_code: appliedPromo?.code ?? null,
+      promo_id: appliedPromo?.id ?? null,
       shipping_method: method,
       shipping_address: body.shipping_address ?? null,
       parcel_locker: body.parcel_locker ?? null,
-    })
-    .select("id, number")
-    .single();
-  if (orderErr) return serverError(res, "checkout.order", orderErr);
+      items: lineItems,
+    },
+  });
 
-  const { error: itemsErr } = await supabase
-    .from("order_items")
-    .insert(lineItems.map((li) => ({ ...li, order_id: order.id })));
-  if (itemsErr) {
-    await supabase.from("orders").delete().eq("id", order.id); // cofnij — uniknij sieroty
-    return serverError(res, "checkout.items", itemsErr);
+  if (rpcErr) {
+    const msg = rpcErr.message ?? "";
+    if (msg.startsWith("OUT_OF_STOCK:")) {
+      const slug = msg.slice("OUT_OF_STOCK:".length).trim();
+      const name = bySlug.get(slug)?.name ?? slug;
+      return res.status(409).json({ error: `Brak na stanie: ${name}` });
+    }
+    if (msg.includes("PROMO_EXHAUSTED")) {
+      return res.status(409).json({ error: "Kod rabatowy został już wykorzystany" });
+    }
+    return serverError(res, "checkout.create_order", rpcErr);
   }
 
-  // licznik użyć promocji zwiększymy po potwierdzeniu płatności (etap Stripe)
+  const order = result as { order_id: string; number: string };
+
+  // 6) Płatność Stripe (karta / BLIK / Przelewy24) — jeśli skonfigurowana i jest co płacić.
+  //    Kwotę bierze z policzonego total (grosze). Potwierdzenie przyjdzie webhookiem.
+  let checkoutUrl: string | null = null;
+  const base = siteUrl();
+  if (stripe && base && total > 0) {
+    try {
+      const session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        payment_method_types: ["card", "blik", "p24"],
+        customer_email: email,
+        client_reference_id: order.order_id,
+        metadata: { order_id: order.order_id, number: order.number },
+        line_items: [
+          {
+            quantity: 1,
+            price_data: {
+              currency: "pln",
+              unit_amount: total,
+              product_data: { name: `Zamówienie ${order.number} — Pan Kotecki` },
+            },
+          },
+        ],
+        success_url: `${base}/kasa/dziekujemy?order=${encodeURIComponent(order.number)}`,
+        cancel_url: `${base}/kasa?anulowano=1`,
+      });
+      checkoutUrl = session.url;
+      await supabase
+        .from("orders")
+        .update({ payment_provider: "stripe", payment_ref: session.id })
+        .eq("id", order.order_id);
+    } catch (err) {
+      console.error("[checkout.stripe]", err);
+      // Stripe włączony, ale sesja się nie utworzyła → zwolnij stan i zgłoś błąd
+      // (nie wysyłamy klienta na „dziękujemy" bez płatności).
+      await supabase.rpc("release_order", { p_order: order.order_id });
+      return res.status(502).json({ error: "Płatność chwilowo niedostępna. Spróbuj ponownie za chwilę." });
+    }
+  }
 
   res.status(201).json({
-    orderId: order.id,
+    orderId: order.order_id,
     number: order.number,
     subtotal: subtotal / 100,
     discount: discount / 100,
     shipping: shipping / 100,
     total: total / 100,
     totalGrosze: total,
+    checkoutUrl,
   });
 });

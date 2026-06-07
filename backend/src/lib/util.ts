@@ -10,6 +10,20 @@ export function serverError(res: Response, where: string, err: unknown) {
   return res.status(500).json({ error: "Błąd serwera. Spróbuj ponownie." });
 }
 
+// Gdy :id nie jest poprawnym UUID — odsyła 404 i zwraca true (przerwij handler).
+// Bez tego zła wartość trafia do bazy i Postgres oddaje 500 z komunikatem schematu.
+export function badId(res: Response, id: string): boolean {
+  if (UUID_RE.test(id)) return false;
+  res.status(404).json({ error: "Nie znaleziono" });
+  return true;
+}
+
+// Mapuje błąd zapisu na odpowiedź: 23505 (konflikt unikalności) → 409, reszta → 500 ogólny.
+export function writeError(res: Response, where: string, err: { code?: string } | null) {
+  if (err?.code === "23505") return res.status(409).json({ error: "Taki wpis już istnieje (zajęty slug/kod)" });
+  return serverError(res, where, err);
+}
+
 const PL_MAP: Record<string, string> = {
   ą: "a", ć: "c", ę: "e", ł: "l", ń: "n", ó: "o", ś: "s", ź: "z", ż: "z",
 };

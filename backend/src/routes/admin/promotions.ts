@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { supabase } from "../../lib/supabase.js";
-import { parseBody } from "../../lib/util.js";
+import { badId, parseBody, serverError, writeError } from "../../lib/util.js";
 
 export const promotionsRouter = Router();
 
@@ -25,7 +25,7 @@ const schema = base.superRefine((d, ctx) => {
 
 promotionsRouter.get("/", async (_req, res) => {
   const { data, error } = await supabase.from("promotions").select("*").order("created_at", { ascending: false });
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) return serverError(res, "promotions.list", error);
   res.json(data ?? []);
 });
 
@@ -37,23 +37,25 @@ promotionsRouter.post("/", async (req, res) => {
     .insert({ ...body, code: body.code.toUpperCase() })
     .select()
     .single();
-  if (error) return res.status(error.code === "23505" ? 409 : 500).json({ error: error.message });
+  if (error) return writeError(res, "promotions.create", error);
   res.status(201).json(data);
 });
 
 promotionsRouter.patch("/:id", async (req, res) => {
+  if (badId(res, req.params.id)) return;
   const body = parseBody(base.partial(), req.body, res);
   if (!body) return;
   const patch: Record<string, unknown> = { ...body };
   if (typeof body.code === "string") patch.code = body.code.toUpperCase();
   const { data, error } = await supabase.from("promotions").update(patch).eq("id", req.params.id).select().maybeSingle();
-  if (error) return res.status(error.code === "23505" ? 409 : 500).json({ error: error.message });
+  if (error) return writeError(res, "promotions.update", error);
   if (!data) return res.status(404).json({ error: "Nie znaleziono" });
   res.json(data);
 });
 
 promotionsRouter.delete("/:id", async (req, res) => {
+  if (badId(res, req.params.id)) return;
   const { error } = await supabase.from("promotions").delete().eq("id", req.params.id);
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) return serverError(res, "promotions.delete", error);
   res.json({ ok: true });
 });

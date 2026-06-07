@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { supabase } from "../../lib/supabase.js";
+import { serverError } from "../../lib/util.js";
 
 export const settingsRouter = Router();
 
@@ -8,7 +9,7 @@ const ALLOWED_KEYS = new Set(["store", "shipping", "contact", "payments"]);
 
 settingsRouter.get("/", async (_req, res) => {
   const { data, error } = await supabase.from("settings").select("*");
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) return serverError(res, "settings.list", error);
   const map: Record<string, unknown> = {};
   for (const row of data ?? []) map[row.key] = row.value;
   res.json(map);
@@ -28,6 +29,6 @@ settingsRouter.put("/:key", async (req, res) => {
     .upsert({ key, value, updated_at: new Date().toISOString() })
     .select()
     .single();
-  if (error) return res.status(500).json({ error: error.message });
+  if (error) return serverError(res, "settings.upsert", error);
   res.json(data);
 });

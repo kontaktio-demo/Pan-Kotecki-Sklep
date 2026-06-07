@@ -82,6 +82,88 @@ w repozytorium. Bez logowania: przy pierwszym uruchomieniu wpisujesz raz:
 Potem aplikacja otwiera się prosto do pulpitu sprzedaży. Plik `.exe` możesz
 przekazać znajomemu — on u siebie wpisze ten sam adres i klucz.
 
-## Następne etapy (buduję)
-5. Płatności (Stripe: BLIK/Przelewy24/karta) + webhook + statusy zamówień.
-6. Dostawa (InPost: paczkomaty + kurier, etykiety).
+## Etap 4 — Zaktualizuj bazę (płatności + dostawa)
+
+Dodaliśmy bezpieczne, atomowe składanie zamówień (bez „oversprzedaży") i kolumnę
+na przesyłki InPost. **To trzeba uruchomić raz**, inaczej składanie zamówienia
+po nowym wdrożeniu nie zadziała.
+
+- Supabase → **SQL Editor → New query** → wklej całą zawartość `supabase/order_rpc.sql` → **Run**.
+  (Dodaje funkcje `create_order`, `release_order` i kolumnę `shipping_ref`. Bezpieczne do ponownego uruchomienia.)
+- Alternatywnie: ponownie uruchom cały `supabase/setup_all.sql` — zawiera już te funkcje.
+
+---
+
+## Etap 5 — Płatności: Stripe (karta / BLIK / Przelewy24)
+
+### 5A. Konto i klucz
+1. Załóż konto na https://stripe.com (możesz zacząć w trybie **Test**).
+2. **Developers → API keys** → skopiuj **Secret key** (`sk_test_…` lub `sk_live_…`).
+3. **Settings → Payment methods** → włącz **Karta**, **BLIK**, **Przelewy24** (PLN).
+
+### 5B. Zmienne na Render (backend)
+Dodaj w usłudze backendu (Environment):
+- `STRIPE_SECRET_KEY` = `sk_…`
+- `SITE_URL` = adres sklepu z Vercela, np. `https://kotecki.pl` (powrót po płatności)
+- `NODE_ENV` = `production`
+- upewnij się, że `CLIENT_ORIGIN` zawiera adres sklepu (np. `https://kotecki.pl`)
+
+### 5C. Webhook (potwierdzenie płatności)
+1. Stripe → **Developers → Webhooks → Add endpoint**.
+2. **Endpoint URL:** `https://TWOJ-BACKEND.onrender.com/api/payments/webhook`
+3. **Events to send** — zaznacz:
+   - `checkout.session.completed`
+   - `checkout.session.async_payment_succeeded`
+   - `checkout.session.async_payment_failed`
+   - `checkout.session.expired`
+4. Po utworzeniu → **Signing secret** (`whsec_…`) → dodaj na Render jako `STRIPE_WEBHOOK_SECRET`.
+5. **Zapisz / redeploy** backend.
+
+### 5D. Test
+- Wejdź na sklep → dodaj produkt → **Kasa → Zamawiam i płacę** → przekieruje na Stripe.
+- Karta testowa: `4242 4242 4242 4242`, dowolna data w przyszłości, dowolny CVC.
+- Po opłaceniu wrócisz na „Dziękujemy", a w panelu zamówienie ma **Płatność: opłacone**.
+
+> Gdy `STRIPE_SECRET_KEY` nie jest ustawiony, sklep nadal przyjmuje zamówienia
+> (np. odbiór osobisty), tylko bez online-płatności. Nic się nie psuje.
+
+---
+
+## Etap 6 — Dostawa: InPost (paczkomaty + kurier)
+
+### 6A. Konto ShipX
+1. https://manager.paczkomaty.pl → konto firmowe → sekcja **API (ShipX)**.
+2. Wygeneruj **token API** oraz odczytaj **ID organizacji** (Organization ID).
+
+### 6B. Zmienne na Render (backend)
+- `INPOST_TOKEN` = token z ShipX
+- `INPOST_ORG_ID` = ID organizacji
+- *(opcjonalnie)* `INPOST_PARCEL_TEMPLATE` = `small` / `medium` / `large`
+- *(sandbox)* `INPOST_BASE_URL` = adres sandboxa ShipX, jeśli testujesz
+
+Redeploy backend.
+
+### 6C. Mapa paczkomatów na sklepie (opcjonalnie, ładniejszy wybór)
+- Vercel → Environment Variables → `NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN` = token Geowidgetu InPost → redeploy.
+- Bez tego klient po prostu wpisuje **kod paczkomatu** (np. `LOD01M`) — też działa.
+
+### 6D. Jak nadać paczkę (panel)
+- Panel → **Zamówienia** → otwórz zamówienie → **Generuj etykietę InPost**.
+- Zapisze się numer śledzenia, status zmieni się na „Spakowane".
+- **Pobierz etykietę (PDF)** → otwiera etykietę do druku.
+
+> Gdy `INPOST_TOKEN`/`INPOST_ORG_ID` nie są ustawione, panel pokaże komunikat
+> „InPost nie skonfigurowany" — reszta działa normalnie.
+
+---
+
+## Skrót: wszystkie zmienne środowiskowe
+
+**Render (backend):** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_API_KEY`,
+`CLIENT_ORIGIN`, `SITE_URL`, `NODE_ENV=production`, `STRIPE_SECRET_KEY`,
+`STRIPE_WEBHOOK_SECRET`, `INPOST_TOKEN`, `INPOST_ORG_ID`.
+
+**Vercel (sklep):** `NEXT_PUBLIC_API_URL` (wymagane), `NEXT_PUBLIC_SUPABASE_URL`
+(zalecane — zawęża hosty zdjęć), `NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN` (opcjonalne).
+
+**Panel (.exe):** adres API + `ADMIN_API_KEY` (wpisujesz raz w aplikacji).
