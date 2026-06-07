@@ -91,7 +91,8 @@ export default function OrderConfirmation() {
         {failed ? "Płatność nie powiodła się" : "Dziękujemy za zamówienie!"}
       </h1>
       <p className="mt-4 max-w-md text-ink-soft">
-        {phase === "paid" && "Płatność potwierdzona. Potwierdzenie wysłaliśmy na podany adres e-mail."}
+        {phase === "paid" &&
+          "Płatność potwierdzona — pakujemy z miłością i pod czujnym okiem kota. Potwierdzenie wysłaliśmy na Twój e-mail."}
         {phase === "pending" &&
           "Przyjęliśmy Twoje zamówienie. Czekamy na potwierdzenie płatności (BLIK/Przelewy24 może chwilę potrwać) — damy znać e-mailem."}
         {phase === "checking" && "Sprawdzamy status płatności…"}
@@ -117,6 +118,13 @@ export default function OrderConfirmation() {
             </span>
           </div>
         </div>
+      )}
+
+      {!failed && (
+        <p className="mt-7 inline-flex items-center gap-2 rounded-full bg-mint px-4 py-2 text-sm text-teal-deep">
+          <span aria-hidden="true">🐾</span>
+          Spodobało się? Opowiedz znajomemu kociarzowi — kot się ucieszy.
+        </p>
       )}
 
       <div className="mt-9 flex flex-wrap justify-center gap-3">

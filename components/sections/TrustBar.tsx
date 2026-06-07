@@ -25,18 +25,26 @@ const ITEMS = [
 
 import Reveal from "@/components/ui/Reveal";
 
+// Naprzemienne kolory ikon — ciepły pomarańcz i chłodny teal (para komplementarna)
+const ICON_TONES = [
+  "bg-orange/12 text-orange-deep",
+  "bg-teal/12 text-teal",
+  "bg-orange/12 text-orange-deep",
+  "bg-teal/12 text-teal",
+];
+
 export default function TrustBar() {
   return (
     <section className="container-edge pt-8 md:pt-12">
-      <Reveal className="grid grid-cols-2 gap-3 rounded-2xl border border-line bg-white p-4 md:grid-cols-4 md:gap-4 md:p-5">
-        {ITEMS.map((item) => (
-          <div key={item.title} className="flex items-center gap-3 px-2 py-1">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange/12 text-orange-deep">
+      <Reveal className="grid grid-cols-2 gap-2 rounded-2xl border border-line bg-white p-3 md:grid-cols-4 md:gap-4 md:p-5">
+        {ITEMS.map((item, i) => (
+          <div key={item.title} className="flex items-center gap-3 rounded-xl px-2 py-2 md:py-1">
+            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${ICON_TONES[i]}`}>
               <svg width="22" height="22" viewBox="0 0 24 24">{item.icon}</svg>
             </span>
             <span>
               <span className="block text-sm font-medium leading-tight">{item.title}</span>
-              <span className="block text-xs text-ash">{item.sub}</span>
+              <span className="block text-xs leading-tight text-ash">{item.sub}</span>
             </span>
           </div>
         ))}

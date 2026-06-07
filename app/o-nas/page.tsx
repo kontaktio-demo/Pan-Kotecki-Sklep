@@ -52,9 +52,9 @@ export default function ONasPage() {
 
       <section className="container-edge py-16 md:py-20">
         <div className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3">
-          {VALUES.map((v) => (
+          {VALUES.map((v, i) => (
             <div key={v.n} className="flex flex-col gap-3 bg-milk p-8 md:p-10">
-              <span className="text-sm font-semibold text-coral">{v.n}</span>
+              <span className={`font-display text-2xl font-semibold ${i === 1 ? "text-teal" : "text-coral"}`}>{v.n}</span>
               <h3 className="text-xl font-semibold">{v.t}</h3>
               <p className="text-sm leading-relaxed text-ink-soft">{v.d}</p>
             </div>

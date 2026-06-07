@@ -10,7 +10,7 @@ type CommonProps = {
 };
 
 const base =
-  "group inline-flex items-center justify-center gap-2.5 rounded-lg px-7 py-3.5 text-sm font-medium transition-colors duration-200";
+  "tap group inline-flex items-center justify-center gap-2.5 rounded-xl px-7 py-3.5 text-sm font-medium";
 
 const styles: Record<Variant, string> = {
   solid: "bg-ink text-milk hover:bg-coral",

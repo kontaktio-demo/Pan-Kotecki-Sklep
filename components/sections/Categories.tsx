@@ -17,6 +17,7 @@ export default async function Categories() {
             Kategorie
           </p>
           <h2 className="text-2xl font-semibold md:text-3xl">Czego dziś szuka Twój kot?</h2>
+          <p className="mt-1.5 text-sm text-ink-soft/80">Cztery działy, jeden szef — a szefem jest kot.</p>
         </Reveal>
 
         <Reveal delay={70} className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
@@ -26,21 +27,22 @@ export default async function Categories() {
             <Link
               key={cat.slug}
               href={`/sklep?kategoria=${cat.slug}`}
-              className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-xl p-5 text-milk"
+              className="tap group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl p-5 text-milk shadow-[0_16px_40px_-24px_rgba(20,12,4,0.55)] ring-1 ring-ink/5"
             >
               <Image
                 src={photo.src}
                 alt={photo.alt}
                 fill
                 sizes="(min-width: 768px) 22rem, 50vw"
-                className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+                className="object-cover transition-transform duration-[650ms] ease-out group-hover:scale-[1.07]"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
-              <div className="relative">
-                <h3 className="text-lg font-semibold">{cat.name}</h3>
-                <span className="mt-1 inline-flex items-center gap-1 text-sm text-milk/85">
+              <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/25 to-transparent transition-opacity duration-500 group-hover:from-ink/90" />
+              <div className="relative translate-y-1 transition-transform duration-300 group-hover:translate-y-0">
+                <h3 className="text-lg font-semibold leading-tight">{cat.name}</h3>
+                <span className="mt-1 inline-flex items-center gap-1.5 text-sm text-milk/85">
+                  <span className="h-px w-5 bg-orange transition-all duration-300 group-hover:w-8" />
                   Zobacz
-                  <span className="transition-transform duration-300 group-hover:translate-x-0.5">→</span>
+                  <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
                 </span>
               </div>
             </Link>

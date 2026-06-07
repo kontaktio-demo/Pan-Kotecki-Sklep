@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCart, cartTotal } from "@/store/cart";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, FREE_SHIPPING_FROM } from "@/lib/format";
 import ProductMedia from "./ProductMedia";
 import { Button } from "@/components/ui/Button";
 
@@ -11,6 +11,8 @@ export default function CartView() {
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
   const total = cartTotal(items);
+  const toFree = Math.max(0, FREE_SHIPPING_FROM - total);
+  const freeProgress = Math.min(100, (total / FREE_SHIPPING_FROM) * 100);
 
   if (items.length === 0) {
     return (
@@ -87,9 +89,29 @@ export default function CartView() {
           <span className="font-medium">Razem</span>
           <span className="font-display text-2xl tabular-nums">{formatPrice(total)}</span>
         </div>
+
+        {/* Dyskretna zachęta do darmowej dostawy — w treści, nie popup */}
+        <div className="mt-5">
+          {toFree > 0 ? (
+            <p className="text-sm text-ink-soft">
+              Dorzuć jeszcze <span className="font-semibold text-teal">{formatPrice(toFree)}</span>, a dostawa będzie gratis.
+            </p>
+          ) : (
+            <p className="inline-flex items-center gap-1.5 text-sm font-medium text-teal">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="m5 12 5 5L20 7" />
+              </svg>
+              Masz darmową dostawę 🐾
+            </p>
+          )}
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line">
+            <div className="h-full rounded-full bg-teal transition-all duration-500" style={{ width: `${freeProgress}%` }} />
+          </div>
+        </div>
+
         <Link
           href="/kasa"
-          className="mt-7 block w-full rounded-lg bg-coral px-6 py-4 text-center text-sm font-semibold text-white transition-colors hover:bg-coral-deep"
+          className="tap mt-7 block w-full rounded-xl bg-coral px-6 py-4 text-center text-sm font-semibold text-white shadow-lg shadow-coral/20 hover:bg-coral-deep"
         >
           Przejdź do kasy
         </Link>

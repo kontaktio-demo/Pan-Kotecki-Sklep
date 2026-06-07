@@ -38,7 +38,7 @@ export function AddToCartCompact({ item }: { item: Item }) {
     return (
       <button
         disabled
-        className="mt-3 inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-line bg-cream px-3 py-2.5 text-sm font-medium text-ash"
+        className="mt-3 inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-line bg-cream px-3 py-2.5 text-sm font-medium text-ash"
       >
         Niedostępny
       </button>
@@ -53,7 +53,7 @@ export function AddToCartCompact({ item }: { item: Item }) {
         setAdded(true);
         setTimeout(() => setAdded(false), 1200);
       }}
-      className="mt-3 inline-flex w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-lg bg-ink px-3 py-2.5 text-sm font-medium text-milk transition-colors duration-200 hover:bg-coral"
+      className="tap mt-3 inline-flex w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-xl bg-ink px-3 py-2.5 text-sm font-medium text-milk hover:bg-coral"
     >
       <CartIcon />
       {added ? "Dodano ✓" : "Do koszyka"}
@@ -71,7 +71,7 @@ export function AddToCartFull({ item }: { item: Item }) {
     return (
       <button
         disabled
-        className="inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-line bg-cream px-8 py-4 text-sm font-semibold text-ash"
+        className="inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl border border-line bg-cream px-8 py-4 text-sm font-semibold text-ash"
       >
         Chwilowo niedostępny
       </button>
@@ -80,7 +80,7 @@ export function AddToCartFull({ item }: { item: Item }) {
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-      <div className="flex items-center rounded-lg border border-ink/20">
+      <div className="flex items-center rounded-xl border border-ink/20">
         <button
           onClick={() => setQty((q) => Math.max(1, q - 1))}
           className="px-5 py-3.5 text-ash transition-colors hover:text-ink"
@@ -103,7 +103,7 @@ export function AddToCartFull({ item }: { item: Item }) {
           setAdded(true);
           setTimeout(() => setAdded(false), 1400);
         }}
-        className="inline-flex flex-1 items-center justify-center gap-2.5 rounded-lg bg-coral px-8 py-4 text-sm font-semibold text-white transition-colors duration-200 hover:bg-coral-deep"
+        className="tap inline-flex flex-1 items-center justify-center gap-2.5 rounded-xl bg-coral px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-coral/20 hover:bg-coral-deep"
       >
         <CartIcon />
         {added ? "Dodano do koszyka ✓" : "Dodaj do koszyka"}

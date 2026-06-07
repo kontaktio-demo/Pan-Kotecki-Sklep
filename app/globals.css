@@ -15,8 +15,13 @@
   --color-orange-deep: #db6920;
   --color-night: #221a11;
 
+  /* kolor komplementarny do pomarańczu — głęboki turkus jako chłodny akcent */
+  --color-teal: #156b64;
+  --color-teal-deep: #0f4f4a;
+  --color-mint: #dcebe6;
+
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-logo), "Fraunces", ui-serif, Georgia, serif;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -53,8 +58,8 @@
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     font-weight: 600;
-    letter-spacing: -0.022em;
-    line-height: 1;
+    letter-spacing: -0.012em;
+    line-height: 1.04;
   }
 
   a {
@@ -73,6 +78,37 @@
 
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* delikatny feedback dotyku na mobile — „wciśnięcie" elementu.
+     Animujemy też kolory, żeby .tap nie kasowało przejść hover (transition-property). */
+  .tap {
+    transition-property: transform, color, background-color, border-color, box-shadow;
+    transition-timing-function: var(--ease-out-expo);
+    transition-duration: 0.18s;
+  }
+  .tap:active {
+    transform: scale(0.97);
+  }
+
+  /* dekoracyjny separator z łapką */
+  .paw-rule {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+    color: var(--color-mist);
+  }
+  .paw-rule::before,
+  .paw-rule::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    max-width: 5rem;
+    background: linear-gradient(to var(--_dir, right), transparent, var(--color-line));
+  }
+  .paw-rule::before {
+    --_dir: left;
   }
 
   .eyebrow {

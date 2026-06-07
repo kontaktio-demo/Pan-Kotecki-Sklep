@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useCart, cartTotal } from "@/store/cart";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, FREE_SHIPPING_FROM } from "@/lib/format";
 import ProductMedia from "./ProductMedia";
 
 export default function CartDrawer() {
@@ -27,6 +27,8 @@ export default function CartDrawer() {
   }, [close]);
 
   const total = cartTotal(items);
+  const toFree = Math.max(0, FREE_SHIPPING_FROM - total);
+  const freeProgress = Math.min(100, (total / FREE_SHIPPING_FROM) * 100);
 
   return (
     <div className={`fixed inset-0 z-[150] ${isOpen ? "" : "pointer-events-none"}`} aria-hidden={!isOpen}>
@@ -129,6 +131,19 @@ export default function CartDrawer() {
             </div>
 
             <footer className="border-t border-line px-6 py-5">
+              {/* Dyskretna zachęta do darmowej dostawy */}
+              <div className="pb-4">
+                {toFree > 0 ? (
+                  <p className="text-xs text-ink-soft">
+                    Do darmowej dostawy brakuje <span className="font-semibold text-teal">{formatPrice(toFree)}</span>
+                  </p>
+                ) : (
+                  <p className="text-xs font-medium text-teal">Masz darmową dostawę 🐾</p>
+                )}
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line">
+                  <div className="h-full rounded-full bg-teal transition-all duration-500" style={{ width: `${freeProgress}%` }} />
+                </div>
+              </div>
               <div className="flex items-center justify-between pb-1">
                 <span className="text-ash">Suma</span>
                 <span className="font-display text-xl tabular-nums">{formatPrice(total)}</span>
@@ -137,7 +152,7 @@ export default function CartDrawer() {
               <Link
                 href="/kasa"
                 onClick={close}
-                className="block w-full rounded-lg bg-coral px-6 py-4 text-center text-sm font-semibold text-white transition-colors hover:bg-coral-deep"
+                className="tap block w-full rounded-xl bg-coral px-6 py-4 text-center text-sm font-semibold text-white shadow-lg shadow-coral/20 hover:bg-coral-deep"
               >
                 Przejdź do kasy
               </Link>

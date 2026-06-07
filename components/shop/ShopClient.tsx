@@ -184,8 +184,11 @@ export default function ShopClient({ products, categories, initialCategory, init
           <div className="flex items-center gap-2">
             <button
               onClick={() => setFiltersOpen((v) => !v)}
-              className="rounded-lg border border-line bg-white px-4 py-2 text-sm lg:hidden"
+              className="tap inline-flex items-center gap-2 rounded-xl border border-line bg-white px-4 py-2 text-sm lg:hidden"
             >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+                <path d="M4 6h16M7 12h10M10 18h4" />
+              </svg>
               Filtry
             </button>
             <label className="flex items-center gap-2 text-sm">
@@ -193,7 +196,7 @@ export default function ShopClient({ products, categories, initialCategory, init
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value)}
-                className="rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none transition-colors hover:border-ink focus:border-ink"
+                className="rounded-xl border border-line bg-white px-3 py-2 text-sm outline-none transition-colors hover:border-ink focus:border-ink"
               >
                 {SORTS.map((s) => (
                   <option key={s.key} value={s.key}>
@@ -211,8 +214,10 @@ export default function ShopClient({ products, categories, initialCategory, init
 
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center gap-4 py-20 text-center">
-            <p className="text-lg font-medium">Brak produktów dla wybranych filtrów</p>
-            <button onClick={resetFilters} className="rounded-lg bg-ink px-6 py-3 text-sm text-milk transition-colors hover:bg-coral">
+            <span className="text-4xl" aria-hidden="true">🐾</span>
+            <p className="text-lg font-semibold">Tu nawet kot niczego nie znalazł</p>
+            <p className="max-w-xs text-sm text-ash">Spróbuj poluzować filtry — być może skarb czeka tuż obok.</p>
+            <button onClick={resetFilters} className="tap mt-1 rounded-xl bg-ink px-6 py-3 text-sm text-milk hover:bg-coral">
               Wyczyść filtry
             </button>
           </div>

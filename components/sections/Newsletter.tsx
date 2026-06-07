@@ -10,8 +10,10 @@ export default function Newsletter() {
 
   return (
     <section className="container-edge pt-16 md:pt-24">
-      <div className="overflow-hidden rounded-[2rem] bg-orange px-6 py-14 text-center text-ink md:px-16 md:py-20">
-        <Reveal>
+      <div className="relative overflow-hidden rounded-[2rem] bg-orange px-6 py-14 text-center text-ink md:px-16 md:py-20">
+        <div className="paw-pattern pointer-events-none absolute inset-0 opacity-[0.06]" />
+        <div className="pointer-events-none absolute -left-20 -bottom-24 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+        <Reveal className="relative">
           <p className="mb-4 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-ink/60">
             <Paw className="h-3.5 w-3.5" />
             Newsletter
@@ -40,11 +42,11 @@ export default function Newsletter() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Twój e-mail"
-                className="flex-1 rounded-lg border border-ink/10 bg-white px-5 py-3.5 text-sm outline-none transition-shadow focus:ring-2 focus:ring-ink/20"
+                className="flex-1 rounded-xl border border-ink/10 bg-white px-5 py-3.5 text-sm outline-none transition-shadow focus:ring-2 focus:ring-ink/20"
               />
               <button
                 type="submit"
-                className="rounded-lg bg-ink px-7 py-3.5 text-sm font-semibold text-milk transition-colors hover:bg-night"
+                className="tap rounded-xl bg-ink px-7 py-3.5 text-sm font-semibold text-milk transition-colors hover:bg-night"
               >
                 Zapisz się
               </button>

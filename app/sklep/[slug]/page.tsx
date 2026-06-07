@@ -107,7 +107,7 @@ export default async function ProductPage({
               {product.originalPrice && (
                 <span className="mb-1 text-lg text-ash line-through tabular-nums">{formatPrice(product.originalPrice)}</span>
               )}
-              <span className={`mb-1 text-sm ${freeShipping ? "text-emerald-600" : "text-ash"}`}>
+              <span className={`mb-1 text-sm font-medium ${freeShipping ? "text-teal" : "text-ash"}`}>
                 {freeShipping ? "+ darmowa dostawa" : `darmowa dostawa od ${FREE_SHIPPING_FROM} zł`}
               </span>
             </div>
@@ -121,6 +121,11 @@ export default async function ProductPage({
             <p className="mt-4 flex items-center gap-2 text-sm text-ash">
               <span className={`h-2 w-2 rounded-full ${product.inStock ? "bg-emerald-500" : "bg-mist"}`} />
               {product.inStock ? "Dostępny — wysyłamy w 24h" : "Chwilowo niedostępny"}
+            </p>
+
+            <p className="mt-2 flex items-center gap-2 text-sm text-ash">
+              <span aria-hidden="true">🐾</span>
+              Pakowane z miłością — i pod czujnym okiem kota.
             </p>
 
             <div className="mt-7 grid grid-cols-2 gap-3 rounded-2xl bg-cream p-4 sm:grid-cols-4">

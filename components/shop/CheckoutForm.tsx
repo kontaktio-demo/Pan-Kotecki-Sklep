@@ -18,7 +18,7 @@ const DELIVERY = [
 ] as const;
 
 const inputCls =
-  "w-full rounded-lg border border-line bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-ink";
+  "w-full rounded-xl border border-line bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-ink";
 
 export default function CheckoutForm() {
   const router = useRouter();
@@ -202,7 +202,7 @@ export default function CheckoutForm() {
               return (
                 <label
                   key={d.id}
-                  className={`flex cursor-pointer items-center justify-between rounded-lg border px-4 py-3 text-sm transition-colors ${
+                  className={`tap flex cursor-pointer items-center justify-between rounded-xl border px-4 py-3.5 text-sm ${
                     delivery === d.id ? "border-ink bg-cream" : "border-line hover:border-ink/40"
                   }`}
                 >
@@ -289,17 +289,17 @@ export default function CheckoutForm() {
                 setPromoDiscount(0);
               }}
               placeholder="np. KOTEK10"
-              className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm uppercase outline-none focus:border-orange"
+              className="w-full rounded-xl border border-line bg-white px-3 py-2.5 text-sm uppercase outline-none focus:border-orange"
             />
             <button
               type="button"
               onClick={applyPromo}
-              className="shrink-0 rounded-lg border border-line bg-cream px-4 py-2.5 text-sm font-semibold transition-colors hover:border-ink"
+              className="tap shrink-0 rounded-xl border border-line bg-cream px-4 py-2.5 text-sm font-semibold hover:border-ink"
             >
               Zastosuj
             </button>
           </div>
-          {promoMsg && <p className={`mt-1.5 text-xs ${promoOk ? "text-emerald-600" : "text-ash"}`}>{promoMsg}</p>}
+          {promoMsg && <p className={`mt-1.5 text-xs ${promoOk ? "text-teal" : "text-ash"}`}>{promoMsg}</p>}
         </div>
 
         <div className="mt-5 flex flex-col gap-2 border-t border-line pt-5 text-sm">
@@ -308,7 +308,7 @@ export default function CheckoutForm() {
             <span className="tabular-nums">{formatPrice(subtotal)}</span>
           </div>
           {discount > 0 && (
-            <div className="flex justify-between text-emerald-600">
+            <div className="flex justify-between font-medium text-teal">
               <span>Rabat</span>
               <span className="tabular-nums">−{formatPrice(discount)}</span>
             </div>
@@ -343,7 +343,7 @@ export default function CheckoutForm() {
         <button
           type="submit"
           disabled={loading || !accept}
-          className="mt-4 w-full rounded-lg bg-coral px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-coral-deep disabled:cursor-not-allowed disabled:opacity-60"
+          className="tap mt-4 w-full rounded-xl bg-coral px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-coral/20 hover:bg-coral-deep disabled:cursor-not-allowed disabled:opacity-60 disabled:shadow-none"
         >
           {loading ? "Przekierowuję do płatności…" : "Zamawiam i płacę"}
         </button>

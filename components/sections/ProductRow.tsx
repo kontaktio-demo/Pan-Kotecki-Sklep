@@ -18,14 +18,15 @@ export default function ProductRow({ title, subtitle, products, href = "/sklep",
     <section className="container-edge pt-16 md:pt-24">
       <Reveal className="mb-7 flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold md:text-3xl">{title}</h2>
-          {subtitle && <p className="mt-1 text-sm text-ash">{subtitle}</p>}
+          <h2 className="text-2xl font-semibold md:text-[2rem]">{title}</h2>
+          {subtitle && <p className="mt-1.5 text-sm text-ash">{subtitle}</p>}
         </div>
         <Link
           href={href}
-          className="shrink-0 text-sm font-medium text-coral transition-colors hover:text-coral-deep"
+          className="group shrink-0 text-sm font-medium text-coral transition-colors hover:text-coral-deep"
         >
-          {hrefLabel} →
+          <span className="border-b border-transparent pb-0.5 transition-colors group-hover:border-coral-deep">{hrefLabel}</span>
+          <span className="ml-1 inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
         </Link>
       </Reveal>
 

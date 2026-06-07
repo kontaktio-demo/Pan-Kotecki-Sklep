@@ -81,7 +81,7 @@ export default function Header() {
           </Link>
           <button
             onClick={openCart}
-            className="relative inline-flex items-center gap-2 rounded-lg border border-line bg-white px-3.5 py-2 text-sm transition-colors hover:border-ink"
+            className="tap relative inline-flex items-center gap-2 rounded-xl border border-line bg-white px-3.5 py-2 text-sm hover:border-ink"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M3 4h2l2.4 12.2a1.5 1.5 0 0 0 1.5 1.2h8.2a1.5 1.5 0 0 0 1.5-1.2L20.5 8H6.2" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
@@ -102,7 +102,7 @@ export default function Header() {
           </button>
           <button
             onClick={() => setMenuOpen((v) => !v)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-white md:hidden"
+            className="tap inline-flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-white md:hidden"
             aria-label="Menu"
           >
             <span className="relative block h-3 w-4">

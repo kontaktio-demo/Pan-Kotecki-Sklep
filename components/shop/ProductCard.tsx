@@ -30,7 +30,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const freeShipping = product.price >= FREE_SHIPPING_FROM;
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl border border-line bg-white transition-shadow duration-300 hover:shadow-[0_10px_34px_-16px_rgba(20,20,20,0.22)]">
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white transition-all duration-300 hover:-translate-y-1 hover:border-line hover:shadow-[0_22px_44px_-26px_rgba(20,14,6,0.4)]">
       <Link
         href={`/sklep/${product.slug}`}
         className="relative block aspect-square overflow-hidden bg-cream"
@@ -40,27 +40,27 @@ export default function ProductCard({ product }: { product: Product }) {
           name={product.name}
           motif={item.motif}
           sizes="(min-width: 1024px) 22rem, 50vw"
-          className="transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+          className="transition-transform duration-[600ms] ease-out group-hover:scale-[1.05]"
         />
         {product.badges && product.badges.length > 0 && (
-          <span className="absolute left-3 top-3 rounded-md bg-orange px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-white">
+          <span className="absolute left-3 top-3 rounded-full bg-orange px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-wide text-white shadow-sm">
             {product.badges[0]}
           </span>
         )}
         {product.originalPrice && (
-          <span className="absolute right-3 top-3 rounded-md bg-coral px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-white">
+          <span className="absolute right-3 top-3 rounded-full bg-coral px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-wide text-white shadow-sm">
             Promocja
           </span>
         )}
         {!product.inStock && (
-          <span className="absolute inset-x-0 bottom-0 bg-ink/75 py-1.5 text-center text-xs font-medium text-milk">
+          <span className="absolute inset-x-0 bottom-0 bg-ink/75 py-1.5 text-center text-xs font-medium text-milk backdrop-blur-sm">
             Chwilowo niedostępny
           </span>
         )}
       </Link>
 
       <div className="flex flex-1 flex-col p-4">
-        <p className="mb-1 text-xs text-ash">{categoryName(product.category)}</p>
+        <p className="mb-1 text-[0.7rem] uppercase tracking-wide text-mist">{categoryName(product.category)}</p>
         <Link
           href={`/sklep/${product.slug}`}
           className="line-clamp-2 min-h-[2.6rem] text-sm font-medium leading-snug transition-colors hover:text-coral"
@@ -80,7 +80,12 @@ export default function ProductCard({ product }: { product: Product }) {
               <span className="text-sm text-ash line-through tabular-nums">{formatPrice(product.originalPrice)}</span>
             )}
           </p>
-          <p className={`mt-0.5 text-xs ${freeShipping ? "text-emerald-600" : "text-ash"}`}>
+          <p className={`mt-0.5 inline-flex items-center gap-1 text-xs ${freeShipping ? "text-teal" : "text-ash"}`}>
+            {freeShipping && (
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="m5 12 5 5L20 7" />
+              </svg>
+            )}
             {freeShipping ? "Darmowa dostawa" : "Wysyłka 24h"}
           </p>
           <AddToCartCompact item={item} />
