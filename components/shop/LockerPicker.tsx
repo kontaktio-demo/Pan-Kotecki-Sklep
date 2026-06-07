@@ -1,6 +1,6 @@
 "use client";
 
-import { createElement, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Token Geowidgetu InPost (mapa paczkomatów). Z tokenem pokazujemy mapę z wyszukiwarką
 // (jak Allegro/Zara). Bez tokenu — pole na kod paczkomatu jako fallback.
@@ -25,7 +25,9 @@ export default function LockerPicker({
 }) {
   const [open, setOpen] = useState(false);
   const [ready, setReady] = useState(false);
+  const mapRef = useRef<HTMLDivElement>(null);
 
+  // Rejestracja callbacku + załadowanie zasobów widgetu (raz).
   useEffect(() => {
     if (!TOKEN) return;
     const handlePoint = (p: Point) => {
@@ -36,22 +38,19 @@ export default function LockerPicker({
       setOpen(false);
     };
     window.__kotInpostPoint = handlePoint;
-    // druga droga odbioru punktu (zdarzenie) — na wypadek różnic w wersjach widgetu
     const onSel = (e: Event) => handlePoint((e as CustomEvent).detail as Point);
     document.addEventListener("onpointselect", onSel as EventListener);
 
-    const cssId = "inpost-geo-css";
-    const jsId = "inpost-geo-js";
-    if (!document.getElementById(cssId)) {
+    if (!document.getElementById("inpost-geo-css")) {
       const l = document.createElement("link");
-      l.id = cssId;
+      l.id = "inpost-geo-css";
       l.rel = "stylesheet";
       l.href = "https://geowidget.inpost.pl/inpost-geowidget.css";
       document.head.appendChild(l);
     }
-    if (!document.getElementById(jsId)) {
+    if (!document.getElementById("inpost-geo-js")) {
       const s = document.createElement("script");
-      s.id = jsId;
+      s.id = "inpost-geo-js";
       s.src = "https://geowidget.inpost.pl/inpost-geowidget.js";
       s.defer = true;
       s.onload = () => setReady(true);
@@ -63,9 +62,39 @@ export default function LockerPicker({
     return () => document.removeEventListener("onpointselect", onSel as EventListener);
   }, [onSelect]);
 
+  // Mapę montujemy RĘCZNIE (document.createElement + setAttribute), NIE przez JSX/React —
+  // bo `token` w elemencie to getter-only i React rzuca błędem przy ustawianiu właściwości.
+  useEffect(() => {
+    if (!open || !TOKEN) return;
+    const host = mapRef.current;
+    if (!host) return;
+    let cancelled = false;
+
+    const mount = () => {
+      if (cancelled || !mapRef.current) return;
+      mapRef.current.innerHTML = "";
+      const el = document.createElement("inpost-geowidget");
+      el.setAttribute("token", TOKEN);
+      el.setAttribute("language", "pl");
+      el.setAttribute("config", "parcelCollect");
+      el.setAttribute("onpoint", "window.__kotInpostPoint && window.__kotInpostPoint(point)");
+      el.style.width = "100%";
+      el.style.height = "100%";
+      el.style.display = "block";
+      mapRef.current.appendChild(el);
+    };
+
+    if (window.customElements?.get("inpost-geowidget")) mount();
+    else window.customElements?.whenDefined("inpost-geowidget").then(mount).catch(() => {});
+
+    return () => {
+      cancelled = true;
+      if (mapRef.current) mapRef.current.innerHTML = "";
+    };
+  }, [open]);
+
   return (
     <div className="flex flex-col gap-3">
-      {/* Wybrany paczkomat */}
       {value ? (
         <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
           <span className="text-2xl" aria-hidden="true">
@@ -91,7 +120,6 @@ export default function LockerPicker({
         </button>
       ) : null}
 
-      {/* Fallback gdy brak tokenu mapy */}
       {!TOKEN && (
         <div>
           <label className="mb-1 block text-xs font-medium text-ash">Kod paczkomatu</label>
@@ -111,7 +139,6 @@ export default function LockerPicker({
         </div>
       )}
 
-      {/* Modal z mapą — kocie smaczki */}
       {open && TOKEN && (
         <div
           className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/55 sm:items-center sm:p-6"
@@ -142,13 +169,8 @@ export default function LockerPicker({
               {!ready && (
                 <div className="absolute inset-0 z-10 grid place-items-center text-ash">Ładuję mapę paczkomatów… 🐈</div>
               )}
-              {createElement("inpost-geowidget" as never, {
-                token: TOKEN,
-                language: "pl",
-                config: "parcelCollect",
-                onpoint: "window.__kotInpostPoint && window.__kotInpostPoint(point)",
-                style: { width: "100%", height: "100%", display: "block" },
-              } as never)}
+              {/* mapę wstawia useEffect ręcznie (setAttribute) — patrz wyżej */}
+              <div ref={mapRef} className="h-full w-full" />
             </div>
           </div>
         </div>
