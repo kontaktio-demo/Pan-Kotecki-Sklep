@@ -6,7 +6,7 @@ import { sendPushToAll } from "../lib/push.js";
 import { sendOrderConfirmation } from "../lib/email.js";
 import { zloty } from "../lib/util.js";
 
-// Webhook Stripe — POTWIERDZA płatność po stronie serwera (nie ufamy klientowi).
+// Webhook Stripe - POTWIERDZA płatność po stronie serwera (nie ufamy klientowi).
 // Wymaga surowego body (express.raw) do weryfikacji podpisu.
 export async function stripeWebhook(req: Request, res: Response) {
   if (!stripe) return res.status(503).end();
@@ -22,11 +22,11 @@ export async function stripeWebhook(req: Request, res: Response) {
     return res.status(400).send("bad signature");
   }
 
-  // Idempotencja — wstawiamy znacznik jako blokadę przed równoległym/powtórnym przetwarzaniem.
+  // Idempotencja - wstawiamy znacznik jako blokadę przed równoległym/powtórnym przetwarzaniem.
   // Przy błędzie przetwarzania znacznik USUWAMY i zwracamy 5xx, żeby Stripe ponowił.
   const { error: dupErr } = await supabase.from("stripe_events").insert({ id: event.id });
   if (dupErr?.code === "23505") return res.json({ received: true, duplicate: true });
-  if (dupErr) console.error("[stripe.webhook] stripe_events insert", dupErr); // np. brak tabeli — i tak przetwarzamy
+  if (dupErr) console.error("[stripe.webhook] stripe_events insert", dupErr); // np. brak tabeli - i tak przetwarzamy
 
   // Wspólna logika potwierdzenia płatności (Checkout Session i PaymentIntent).
   const confirmPaid = async (orderId: string | null, amount: number | null, currency: string | null, ref: string) => {
@@ -38,7 +38,7 @@ export async function stripeWebhook(req: Request, res: Response) {
       .maybeSingle();
     if (ordErr) throw ordErr;
     if (!ord) {
-      console.warn(`[stripe.webhook] zamówienie ${orderId} nie istnieje — pomijam`);
+      console.warn(`[stripe.webhook] zamówienie ${orderId} nie istnieje - pomijam`);
       return;
     }
     // Obrona w głąb: kwota i waluta muszą zgadzać się z zamówieniem.
@@ -59,7 +59,7 @@ export async function stripeWebhook(req: Request, res: Response) {
     const { error: e2 } = await supabase.from("orders").update({ status: "paid" }).eq("id", orderId).eq("status", "pending");
     if (e2) throw e2;
     if (!alreadyPaid) {
-      void sendPushToAll({ title: "🛒 Opłacone zamówienie", body: `${ord.number} — ${zloty(ord.total_grosze)}`, url: "/#orders" });
+      void sendPushToAll({ title: "🛒 Opłacone zamówienie", body: `${ord.number} - ${zloty(ord.total_grosze)}`, url: "/#orders" });
       void sendOrderConfirmation(orderId);
     }
   };
@@ -124,7 +124,7 @@ export async function stripeWebhook(req: Request, res: Response) {
     }
   } catch (err) {
     // Cofnij znacznik idempotencji → Stripe ponowi dostarczenie (backoff).
-    console.error("[stripe.webhook] błąd obsługi — ponowienie", err);
+    console.error("[stripe.webhook] błąd obsługi - ponowienie", err);
     await supabase.from("stripe_events").delete().eq("id", event.id);
     return res.status(500).send("processing failed");
   }

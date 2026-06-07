@@ -1,4 +1,4 @@
-// Sygnaturowy motyw marki — „metka" jak wszyta w ubranie, z przymrużeniem oka.
+// Sygnaturowy motyw marki - „metka" jak wszyta w ubranie, z przymrużeniem oka.
 // Używaj OSZCZĘDNIE (sekcja o marce, karta produktu), nie wszędzie.
 
 const SYMBOLS = [
@@ -34,7 +34,7 @@ export default function CareLabel({
       <ul className="space-y-1.5">
         {lines.map((l, i) => (
           <li key={i} className="flex gap-2 text-[0.78rem] leading-snug text-ink-soft">
-            <span aria-hidden="true" className="select-none text-mist">·</span>
+            <span aria-hidden="true" className="select-none text-mist">-</span>
             {l}
           </li>
         ))}

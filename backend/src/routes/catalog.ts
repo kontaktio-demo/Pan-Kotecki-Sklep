@@ -11,7 +11,7 @@ function safeTerm(input: string): string {
   return input.replace(/[^\p{L}\p{N}\s-]/gu, " ").trim().slice(0, 60);
 }
 
-// cache na CDN/przeglądarce — mniej zapytań do bazy, lepsza skalowalność
+// cache na CDN/przeglądarce - mniej zapytań do bazy, lepsza skalowalność
 function cache(res: import("express").Response, sMaxAge: number) {
   res.set("Cache-Control", `public, max-age=30, s-maxage=${sMaxAge}, stale-while-revalidate=600`);
 }
@@ -83,12 +83,12 @@ catalogRouter.get("/settings/public", async (_req, res) => {
   const raw = Number(store.free_shipping_grosze);
   const freeShippingGrosze = Number.isFinite(raw) && raw >= 0 ? raw : 14900;
   const open = store.open !== false; // domyślnie otwarty; zamknięty tylko gdy jawnie false
-  // krótki cache — żeby włącznik „Wkrótce/Otwarty" działał szybko (~30 s)
+  // krótki cache - żeby włącznik „Wkrótce/Otwarty" działał szybko (~30 s)
   res.set("Cache-Control", "public, max-age=15, s-maxage=30, stale-while-revalidate=60");
   res.json({ freeShippingGrosze, open });
 });
 
-// Walidacja kodu rabatowego PRZED kasą (podgląd rabatu) — NIE zwiększa licznika użyć.
+// Walidacja kodu rabatowego PRZED kasą (podgląd rabatu) - NIE zwiększa licznika użyć.
 const validateSchema = z.object({ code: z.string().min(1).max(40), subtotal_grosze: z.number().int().min(0) });
 catalogRouter.post("/promo/validate", async (req, res) => {
   const body = parseBody(validateSchema, req.body, res);

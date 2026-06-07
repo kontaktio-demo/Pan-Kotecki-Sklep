@@ -3,7 +3,7 @@ import LoginForm from "@/components/account/LoginForm";
 
 export const metadata: Metadata = {
   title: "Logowanie",
-  description: "Zaloguj się do konta Pan Kotecki — bez hasła, przez link na e-mail. Konto jest opcjonalne.",
+  description: "Zaloguj się do konta Pan Kotecki - bez hasła, przez link na e-mail. Konto jest opcjonalne.",
   robots: { index: false },
 };
 

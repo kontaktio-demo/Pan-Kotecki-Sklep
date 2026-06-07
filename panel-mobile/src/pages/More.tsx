@@ -45,7 +45,7 @@ export default function More({ go }: { go: (p: Page) => void }) {
         </span>
       </button>
 
-      <p className="px-2 pt-2 text-center text-xs text-ash">Pan Kotecki — panel mobilny 🐾</p>
+      <p className="px-2 pt-2 text-center text-xs text-ash">Pan Kotecki - panel mobilny 🐾</p>
     </div>
   );
 }

@@ -65,7 +65,7 @@ customersRouter.get("/accounts", async (_req, res) => {
   }
 });
 
-// RODO — usunięcie konta klienta na żądanie (z panelu). Atomowo (RPC): profil +
+// RODO - usunięcie konta klienta na żądanie (z panelu). Atomowo (RPC): profil +
 // adresy + kopia PII w `customers` znikają; zamówienia zostają, odpięte od konta.
 customersRouter.delete("/accounts/:userId", async (req, res) => {
   if (badId(res, req.params.userId)) return;

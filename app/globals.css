@@ -15,7 +15,7 @@
   --color-orange-deep: #db6920;
   --color-night: #221a11;
 
-  /* kolor komplementarny do pomarańczu — głęboki turkus jako chłodny akcent */
+  /* kolor komplementarny do pomarańczu - głęboki turkus jako chłodny akcent */
   --color-teal: #156b64;
   --color-teal-deep: #0f4f4a;
   --color-mint: #dcebe6;
@@ -80,7 +80,7 @@
     text-wrap: balance;
   }
 
-  /* delikatny feedback dotyku na mobile — „wciśnięcie" elementu.
+  /* delikatny feedback dotyku na mobile - „wciśnięcie" elementu.
      Animujemy też kolory, żeby .tap nie kasowało przejść hover (transition-property). */
   .tap {
     transition-property: transform, color, background-color, border-color, box-shadow;

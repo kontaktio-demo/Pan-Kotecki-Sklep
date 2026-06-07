@@ -55,7 +55,7 @@ accountRouter.put("/me", async (req: CustomerRequest, res) => {
   res.json({ ok: true, email });
 });
 
-// RODO — trwałe usunięcie konta. Atomowo (RPC): profil + adresy + kopia PII w
+// RODO - trwałe usunięcie konta. Atomowo (RPC): profil + adresy + kopia PII w
 // `customers` znikają, zamówienia zostają (księgowość), ale odpięte od konta.
 accountRouter.delete("/me", async (req: CustomerRequest, res) => {
   const { id, email } = req.customer!;
@@ -108,7 +108,7 @@ function mapOrder(o: OrderRow) {
 // złożone na ten sam (zweryfikowany logowaniem) e-mail.
 accountRouter.get("/orders", async (req: CustomerRequest, res) => {
   const { id, email } = req.customer!;
-  // Przejmij zamówienia gościa złożone na ten (zweryfikowany) e-mail — ale TYLKO
+  // Przejmij zamówienia gościa złożone na ten (zweryfikowany) e-mail - ale TYLKO
   // gdy faktycznie są nieprzypisane, żeby nie pisać do bazy przy każdym wejściu.
   if (email) {
     const { count } = await supabase

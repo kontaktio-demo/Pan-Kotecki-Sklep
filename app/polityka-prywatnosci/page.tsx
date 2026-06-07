@@ -43,18 +43,18 @@ export default function PrivacyPage() {
             <li>realizacji zamówienia i umowy sprzedaży (art. 6 ust. 1 lit. b RODO),</li>
             <li>wypełnienia obowiązków podatkowo-księgowych (art. 6 ust. 1 lit. c RODO),</li>
             <li>obsługi reklamacji i ewentualnych roszczeń (art. 6 ust. 1 lit. f RODO),</li>
-            <li>wysyłki newslettera — wyłącznie po wyrażeniu zgody (art. 6 ust. 1 lit. a RODO).</li>
+            <li>wysyłki newslettera - wyłącznie po wyrażeniu zgody (art. 6 ust. 1 lit. a RODO).</li>
           </ul>
-          <p>Zakupy możesz zrobić jako gość — założenie konta nie jest wymagane.</p>
+          <p>Zakupy możesz zrobić jako gość - założenie konta nie jest wymagane.</p>
         </Section>
 
         <Section title="3. Konto klienta (opcjonalne)">
           <p>
-            Możesz — ale nie musisz — założyć konto. Logowanie odbywa się bez hasła: na podany e-mail wysyłamy
+            Możesz - ale nie musisz - założyć konto. Logowanie odbywa się bez hasła: na podany e-mail wysyłamy
             jednorazowy link. W ramach konta przetwarzamy: Twój adres e-mail, opcjonalnie imię, nazwisko i telefon,
             zapisane adresy dostawy oraz historię zamówień powiązaną z kontem. Podstawą jest wykonanie umowy i nasz
             uzasadniony interes w ułatwieniu kolejnych zakupów (art. 6 ust. 1 lit. b i f RODO), a w przypadku zgody
-            marketingowej — Twoja zgoda (lit. a).
+            marketingowej - Twoja zgoda (lit. a).
           </p>
           <p>
             Konto możesz usunąć w każdej chwili w panelu <strong>Moje konto → Dane konta → Usuń konto</strong>. Usuwamy
@@ -82,7 +82,7 @@ export default function PrivacyPage() {
             Dane zamówień i dokumenty rozliczeniowe przechowujemy przez okres wymagany przepisami podatkowymi
             (co do zasady 5 lat licząc od końca roku, w którym wystawiono dokument). Dane przydatne do dochodzenia lub
             obrony roszczeń przechowujemy do czasu ich przedawnienia. Dane konta przechowujemy do czasu jego usunięcia
-            przez Ciebie, a dane przetwarzane na podstawie zgody (np. newsletter) — do czasu jej wycofania.
+            przez Ciebie, a dane przetwarzane na podstawie zgody (np. newsletter) - do czasu jej wycofania.
           </p>
         </Section>
 
@@ -90,7 +90,7 @@ export default function PrivacyPage() {
           <p>
             Masz prawo dostępu do danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia oraz
             wniesienia sprzeciwu. Zgodę (np. marketingową) możesz wycofać w każdej chwili (w panelu „Moje konto" lub
-            pisząc do nas) — bez wpływu na zgodność z prawem przetwarzania sprzed wycofania. Możesz też złożyć skargę do
+            pisząc do nas) - bez wpływu na zgodność z prawem przetwarzania sprzed wycofania. Możesz też złożyć skargę do
             Prezesa Urzędu Ochrony Danych Osobowych (UODO).
           </p>
           <p>

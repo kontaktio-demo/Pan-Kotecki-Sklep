@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "./AuthProvider";
 import Paw from "@/components/ui/Paw";
 
-// Gdy ustawisz NEXT_PUBLIC_HCAPTCHA_SITE_KEY — pokazujemy hCaptcha i wymagamy tokenu.
+// Gdy ustawisz NEXT_PUBLIC_HCAPTCHA_SITE_KEY - pokazujemy hCaptcha i wymagamy tokenu.
 // Bez tej zmiennej logowanie działa jak dotąd (bez captcha).
 const HCAPTCHA_SITEKEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
 
@@ -32,7 +32,7 @@ export default function LoginForm() {
     setErr("");
     setBusy(true);
 
-    // hCaptcha „invisible" — odpalamy w tle dopiero przy wysyłce.
+    // hCaptcha „invisible" - odpalamy w tle dopiero przy wysyłce.
     let captchaToken: string | undefined;
     if (HCAPTCHA_SITEKEY) {
       try {
@@ -43,7 +43,7 @@ export default function LoginForm() {
       }
       if (!captchaToken) {
         setBusy(false);
-        setErr("Weryfikacja nie powiodła się — spróbuj ponownie 🐾");
+        setErr("Weryfikacja nie powiodła się - spróbuj ponownie 🐾");
         return;
       }
     }
@@ -71,7 +71,7 @@ export default function LoginForm() {
           </span>
           <h1 className="text-3xl font-semibold md:text-4xl">Twoje konto</h1>
           <p className="mt-2 max-w-sm text-ink-soft">
-            Logowanie bez hasła — podaj e-mail, wyślemy Ci link. Konto jest opcjonalne:
+            Logowanie bez hasła - podaj e-mail, wyślemy Ci link. Konto jest opcjonalne:
             zakupy zrobisz też jako gość.
           </p>
         </div>
@@ -116,7 +116,7 @@ export default function LoginForm() {
               disabled={busy}
               className="tap mt-4 w-full rounded-xl bg-coral px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-coral/20 hover:bg-coral-deep disabled:opacity-60"
             >
-              {busy ? "Wysyłam link…" : "Wyślij link do logowania"}
+              {busy ? "Wysyłam link..." : "Wyślij link do logowania"}
             </button>
             <p className="mt-4 text-center text-xs text-mist">
               Logując się, akceptujesz{" "}
@@ -125,7 +125,7 @@ export default function LoginForm() {
             </p>
             {HCAPTCHA_SITEKEY && (
               <p className="mt-2 text-center text-[0.68rem] text-mist">
-                Chronione przez hCaptcha —{" "}
+                Chronione przez hCaptcha -{" "}
                 <a href="https://hcaptcha.com/privacy" target="_blank" rel="noreferrer" className="underline">prywatność</a> i{" "}
                 <a href="https://hcaptcha.com/terms" target="_blank" rel="noreferrer" className="underline">warunki</a>.
               </p>

@@ -1,5 +1,5 @@
--- Pan Kotecki — RLS (Row Level Security)
--- Backend używa SERVICE_ROLE_KEY (omija RLS) — to on robi zapisy.
+-- Pan Kotecki - RLS (Row Level Security)
+-- Backend używa SERVICE_ROLE_KEY (omija RLS) - to on robi zapisy.
 -- Publicznie (anon) dostępny jest tylko ODCZYT katalogu, gdyby sklep czytał
 -- z Supabase bezpośrednio. Reszta zamknięta.
 

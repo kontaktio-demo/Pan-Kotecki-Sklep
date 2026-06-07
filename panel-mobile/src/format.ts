@@ -45,7 +45,7 @@ export const PAYMENT_LABELS: Record<string, string> = {
   refunded: "Zwrócone",
 };
 
-// kolory statusów (Tailwind klasy) — spójne, czytelne pigułki
+// kolory statusów (Tailwind klasy) - spójne, czytelne pigułki
 export const STATUS_TONE: Record<string, string> = {
   pending: "bg-amber-100 text-amber-700",
   paid: "bg-emerald-100 text-emerald-700",

@@ -6,7 +6,7 @@ import ShopClient from "@/components/shop/ShopClient";
 export const metadata: Metadata = {
   title: "Sklep",
   description:
-    "Zabawki, akcesoria, kubki i drobiazgi dla właścicieli kotów. Filtruj, sortuj i zamawiaj — wysyłka w 24h.",
+    "Zabawki, akcesoria, kubki i drobiazgi dla właścicieli kotów. Filtruj, sortuj i zamawiaj - wysyłka w 24h.",
 };
 
 export default async function ShopPage({

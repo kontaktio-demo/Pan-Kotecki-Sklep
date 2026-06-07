@@ -23,7 +23,7 @@ function urlBase64ToUint8Array(base64: string): Uint8Array {
   return arr;
 }
 
-// Czy istniejąca subskrypcja pasuje do aktualnego klucza VAPID (po rotacji — nie).
+// Czy istniejąca subskrypcja pasuje do aktualnego klucza VAPID (po rotacji - nie).
 function sameKey(sub: PushSubscription, keyB64: string): boolean {
   try {
     const cur = urlBase64ToUint8Array(keyB64);
@@ -82,7 +82,7 @@ export async function enablePush(): Promise<{ ok: boolean; message: string }> {
   }
 }
 
-// Cicha próba odnowienia subskrypcji przy starcie — zwiększa niezawodność.
+// Cicha próba odnowienia subskrypcji przy starcie - zwiększa niezawodność.
 export async function refreshPushSilently(): Promise<void> {
   if (!pushSupported() || Notification.permission !== "granted") return;
   try {
@@ -92,7 +92,7 @@ export async function refreshPushSilently(): Promise<void> {
     const sub = await subscribeFresh(reg, key); // odnawia, jeśli klucz VAPID się zmienił
     await api.post("/api/admin/push/subscribe", sub.toJSON());
   } catch {
-    /* cicho — spróbujemy następnym razem */
+    /* cicho - spróbujemy następnym razem */
   }
 }
 

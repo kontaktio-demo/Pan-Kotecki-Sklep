@@ -45,13 +45,13 @@ export default function Home({ go }: { go: (p: Page) => void }) {
   }, []);
 
   if (err) return <div className="p-4"><ErrorNote msg={`Błąd: ${err}`} /></div>;
-  if (!d) return <Spinner label="Liczę Twoje zarobki…" />;
+  if (!d) return <Spinner label="Liczę Twoje zarobki..." />;
 
   const up = d.changePct >= 0;
   const headline =
     d.changePct >= 50 ? "🚀 Mocno w górę!" : d.changePct > 0 ? "🔥 Rośniesz!" : d.changePct === 0 ? "✨ Działamy dalej!" : "💪 Dasz radę nadrobić!";
   const remaining = Math.max(0, d.goal.goalGrosze - d.thisRevenueGrosze);
-  const goalMsg = remaining === 0 ? "Cel osiągnięty! 🎉" : `Jeszcze ${zl(remaining)} do celu — lecimy!`;
+  const goalMsg = remaining === 0 ? "Cel osiągnięty! 🎉" : `Jeszcze ${zl(remaining)} do celu - lecimy!`;
   const maxMonth = Math.max(1, ...d.byMonth.map((x) => x.grosze));
   const maxDay = Math.max(1, ...d.daily.map((x) => x.grosze));
 
@@ -68,13 +68,13 @@ export default function Home({ go }: { go: (p: Page) => void }) {
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange to-coral p-6 text-white shadow-lg shadow-orange/25">
         <div className="pointer-events-none absolute -right-2 top-1 text-7xl opacity-20 select-none">🐱</div>
         <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/85">
-          Zarobione — {d.monthLabel}
+          Zarobione - {d.monthLabel}
         </div>
         <div className="mt-1.5 text-[2.6rem] font-bold leading-none tabular-nums">{zl(d.thisRevenueGrosze)}</div>
         <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[13px] backdrop-blur">
           {d.lastRevenueGrosze > 0
             ? `${up ? "▲ +" : "▼ "}${d.changePct}% vs poprzedni miesiąc`
-            : "Pierwszy miesiąc — robimy historię!"}
+            : "Pierwszy miesiąc - robimy historię!"}
         </div>
         <div className="mt-3 text-lg font-semibold">{headline}</div>
       </div>
@@ -121,7 +121,7 @@ export default function Home({ go }: { go: (p: Page) => void }) {
           <div>
             <div className="text-xs text-ash">Najlepszy dzień</div>
             <div className="font-semibold">
-              {d.bestDay.grosze > 0 ? `${plDay(d.bestDay.date)} — ${zl(d.bestDay.grosze)}` : "Jeszcze przed Tobą 😉"}
+              {d.bestDay.grosze > 0 ? `${plDay(d.bestDay.date)} - ${zl(d.bestDay.grosze)}` : "Jeszcze przed Tobą 😉"}
             </div>
           </div>
         </div>
@@ -130,7 +130,7 @@ export default function Home({ go }: { go: (p: Page) => void }) {
           <div>
             <div className="text-xs text-ash">Hit miesiąca</div>
             <div className="font-semibold">
-              {d.topProduct ? `${d.topProduct.name} (${d.topProduct.qty} szt.)` : "Brak sprzedaży — to się zmieni!"}
+              {d.topProduct ? `${d.topProduct.name} (${d.topProduct.qty} szt.)` : "Brak sprzedaży - to się zmieni!"}
             </div>
           </div>
         </div>
@@ -138,7 +138,7 @@ export default function Home({ go }: { go: (p: Page) => void }) {
 
       {/* Wykres 6 miesięcy */}
       <div className="card p-5">
-        <div className="mb-4 text-sm font-semibold">Przychód — 6 miesięcy</div>
+        <div className="mb-4 text-sm font-semibold">Przychód - 6 miesięcy</div>
         <div className="flex h-36 items-end gap-2.5">
           {d.byMonth.map((mn, i) => (
             <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
@@ -154,7 +154,7 @@ export default function Home({ go }: { go: (p: Page) => void }) {
 
       {/* Dzień po dniu */}
       <div className="card p-5">
-        <div className="mb-4 text-sm font-semibold">Ten miesiąc — dzień po dniu</div>
+        <div className="mb-4 text-sm font-semibold">Ten miesiąc - dzień po dniu</div>
         <div className="flex h-28 items-end gap-0.5">
           {d.daily.map((x) => (
             <div

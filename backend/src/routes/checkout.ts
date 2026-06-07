@@ -11,7 +11,7 @@ import { withCustomer, type CustomerRequest } from "../lib/customerAuth.js";
 export const checkoutRouter = Router();
 
 // Gość domyślnie. Jeśli klient jest zalogowany (token Supabase), wiążemy
-// zamówienie z jego kontem — bez wymuszania logowania.
+// zamówienie z jego kontem - bez wymuszania logowania.
 checkoutRouter.use(withCustomer);
 
 const SHIPPING_GROSZE: Record<string, number> = {
@@ -24,7 +24,7 @@ const schema = z
   .object({
     items: z.array(z.object({ slug: z.string().min(1).max(100), qty: z.number().int().min(1).max(99) })).min(1).max(50),
     email: z.string().email(),
-    phone: z.string().min(5).max(40), // wymagany — InPost potrzebuje telefonu odbiorcy
+    phone: z.string().min(5).max(40), // wymagany - InPost potrzebuje telefonu odbiorcy
     name: z.string().max(120).optional(),
     shipping_method: z.enum(["inpost_locker", "inpost_courier", "pickup"]).default("inpost_locker"),
     shipping_address: z.record(z.string(), z.unknown()).optional(),
@@ -32,7 +32,7 @@ const schema = z
     promo_code: z.string().max(40).optional(),
     ui: z.enum(["hosted", "embedded"]).optional(), // tryb płatności (embedded = na naszej stronie)
   })
-  // Cel dostawy musi pasować do metody — żeby nie powstało opłacone, niewysyłalne zamówienie.
+  // Cel dostawy musi pasować do metody - żeby nie powstało opłacone, niewysyłalne zamówienie.
   .superRefine((b, ctx) => {
     if (b.shipping_method === "inpost_locker" && !b.parcel_locker?.trim()) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["parcel_locker"], message: "Wybierz paczkomat" });
@@ -53,7 +53,7 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
   for (const it of body.items) merged.set(it.slug, (merged.get(it.slug) ?? 0) + it.qty);
   const wanted = [...merged.entries()].map(([slug, qty]) => ({ slug, qty }));
 
-  // 1) Ceny ZAWSZE z bazy — nigdy z klienta.
+  // 1) Ceny ZAWSZE z bazy - nigdy z klienta.
   const { data: products, error: prodErr } = await supabase
     .from("products")
     .select("id, slug, name, price_grosze, sale_price_grosze, active, in_stock, stock_qty, images:product_images(url, sort_order)")
@@ -106,11 +106,11 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
     }
   }
 
-  // 3) Dostawa (darmowa od progu — liczona od wartości produktów, przed rabatem)
+  // 3) Dostawa (darmowa od progu - liczona od wartości produktów, przed rabatem)
   const { data: storeSetting } = await supabase.from("settings").select("value").eq("key", "store").maybeSingle();
   // Egzekwuj „sklep zamknięty" także po stronie API (nie tylko w middleware).
   if ((storeSetting?.value as { open?: boolean })?.open === false) {
-    return res.status(503).json({ error: "Sklep jest chwilowo zamknięty — zajrzyj wkrótce." });
+    return res.status(503).json({ error: "Sklep jest chwilowo zamknięty - zajrzyj wkrótce." });
   }
   const rawThreshold = Number((storeSetting?.value as { free_shipping_grosze?: number })?.free_shipping_grosze);
   const freeThreshold = Number.isFinite(rawThreshold) && rawThreshold >= 0 ? rawThreshold : 14900;
@@ -122,7 +122,7 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
   if (total < 0) return res.status(400).json({ error: "Błąd wyceny zamówienia" });
 
   // 4) Klient (znajdź lub utwórz). Dla zalogowanych wiążemy zamówienie z
-  //    ZWERYFIKOWANYM e-mailem konta (a nie dowolnym z body) — bez spoofingu.
+  //    ZWERYFIKOWANYM e-mailem konta (a nie dowolnym z body) - bez spoofingu.
   const email = (req.customer?.email || body.email).toLowerCase();
   let customerId: string | null = null;
   const { data: existing } = await supabase.from("customers").select("id").eq("email", email).maybeSingle();
@@ -137,7 +137,7 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
   }
 
   // 5) Zamówienie + pozycje + ATOMOWY dekrement stanu i licznik promocji.
-  //    Wszystko w jednej transakcji Postgres (RPC) — brak oversell i wyścigów.
+  //    Wszystko w jednej transakcji Postgres (RPC) - brak oversell i wyścigów.
   const { data: result, error: rpcErr } = await supabase.rpc("create_order", {
     p: {
       number: orderNumber(),
@@ -180,9 +180,9 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
   const base = siteUrl();
   const embedded = body.ui === "embedded";
   if (total === 0) {
-    // Darmowe zamówienie (np. 100% rabat + odbiór) — od razu opłacone, bez Stripe.
+    // Darmowe zamówienie (np. 100% rabat + odbiór) - od razu opłacone, bez Stripe.
     await supabase.from("orders").update({ status: "paid", payment_status: "paid" }).eq("id", order.order_id);
-    void sendPushToAll({ title: "🛒 Opłacone zamówienie", body: `${order.number} — ${zloty(0)}`, url: "/#orders" });
+    void sendPushToAll({ title: "🛒 Opłacone zamówienie", body: `${order.number} - ${zloty(0)}`, url: "/#orders" });
     void sendOrderConfirmation(order.order_id);
   } else if (stripe && base) {
     try {
@@ -202,13 +202,13 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
             price_data: {
               currency: "pln",
               unit_amount: total,
-              product_data: { name: `Zamówienie ${order.number} — Pan Kotecki` },
+              product_data: { name: `Zamówienie ${order.number} - Pan Kotecki` },
             },
           },
         ],
       };
       if (embedded) {
-        // Payment Element — w pełni custom formularz NA naszej stronie (PaymentIntent).
+        // Payment Element - w pełni custom formularz NA naszej stronie (PaymentIntent).
         const pi = await stripe.paymentIntents.create({
           amount: total,
           currency: "pln",
@@ -222,7 +222,7 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
           .update({ payment_provider: "stripe", payment_ref: pi.id })
           .eq("id", order.order_id);
       } else {
-        // Hosted Checkout (przekierowanie) — fallback gdy brak klucza publicznego.
+        // Hosted Checkout (przekierowanie) - fallback gdy brak klucza publicznego.
         params.submit_type = "pay";
         params.success_url = `${base}/kasa/dziekujemy?order=${encodeURIComponent(order.number)}`;
         params.cancel_url = `${base}/kasa?anulowano=1`;

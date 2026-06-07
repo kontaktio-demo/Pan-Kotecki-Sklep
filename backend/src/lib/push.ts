@@ -22,7 +22,7 @@ export function vapidPublicKey(): string | null {
 type PushPayload = { title: string; body: string; url?: string; tag?: string };
 
 // Wysyła powiadomienie do wszystkich zapisanych urządzeń (telefonów właścicieli).
-// Martwe subskrypcje (404/410) automatycznie usuwa — to dba o niezawodność.
+// Martwe subskrypcje (404/410) automatycznie usuwa - to dba o niezawodność.
 export async function sendPushToAll(payload: PushPayload): Promise<void> {
   if (!pushEnabled) return;
   const { data: subs, error } = await supabase.from("push_subscriptions").select("id, subscription");

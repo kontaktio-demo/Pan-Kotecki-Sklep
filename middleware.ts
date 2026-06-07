@@ -1,11 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-// Tryb „Wkrótce" — gdy sklep jest zamknięty (flaga z ustawień), trasy sklepowe
+// Tryb „Wkrótce" - gdy sklep jest zamknięty (flaga z ustawień), trasy sklepowe
 // (/sklep, /koszyk, /kasa) pokazują stronę „wkrótce". Reszta strony (główna,
-// o nas, kontakt, regulamin…) działa normalnie.
+// o nas, kontakt, regulamin...) działa normalnie.
 const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
-// lekki cache w pamięci instancji — żeby nie odpytywać backendu na każde żądanie
+// lekki cache w pamięci instancji - żeby nie odpytywać backendu na każde żądanie
 let cache: { open: boolean; ts: number } | null = null;
 
 async function isShopOpen(): Promise<boolean> {
@@ -25,7 +25,7 @@ async function isShopOpen(): Promise<boolean> {
 }
 
 export async function middleware(req: NextRequest) {
-  // Strony płatności i potwierdzenia muszą działać zawsze — klient w trakcie
+  // Strony płatności i potwierdzenia muszą działać zawsze - klient w trakcie
   // płatności nie może wpaść w „Wkrótce", nawet gdy sklep jest zamknięty.
   const path = req.nextUrl.pathname;
   if (path.startsWith("/kasa/dziekujemy") || path.startsWith("/kasa/platnosc")) return NextResponse.next();

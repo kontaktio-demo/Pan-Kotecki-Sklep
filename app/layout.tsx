@@ -28,8 +28,8 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://pankotecki.pl";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Pan Kotecki — gadżety i zabawki dla kotów oraz ich ludzi",
-    template: "%s — Pan Kotecki",
+    default: "Pan Kotecki - gadżety i zabawki dla kotów oraz ich ludzi",
+    template: "%s - Pan Kotecki",
   },
   description:
     "Zabawki, akcesoria, kubki i gadżety dla kotów i ich właścicieli. Szybka wysyłka 24h, darmowa dostawa od 149 zł.",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     locale: "pl_PL",
     url: siteUrl,
     siteName: "Pan Kotecki",
-    title: "Pan Kotecki — sklep dla kotów i ich ludzi",
+    title: "Pan Kotecki - sklep dla kotów i ich ludzi",
     description:
       "Zabawki, akcesoria, kubki i gadżety dla kotów. Szybka wysyłka 24h, darmowa dostawa od 149 zł.",
   },

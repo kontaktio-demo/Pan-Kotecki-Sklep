@@ -38,7 +38,7 @@ export default function Notifications() {
         </div>
         <div className="text-lg font-bold">Powiadomienia o zakupach</div>
         <p className="mx-auto mt-1 max-w-xs text-sm text-ash">
-          Dzwonek na telefon przy każdym <b>opłaconym</b> zamówieniu — nawet gdy apka jest zamknięta.
+          Dzwonek na telefon przy każdym <b>opłaconym</b> zamówieniu - nawet gdy apka jest zamknięta.
         </p>
       </div>
 
@@ -67,7 +67,7 @@ export default function Notifications() {
         </div>
         <div className="mt-4 flex flex-col gap-2">
           <button className="btn-orange w-full" onClick={enable} disabled={busy}>
-            {busy ? "Chwilka…" : granted ? "Odśwież subskrypcję" : "Włącz powiadomienia"}
+            {busy ? "Chwilka..." : granted ? "Odśwież subskrypcję" : "Włącz powiadomienia"}
           </button>
           {granted && (
             <button className="btn-ghost w-full" onClick={test} disabled={busy}>

@@ -1,5 +1,5 @@
 -- =============================================================
--- Pan Kotecki — HARDENING + SKALOWALNOŚĆ (audyt przedpremierowy).
+-- Pan Kotecki - HARDENING + SKALOWALNOŚĆ (audyt przedpremierowy).
 -- Wklej całość do Supabase SQL Editor i RUN. Idempotentne (bezpieczne
 -- na istniejącej bazie, można puścić ponownie). Uruchom PO setup_all.sql.
 -- =============================================================
@@ -7,7 +7,7 @@
 create extension if not exists "pgcrypto";
 
 -- ===== 1. INDEKSY POD RUCH (tysiące zamówień) =====
--- Hot-path lookups, raporty i wyszukiwarka — żeby nie było seq-scanów.
+-- Hot-path lookups, raporty i wyszukiwarka - żeby nie było seq-scanów.
 create index if not exists orders_customer_idx       on orders (customer_id);
 create index if not exists orders_email_plain_idx     on orders (email);
 create index if not exists orders_status_created_idx  on orders (status, created_at desc);
@@ -15,7 +15,7 @@ create index if not exists orders_status_created_idx  on orders (status, created
 create index if not exists orders_paid_created_idx    on orders (created_at) where payment_status = 'paid';
 create index if not exists customers_email_plain_idx  on customers (email);
 
--- Wyszukiwarka produktów ILIKE '%fraza%' — indeks trigramowy (GIN)
+-- Wyszukiwarka produktów ILIKE '%fraza%' - indeks trigramowy (GIN)
 create extension if not exists pg_trgm;
 create index if not exists products_name_trgm on products using gin (name gin_trgm_ops);
 create index if not exists products_desc_trgm on products using gin (short_description gin_trgm_ops);
@@ -38,7 +38,7 @@ create policy "public read product images" on product_images
     exists (select 1 from products p where p.id = product_images.product_id and p.active = true)
   );
 
--- ===== 4. Zgoda marketingowa — znacznik czasu (dowód zgody, RODO) =====
+-- ===== 4. Zgoda marketingowa - znacznik czasu (dowód zgody, RODO) =====
 alter table account_profiles add column if not exists marketing_consent_at timestamptz;
 
 -- ===== 5. RODO: atomowe, KOMPLETNE usunięcie konta =====
@@ -57,7 +57,7 @@ begin
     update orders set user_id = null where user_id = p_user;
   end if;
   if p_email is not null and length(p_email) > 0 then
-    -- `customers` to kopia danych identyfikujących (nie dokument księgowy) — kasujemy.
+    -- `customers` to kopia danych identyfikujących (nie dokument księgowy) - kasujemy.
     delete from customers where lower(email) = lower(p_email);
   end if;
 end;

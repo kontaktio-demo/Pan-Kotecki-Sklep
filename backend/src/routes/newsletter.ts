@@ -44,7 +44,7 @@ newsletterRouter.post("/", async (req, res) => {
   if (error && error.code !== "23505") return serverError(res, "newsletter", error);
 
   if (error?.code === "23505") {
-    // Już istnieje — jeśli niepotwierdzony, odśwież token i wyślij ponownie.
+    // Już istnieje - jeśli niepotwierdzony, odśwież token i wyślij ponownie.
     const { data: ex } = await supabase
       .from("newsletter_subscribers")
       .select("confirmed")

@@ -13,7 +13,7 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 // Panel desktopowy uwierzytelnia się stałym kluczem (nagłówek x-admin-key).
-// Brak ekranu logowania — klucz wpisuje się w aplikacji raz.
+// Brak ekranu logowania - klucz wpisuje się w aplikacji raz.
 export function requireAdmin(req: AdminRequest, res: Response, next: NextFunction) {
   const key = process.env.ADMIN_API_KEY;
   if (!key) return res.status(503).json({ error: "Panel nieskonfigurowany (brak ADMIN_API_KEY)" });

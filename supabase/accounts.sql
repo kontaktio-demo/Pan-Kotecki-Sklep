@@ -1,9 +1,9 @@
 -- =============================================================
--- Pan Kotecki — KONTA KLIENTÓW (passwordless, Supabase Auth).
+-- Pan Kotecki - KONTA KLIENTÓW (passwordless, Supabase Auth).
 -- Wklej całość do Supabase SQL Editor i kliknij RUN.
 -- Można uruchomić ponownie (idempotentne: if not exists / create or replace).
 --
--- Model: gość jest domyślny. Konto to DODATEK — logowanie bez hasła
+-- Model: gość jest domyślny. Konto to DODATEK - logowanie bez hasła
 -- (magic link / kod e-mail) przez wbudowane Supabase Auth (tabela auth.users).
 -- Backend (service_role) czyta/zapisuje dane konta po weryfikacji tokenu.
 -- =============================================================
@@ -51,7 +51,7 @@ drop trigger if exists account_addresses_set_updated on account_addresses;
 create trigger account_addresses_set_updated before update on account_addresses
   for each row execute function set_updated_at();
 
--- ===== RLS — klient widzi i zmienia TYLKO swoje dane =====
+-- ===== RLS - klient widzi i zmienia TYLKO swoje dane =====
 -- Backend działa na service_role (omija RLS). Polityki to obrona w głąb
 -- (oraz umożliwiają ewentualny bezpośredni dostęp z klienta przez anon-key).
 alter table account_profiles  enable row level security;
@@ -79,7 +79,7 @@ grant select, insert, update, delete on account_profiles  to authenticated;
 grant select, insert, update, delete on account_addresses to authenticated;
 
 -- ===== create_order: dołożenie user_id (atomowo, jak dotąd) =====
--- Pełna podmiana funkcji — identyczna logika + zapis user_id (gość = NULL).
+-- Pełna podmiana funkcji - identyczna logika + zapis user_id (gość = NULL).
 create or replace function create_order(p jsonb)
 returns jsonb
 language plpgsql

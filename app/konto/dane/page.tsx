@@ -92,13 +92,13 @@ export default function DanePage() {
         </div>
         <div className="mt-5 flex items-center gap-3">
           <button type="submit" disabled={busy} className="tap rounded-xl bg-coral px-6 py-3 text-sm font-semibold text-white hover:bg-coral-deep disabled:opacity-60">
-            {busy ? "Zapisuję…" : "Zapisz zmiany"}
+            {busy ? "Zapisuję..." : "Zapisz zmiany"}
           </button>
           {saved && <span className="text-sm text-teal">Zapisano ✓</span>}
         </div>
       </form>
 
-      {/* RODO — usunięcie konta */}
+      {/* RODO - usunięcie konta */}
       <div className="mt-8 rounded-2xl border border-red-200 bg-red-50/50 p-5 md:p-6">
         <p className="font-semibold text-red-700">Usuń konto</p>
         <p className="mt-1 text-sm text-ink-soft">
@@ -112,7 +112,7 @@ export default function DanePage() {
         ) : (
           <div className="mt-4 flex flex-wrap gap-2">
             <button onClick={doDelete} disabled={busy} className="tap rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60">
-              {busy ? "Usuwam…" : "Tak, usuń konto na zawsze"}
+              {busy ? "Usuwam..." : "Tak, usuń konto na zawsze"}
             </button>
             <button onClick={() => setConfirmDelete(false)} className="tap rounded-xl border border-line px-5 py-2.5 text-sm font-medium hover:border-ink">
               Anuluj

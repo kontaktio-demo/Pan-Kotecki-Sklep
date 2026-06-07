@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 declare const self: ServiceWorkerGlobalScope;
 
-// Service worker panelu — jego głównym zadaniem są powiadomienia push.
+// Service worker panelu - jego głównym zadaniem są powiadomienia push.
 self.addEventListener("install", () => {
   self.skipWaiting();
 });
@@ -25,7 +25,7 @@ self.addEventListener("push", (event) => {
     badge: "/icon-192.png",
     data: { url: payload.url || "/" },
     tag: payload.tag,
-    // @ts-expect-error — pole wspierane na części platform
+    // @ts-expect-error - pole wspierane na części platform
     vibrate: [80, 40, 80],
   };
   event.waitUntil(self.registration.showNotification(title, options));

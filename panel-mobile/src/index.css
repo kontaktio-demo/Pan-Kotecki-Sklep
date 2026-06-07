@@ -19,7 +19,7 @@
   * {
     box-sizing: border-box;
   }
-  /* brak zaznaczania/menu przy długim przytrzymaniu — czuć appkę, nie stronę */
+  /* brak zaznaczania/menu przy długim przytrzymaniu - czuć appkę, nie stronę */
   button,
   a {
     -webkit-tap-highlight-color: transparent;

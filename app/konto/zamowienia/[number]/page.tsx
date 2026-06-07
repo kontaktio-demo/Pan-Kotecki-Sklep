@@ -48,7 +48,7 @@ export default function OrderDetailPage() {
   async function reorder() {
     if (!order || reordering) return;
     setReordering(true);
-    // Pobierz AKTUALNE ceny i dostępność (nie historyczne) — pomiń niedostępne.
+    // Pobierz AKTUALNE ceny i dostępność (nie historyczne) - pomiń niedostępne.
     for (const it of order.items) {
       if (!it.slug) continue;
       const prod = await getProductBySlug(it.slug).catch(() => undefined);
@@ -73,7 +73,7 @@ export default function OrderDetailPage() {
           <StatusBadge status={order.status} />
         </div>
         <button onClick={reorder} disabled={reordering} className="tap rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-milk hover:bg-coral disabled:opacity-60">
-          {reordering ? "Dodaję…" : "Zamów ponownie"}
+          {reordering ? "Dodaję..." : "Zamów ponownie"}
         </button>
       </div>
       <p className="mt-1 text-sm text-ash">Złożone {formatDate(order.createdAt)}</p>
@@ -94,7 +94,7 @@ export default function OrderDetailPage() {
                 ) : (
                   <span className="text-sm font-medium leading-snug">{it.name}</span>
                 )}
-                <p className="mt-0.5 text-sm text-ash">{it.qty} × {formatPrice(it.price)}</p>
+                <p className="mt-0.5 text-sm text-ash">{it.qty} x {formatPrice(it.price)}</p>
               </div>
               <span className="shrink-0 text-sm font-semibold tabular-nums">{formatPrice(it.price * it.qty)}</span>
             </li>
@@ -126,7 +126,7 @@ export default function OrderDetailPage() {
 
           <div className="rounded-2xl border border-line bg-white p-5 text-sm">
             <p className="font-medium">Dostawa</p>
-            <p className="mt-1 text-ink-soft">{SHIPPING_LABEL[order.shippingMethod ?? ""] ?? order.shippingMethod ?? "—"}</p>
+            <p className="mt-1 text-ink-soft">{SHIPPING_LABEL[order.shippingMethod ?? ""] ?? order.shippingMethod ?? "-"}</p>
             {order.parcelLocker && <p className="mt-1 text-ink-soft">Paczkomat: <span className="font-medium text-ink">{order.parcelLocker}</span></p>}
             {addr && (addr.street || addr.city) && (
               <p className="mt-1 text-ink-soft">

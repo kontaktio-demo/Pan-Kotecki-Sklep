@@ -81,7 +81,7 @@ function PayForm({ total, orderNr }: { total: number; orderNr: string | null }) 
         disabled={busy || !stripe || !elements}
         className="tap mt-5 w-full rounded-xl bg-coral px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-coral/20 hover:bg-coral-deep disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {busy ? "Przetwarzam…" : `Zapłać ${formatPrice(total)}`}
+        {busy ? "Przetwarzam..." : `Zapłać ${formatPrice(total)}`}
       </button>
       <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-mist">
         <span aria-hidden="true">🔒</span> Płatność szyfrowana, obsługiwana przez Stripe
@@ -141,7 +141,7 @@ export default function EmbeddedPayment() {
           <h1 className="text-2xl font-semibold md:text-3xl">Płatność</h1>
           <p className="mb-6 mt-1 text-sm text-ash">
             {orderNr ? (
-              <>Zamówienie <span className="font-medium text-ink">{orderNr}</span> · dokończ płatność poniżej</>
+              <>Zamówienie <span className="font-medium text-ink">{orderNr}</span> - dokończ płatność poniżej</>
             ) : (
               <>Dokończ płatność, aby złożyć zamówienie</>
             )}

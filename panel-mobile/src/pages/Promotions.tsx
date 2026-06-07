@@ -60,8 +60,8 @@ export default function Promotions() {
                 </div>
                 <div className="mt-0.5 text-xs text-ash">
                   Rabat {p.kind === "percent" ? `${p.value}%` : zl(p.value)}
-                  {p.min_order_grosze ? ` · od ${zl(p.min_order_grosze)}` : ""}
-                  {` · użyto ${p.used_count ?? 0}${p.usage_limit != null ? `/${p.usage_limit}` : ""}`}
+                  {p.min_order_grosze ? ` - od ${zl(p.min_order_grosze)}` : ""}
+                  {` - użyto ${p.used_count ?? 0}${p.usage_limit != null ? `/${p.usage_limit}` : ""}`}
                 </div>
               </button>
               <button onClick={() => remove(p)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-red-500 active:bg-red-50">
@@ -90,7 +90,7 @@ function Editor({ promo, onClose, onSaved }: { promo: Promo; onClose: () => void
     setSaving(true);
     setErr("");
     let value = p.kind === "fixed" ? toGrosze(valueInput) : Math.round(Number(valueInput) || 0);
-    if (p.kind === "percent") value = Math.min(100, Math.max(1, value)); // procent 1–100
+    if (p.kind === "percent") value = Math.min(100, Math.max(1, value)); // procent 1-100
     value = Math.max(0, value);
     const payload = {
       code: p.code,
@@ -115,7 +115,7 @@ function Editor({ promo, onClose, onSaved }: { promo: Promo; onClose: () => void
     <Sheet
       title={p.id ? "Edytuj kod" : "Nowy kod rabatowy"}
       onClose={onClose}
-      footer={<button className="btn-primary w-full" onClick={save} disabled={saving || !p.code.trim()}>{saving ? "Zapisuję…" : "Zapisz"}</button>}
+      footer={<button className="btn-primary w-full" onClick={save} disabled={saving || !p.code.trim()}>{saving ? "Zapisuję..." : "Zapisz"}</button>}
     >
       <div className="space-y-3">
         <div>
@@ -142,7 +142,7 @@ function Editor({ promo, onClose, onSaved }: { promo: Promo; onClose: () => void
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="label">Min. zamówienie (zł)</label>
-            <input className="input" inputMode="decimal" value={minInput} placeholder="—" onChange={(e) => setMinInput(e.target.value)} />
+            <input className="input" inputMode="decimal" value={minInput} placeholder="-" onChange={(e) => setMinInput(e.target.value)} />
           </div>
           <div>
             <label className="label">Limit użyć</label>

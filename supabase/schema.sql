@@ -1,4 +1,4 @@
--- Pan Kotecki — schemat bazy (Supabase / Postgres)
+-- Pan Kotecki - schemat bazy (Supabase / Postgres)
 -- Uruchom w Supabase: SQL Editor → wklej → Run.
 
 create extension if not exists "pgcrypto";

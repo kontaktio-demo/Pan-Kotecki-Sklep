@@ -19,7 +19,7 @@ export default function CartView() {
       <div className="container-edge flex flex-col items-center gap-6 py-24 text-center">
         <p className="font-display text-4xl">Twój koszyk jest pusty</p>
         <p className="max-w-md text-ink-soft">
-          Zajrzyj do sklepu — coś dla siebie albo dla kota na pewno się znajdzie.
+          Zajrzyj do sklepu - coś dla siebie albo dla kota na pewno się znajdzie.
         </p>
         <Button href="/sklep" arrow>
           Przejdź do sklepu
@@ -90,7 +90,7 @@ export default function CartView() {
           <span className="font-display text-2xl tabular-nums">{formatPrice(total)}</span>
         </div>
 
-        {/* Dyskretna zachęta do darmowej dostawy — w treści, nie popup */}
+        {/* Dyskretna zachęta do darmowej dostawy - w treści, nie popup */}
         <div className="mt-5">
           {toFree > 0 ? (
             <p className="text-sm text-ink-soft">

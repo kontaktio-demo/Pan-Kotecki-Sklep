@@ -72,7 +72,7 @@ ordersRouter.patch("/:id", async (req, res) => {
   if (body.payment_status === "paid" && !wasPaid) {
     void sendPushToAll({
       title: "🛒 Opłacone zamówienie",
-      body: `${data.number} — ${zloty(data.total_grosze)}`,
+      body: `${data.number} - ${zloty(data.total_grosze)}`,
       url: "/#orders",
     });
   }
@@ -93,10 +93,10 @@ ordersRouter.post("/:id/label", async (req, res) => {
     .maybeSingle();
   if (error) return serverError(res, "orders.label.fetch", error);
   if (!o) return res.status(404).json({ error: "Nie znaleziono" });
-  if (o.shipping_method === "pickup") return res.status(400).json({ error: "Odbiór osobisty — etykieta niepotrzebna" });
+  if (o.shipping_method === "pickup") return res.status(400).json({ error: "Odbiór osobisty - etykieta niepotrzebna" });
 
   try {
-    // Jeśli przesyłka już istnieje — nie twórz duplikatu, tylko odśwież status.
+    // Jeśli przesyłka już istnieje - nie twórz duplikatu, tylko odśwież status.
     if (o.shipping_ref) {
       const s = await getShipment(o.shipping_ref); // rzuca przy 401/429/500; null tylko przy realnym 404
       if (s) {
@@ -114,7 +114,7 @@ ordersRouter.post("/:id/label", async (req, res) => {
     if (method === "courier") {
       const a = (o.shipping_address ?? {}) as Addr;
       if (!a.street || !a.city || !a.post_code) {
-        return res.status(400).json({ error: "Brak/niepełny adres dostawy — uzupełnij dane przed wygenerowaniem etykiety kuriera" });
+        return res.status(400).json({ error: "Brak/niepełny adres dostawy - uzupełnij dane przed wygenerowaniem etykiety kuriera" });
       }
     }
     const shipment = await createShipment({
@@ -123,7 +123,7 @@ ordersRouter.post("/:id/label", async (req, res) => {
       lockerCode: o.parcel_locker,
       reference: o.number,
     });
-    // Zapis tylko gdy shipping_ref nadal puste — chroni przed wyścigiem (podwójne kliknięcie).
+    // Zapis tylko gdy shipping_ref nadal puste - chroni przed wyścigiem (podwójne kliknięcie).
     const { data: saved } = await supabase
       .from("orders")
       .update({ shipping_ref: shipment.id, tracking_number: shipment.tracking_number, status: "packed" })
@@ -140,16 +140,16 @@ ordersRouter.post("/:id/label", async (req, res) => {
   }
 });
 
-// Pobierz etykietę PDF (przez backend — z autoryzacją, dane adresowe nie są publiczne).
+// Pobierz etykietę PDF (przez backend - z autoryzacją, dane adresowe nie są publiczne).
 ordersRouter.get("/:id/label-file", async (req, res) => {
   if (badId(res, req.params.id)) return;
   if (!inpostConfigured()) return res.status(501).json({ error: "InPost nie skonfigurowany" });
   const { data: o, error } = await supabase.from("orders").select("shipping_ref").eq("id", req.params.id).maybeSingle();
   if (error) return serverError(res, "orders.labelfile.fetch", error);
-  if (!o?.shipping_ref) return res.status(404).json({ error: "Brak przesyłki — najpierw wygeneruj etykietę" });
+  if (!o?.shipping_ref) return res.status(404).json({ error: "Brak przesyłki - najpierw wygeneruj etykietę" });
   try {
     const pdf = await fetchLabel(o.shipping_ref);
-    if (!pdf) return res.status(409).json({ error: "Etykieta jeszcze nie gotowa — spróbuj za chwilę" });
+    if (!pdf) return res.status(409).json({ error: "Etykieta jeszcze nie gotowa - spróbuj za chwilę" });
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `inline; filename="etykieta-${req.params.id}.pdf"`);
     res.send(pdf);

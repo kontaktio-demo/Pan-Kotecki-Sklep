@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-// Numer NIE jest zapisany jako tekst w kodzie strony — tylko jako kody znaków,
+// Numer NIE jest zapisany jako tekst w kodzie strony - tylko jako kody znaków,
 // składane dopiero po kliknięciu. Boty/scrapery nie wyłapią go z HTML.
 // [54,54,51,32,51,54,49,32,50,49,57] = "663 361 219"
 const CODES = [54, 54, 51, 32, 51, 54, 49, 32, 50, 49, 57];

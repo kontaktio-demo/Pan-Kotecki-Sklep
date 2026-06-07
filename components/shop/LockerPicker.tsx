@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 // Token Geowidgetu InPost (mapa paczkomatów). Z tokenem pokazujemy mapę z wyszukiwarką
-// (jak Allegro/Zara). Bez tokenu — pole na kod paczkomatu jako fallback.
+// (jak Allegro/Zara). Bez tokenu - pole na kod paczkomatu jako fallback.
 const TOKEN = process.env.NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN;
 
 type Point = { name?: string; address?: { line1?: string; line2?: string }; address_details?: { street?: string } };
@@ -34,7 +34,7 @@ export default function LockerPicker({
       const code = (p?.name ?? "").toString();
       if (!code) return;
       const addr = p?.address?.line1 ?? p?.address_details?.street ?? "";
-      onSelect(code, addr ? `${code} · ${addr}` : code);
+      onSelect(code, addr ? `${code} - ${addr}` : code);
       setOpen(false);
     };
     window.__kotInpostPoint = handlePoint;
@@ -62,7 +62,7 @@ export default function LockerPicker({
     return () => document.removeEventListener("onpointselect", onSel as EventListener);
   }, [onSelect]);
 
-  // Mapę montujemy RĘCZNIE (document.createElement + setAttribute), NIE przez JSX/React —
+  // Mapę montujemy RĘCZNIE (document.createElement + setAttribute), NIE przez JSX/React -
   // bo `token` w elemencie to getter-only i React rzuca błędem przy ustawianiu właściwości.
   useEffect(() => {
     if (!open || !TOKEN) return;
@@ -170,9 +170,9 @@ export default function LockerPicker({
             </div>
             <div className="relative flex-1">
               {!ready && (
-                <div className="absolute inset-0 z-10 grid place-items-center text-ash">Ładuję mapę paczkomatów… 🐈</div>
+                <div className="absolute inset-0 z-10 grid place-items-center text-ash">Ładuję mapę paczkomatów... 🐈</div>
               )}
-              {/* mapę wstawia useEffect ręcznie (setAttribute) — patrz wyżej */}
+              {/* mapę wstawia useEffect ręcznie (setAttribute) - patrz wyżej */}
               <div ref={mapRef} className="absolute inset-0" />
             </div>
           </div>

@@ -53,7 +53,7 @@ export default function OrderConfirmation() {
           }
           if (d.paymentStatus === "failed" || d.status === "cancelled") {
             if (!alive) return;
-            setPhase("failed"); // koszyka nie czyścimy — można spróbować ponownie
+            setPhase("failed"); // koszyka nie czyścimy - można spróbować ponownie
             return;
           }
         }
@@ -61,7 +61,7 @@ export default function OrderConfirmation() {
       tries += 1;
       if (!alive) return;
       setPhase("pending");
-      // koszyka NIE czyścimy przy oczekiwaniu — opróżniamy dopiero po potwierdzeniu 'paid'
+      // koszyka NIE czyścimy przy oczekiwaniu - opróżniamy dopiero po potwierdzeniu 'paid'
       if (tries < 8) setTimeout(poll, 3000);
     };
     poll();
@@ -95,11 +95,11 @@ export default function OrderConfirmation() {
       </h1>
       <p className="mt-4 max-w-md text-ink-soft">
         {phase === "paid" &&
-          "Płatność potwierdzona — pakujemy z miłością i pod czujnym okiem kota. Potwierdzenie wysłaliśmy na Twój e-mail."}
+          "Płatność potwierdzona - pakujemy z miłością i pod czujnym okiem kota. Potwierdzenie wysłaliśmy na Twój e-mail."}
         {phase === "pending" &&
-          "Przyjęliśmy Twoje zamówienie. Czekamy na potwierdzenie płatności (BLIK/Przelewy24 może chwilę potrwać) — damy znać e-mailem."}
-        {phase === "checking" && "Sprawdzamy status płatności…"}
-        {failed && "Nie udało się pobrać płatności. Twój koszyk jest nadal aktywny — możesz spróbować ponownie."}
+          "Przyjęliśmy Twoje zamówienie. Czekamy na potwierdzenie płatności (BLIK/Przelewy24 może chwilę potrwać) - damy znać e-mailem."}
+        {phase === "checking" && "Sprawdzamy status płatności..."}
+        {failed && "Nie udało się pobrać płatności. Twój koszyk jest nadal aktywny - możesz spróbować ponownie."}
       </p>
 
       {order && !failed && (
@@ -126,7 +126,7 @@ export default function OrderConfirmation() {
       {!failed && (
         <p className="mt-7 inline-flex items-center gap-2 rounded-full bg-mint px-4 py-2 text-sm text-teal-deep">
           <span aria-hidden="true">🐾</span>
-          Spodobało się? Opowiedz znajomemu kociarzowi — kot się ucieszy.
+          Spodobało się? Opowiedz znajomemu kociarzowi - kot się ucieszy.
         </p>
       )}
 
@@ -151,7 +151,7 @@ export default function OrderConfirmation() {
           <Link href="/logowanie" className="font-medium text-ink underline-offset-2 hover:underline">
             Załóż konto na ten sam e-mail
           </Link>{" "}
-          — to zamówienie pojawi się na nim automatycznie.
+          - to zamówienie pojawi się na nim automatycznie.
         </p>
       )}
       {!failed && user && (

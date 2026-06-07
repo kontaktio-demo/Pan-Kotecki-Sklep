@@ -31,7 +31,7 @@ export default function KontoOverview() {
       <div className="mt-7 grid gap-3 sm:grid-cols-3">
         <Link href="/konto/zamowienia" className="tap rounded-2xl border border-line bg-white p-5 hover:border-ink/30">
           <p className="text-sm text-ash">Zamówienia</p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums">{orders ? orders.length : "—"}</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums">{orders ? orders.length : "-"}</p>
         </Link>
         <Link href="/konto/adresy" className="tap rounded-2xl border border-line bg-white p-5 hover:border-ink/30">
           <p className="text-sm text-ash">Adresy</p>
@@ -56,7 +56,7 @@ export default function KontoOverview() {
         <CenterSpinner />
       ) : recent.length === 0 ? (
         <div className="mt-4 rounded-2xl border border-dashed border-line bg-white/60 p-8 text-center">
-          <p className="font-medium">Brak zamówień — na razie.</p>
+          <p className="font-medium">Brak zamówień - na razie.</p>
           <p className="mt-1 text-sm text-ash">Twój kot na pewno coś sobie upatrzył.</p>
           <Link href="/sklep" className="tap mt-5 inline-flex rounded-xl bg-ink px-6 py-3 text-sm text-milk hover:bg-coral">
             Przejdź do sklepu
@@ -76,7 +76,7 @@ export default function KontoOverview() {
                     <StatusBadge status={o.status} />
                   </div>
                   <p className="mt-0.5 truncate text-sm text-ash">
-                    {formatDate(o.createdAt)} · {o.itemCount} {o.itemCount === 1 ? "produkt" : "szt."}
+                    {formatDate(o.createdAt)} - {o.itemCount} {o.itemCount === 1 ? "produkt" : "szt."}
                   </p>
                 </div>
                 <span className="shrink-0 font-semibold tabular-nums">{formatPrice(o.total)}</span>

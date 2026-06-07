@@ -43,7 +43,7 @@ export default function ContactForm() {
       }
       if (!captchaToken) {
         setBusy(false);
-        setErr("Weryfikacja nie powiodła się — spróbuj ponownie 🐾");
+        setErr("Weryfikacja nie powiodła się - spróbuj ponownie 🐾");
         return;
       }
     }
@@ -92,10 +92,10 @@ export default function ContactForm() {
         disabled={busy}
         className="tap self-start rounded-full bg-ink px-8 py-4 text-sm font-medium text-milk transition-colors duration-300 hover:bg-coral disabled:opacity-60"
       >
-        {busy ? "Wysyłam…" : "Wyślij wiadomość"}
+        {busy ? "Wysyłam..." : "Wyślij wiadomość"}
       </button>
       <p className="text-xs text-mist">
-        Wysyłając wiadomość, zgadzasz się na przetwarzanie Twoich danych w celu udzielenia odpowiedzi — szczegóły w{" "}
+        Wysyłając wiadomość, zgadzasz się na przetwarzanie Twoich danych w celu udzielenia odpowiedzi - szczegóły w{" "}
         <Link href="/polityka-prywatnosci" className="underline hover:text-ink">polityce prywatności</Link>.
         {HCAPTCHA_SITEKEY && (
           <>

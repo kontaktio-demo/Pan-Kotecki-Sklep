@@ -20,7 +20,7 @@ export type Product = {
   name: string;
   category: string;
   price: number;
-  originalPrice?: number; // cena sprzed obniżki (gdy promocja) — do przekreślenia
+  originalPrice?: number; // cena sprzed obniżki (gdy promocja) - do przekreślenia
   currency: "PLN" | string;
   visual?: ProductVisual;
   images?: string[];
@@ -36,7 +36,7 @@ const CATEGORIES: Category[] = [
   {
     slug: "zabawki",
     name: "Zabawki",
-    tagline: "Polowanie, skok, mruczenie — dla kociej energii.",
+    tagline: "Polowanie, skok, mruczenie - dla kociej energii.",
   },
   {
     slug: "akcesoria",
@@ -51,7 +51,7 @@ const CATEGORIES: Category[] = [
   {
     slug: "dla-wlasciciela",
     name: "Dla właściciela",
-    tagline: "Noś swoją miłość do kotów — dosłownie.",
+    tagline: "Noś swoją miłość do kotów - dosłownie.",
   },
 ];
 
@@ -92,7 +92,7 @@ const PRODUCTS: Product[] = [
     price: 19,
     currency: "PLN",
     visual: { motif: "ball", tone: "sand" },
-    shortDescription: "Trzy kolory, jeden cel — gonić.",
+    shortDescription: "Trzy kolory, jeden cel - gonić.",
     description:
       "Lekkie, ażurowe piłki z dzwoneczkiem w środku. Toczą się nieprzewidywalnie po podłodze i potrafią zająć kota na długie minuty.",
     details: ["3 sztuki", "Średnica: 4 cm", "Cichy dzwoneczek"],
@@ -150,7 +150,7 @@ const PRODUCTS: Product[] = [
     visual: { motif: "bowl", tone: "sand" },
     shortDescription: "Płytka miska, która szanuje kocie wąsy.",
     description:
-      "Szeroka, niska miska z wypalanej ceramiki — bez podrażniania wąsów. Stabilna podstawa i powierzchnia łatwa do utrzymania w czystości.",
+      "Szeroka, niska miska z wypalanej ceramiki - bez podrażniania wąsów. Stabilna podstawa i powierzchnia łatwa do utrzymania w czystości.",
     details: ["Pojemność: 250 ml", "Ceramika szkliwiona", "Można myć w zmywarce"],
     inStock: true,
   },
@@ -163,7 +163,7 @@ const PRODUCTS: Product[] = [
     visual: { motif: "fountain", tone: "cool" },
     shortDescription: "Świeża, krążąca woda zachęca do picia.",
     description:
-      "Cicha fontanna z filtrem, która utrzymuje wodę w ruchu i świeżości. Delikatny szum zachęca kota do częstszego picia — wsparcie dla nerek i nawodnienia.",
+      "Cicha fontanna z filtrem, która utrzymuje wodę w ruchu i świeżości. Delikatny szum zachęca kota do częstszego picia - wsparcie dla nerek i nawodnienia.",
     details: ["Pojemność: 2 l", "Cichy silnik", "Filtr węglowy w zestawie"],
     bestseller: true,
     inStock: true,
@@ -191,7 +191,7 @@ const PRODUCTS: Product[] = [
     shortDescription: "Bezpieczne zapięcie, miejsce na adresówkę.",
     description:
       "Miękka obroża z zapięciem bezpieczeństwa, które puszcza pod naciskiem. Regulowana, z zawieszką na adres i dyskretnym dzwoneczkiem.",
-    details: ["Regulacja: 20–30 cm", "Zapięcie bezpieczeństwa", "Miejsce na adresówkę"],
+    details: ["Regulacja: 20-30 cm", "Zapięcie bezpieczeństwa", "Miejsce na adresówkę"],
     inStock: true,
   },
   {
@@ -216,7 +216,7 @@ const PRODUCTS: Product[] = [
     visual: { motif: "brush", tone: "mist" },
     shortDescription: "Mniej sierści na kanapie, więcej na szczotce.",
     description:
-      "Szczotka z chowanymi zębami — jednym kliknięciem usuwasz zebraną sierść. Delikatna dla skóry, skuteczna w usuwaniu martwego podszerstka.",
+      "Szczotka z chowanymi zębami - jednym kliknięciem usuwasz zebraną sierść. Delikatna dla skóry, skuteczna w usuwaniu martwego podszerstka.",
     details: ["Chowane zęby", "Ergonomiczny uchwyt", "Do każdej długości włosa"],
     inStock: true,
   },
@@ -258,7 +258,7 @@ const PRODUCTS: Product[] = [
     visual: { motif: "mugpair", tone: "sand" },
     shortDescription: "Dwa kubki, jedna wspólna poranna rutyna.",
     description:
-      "Para kubków w spójnym, minimalnym stylu — jeden dla Ciebie, drugi dla wielbiciela kotów obok. Świetny pomysł na prezent.",
+      "Para kubków w spójnym, minimalnym stylu - jeden dla Ciebie, drugi dla wielbiciela kotów obok. Świetny pomysł na prezent.",
     details: ["2 sztuki po 300 ml", "Ceramika", "W pudełku prezentowym"],
     inStock: true,
   },
@@ -273,7 +273,7 @@ const PRODUCTS: Product[] = [
     shortDescription: "Zakupy, książki i koci manifest na ramieniu.",
     description:
       "Mocna bawełniana torba z minimalnym nadrukiem. Długie ucha, pojemne wnętrze i charakter, który mówi wszystko bez słów.",
-    details: ["Bawełna 280 g/m²", "Wymiary: 38 × 42 cm", "Długie ucha"],
+    details: ["Bawełna 280 g/m²", "Wymiary: 38 x 42 cm", "Długie ucha"],
     bestseller: true,
     inStock: true,
   },
@@ -286,8 +286,8 @@ const PRODUCTS: Product[] = [
     visual: { motif: "socks", tone: "mist" },
     shortDescription: "Kocie łapki na Twoich stopach.",
     description:
-      "Miękkie, oddychające skarpetki z dyskretnym motywem łapek. Dwie pary w pudełku — dla siebie albo na prezent.",
-    details: ["2 pary", "Bawełna z domieszką elastanu", "Rozmiar uniwersalny 38–43"],
+      "Miękkie, oddychające skarpetki z dyskretnym motywem łapek. Dwie pary w pudełku - dla siebie albo na prezent.",
+    details: ["2 pary", "Bawełna z domieszką elastanu", "Rozmiar uniwersalny 38-43"],
     inStock: true,
   },
   {
@@ -325,13 +325,13 @@ const PRODUCTS: Product[] = [
     visual: { motif: "hoodie", tone: "ink" },
     shortDescription: "Miękka bluza dla zespołu „kot ważniejszy”.",
     description:
-      "Ciężka, miękka w środku bluza z kapturem i drobnym haftem. Krój oversize, materiał, z którego nie chce się wychodzić — zupełnie jak kot z legowiska.",
-    details: ["Bawełna z pętelką 320 g/m²", "Krój oversize", "Rozmiary S–XXL"],
+      "Ciężka, miękka w środku bluza z kapturem i drobnym haftem. Krój oversize, materiał, z którego nie chce się wychodzić - zupełnie jak kot z legowiska.",
+    details: ["Bawełna z pętelką 320 g/m²", "Krój oversize", "Rozmiary S-XXL"],
     inStock: true,
   },
 ];
 
-// Gdy ustawione NEXT_PUBLIC_API_URL — sklep czyta z backendu (baza).
+// Gdy ustawione NEXT_PUBLIC_API_URL - sklep czyta z backendu (baza).
 // W przeciwnym razie korzysta z danych lokalnych (powyżej) jako fallback.
 const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 

@@ -30,7 +30,7 @@ export default function ZamowieniaPage() {
         <div className="mt-6 rounded-2xl border border-dashed border-line bg-white/60 p-10 text-center">
           <span className="text-4xl" aria-hidden="true">🐾</span>
           <p className="mt-3 font-medium">Nie masz jeszcze żadnych zamówień</p>
-          <p className="mt-1 text-sm text-ash">Gdy coś zamówisz, pojawi się tutaj — razem ze statusem wysyłki.</p>
+          <p className="mt-1 text-sm text-ash">Gdy coś zamówisz, pojawi się tutaj - razem ze statusem wysyłki.</p>
           <Link href="/sklep" className="tap mt-5 inline-flex rounded-xl bg-ink px-6 py-3 text-sm text-milk hover:bg-coral">
             Przejdź do sklepu
           </Link>
@@ -51,10 +51,10 @@ export default function ZamowieniaPage() {
                   <span className="font-semibold tabular-nums">{formatPrice(o.total)}</span>
                 </div>
                 <p className="mt-1 text-sm text-ash">
-                  {formatDate(o.createdAt)} · {o.itemCount} {o.itemCount === 1 ? "produkt" : "szt."}
+                  {formatDate(o.createdAt)} - {o.itemCount} {o.itemCount === 1 ? "produkt" : "szt."}
                 </p>
                 <p className="mt-2 truncate text-sm text-ink-soft">
-                  {o.items.map((i) => `${i.qty}× ${i.name}`).join(", ")}
+                  {o.items.map((i) => `${i.qty}x ${i.name}`).join(", ")}
                 </p>
               </Link>
             </li>

@@ -96,7 +96,7 @@ export async function getShipment(id: string): Promise<ShipmentResult | null> {
 }
 
 // Pobiera etykietę PDF. null = przesyłka jeszcze nieobsłużona (404/422/425).
-// Inne błędy (401 zły token / 429 / 500) RZUCAMY — żeby nie udawać „spróbuj później".
+// Inne błędy (401 zły token / 429 / 500) RZUCAMY - żeby nie udawać „spróbuj później".
 export async function fetchLabel(id: string): Promise<Buffer | null> {
   const res = await fetch(`${BASE}/shipments/${id}/label?format=pdf&type=normal`, { headers: headers() });
   if (res.status === 404 || res.status === 422 || res.status === 425) return null;

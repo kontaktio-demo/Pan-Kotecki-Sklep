@@ -46,12 +46,12 @@ export default function RegulaminPage() {
 
         <Section title="§2. Definicje">
           <p>
-            <strong>Klient</strong> — osoba fizyczna, prawna lub jednostka organizacyjna składająca zamówienie.
+            <strong>Klient</strong> - osoba fizyczna, prawna lub jednostka organizacyjna składająca zamówienie.
             <br />
-            <strong>Konsument</strong> — Klient będący osobą fizyczną, dokonujący zakupu w celach niezwiązanych z
+            <strong>Konsument</strong> - Klient będący osobą fizyczną, dokonujący zakupu w celach niezwiązanych z
             działalnością gospodarczą.
             <br />
-            <strong>Produkt</strong> — towar dostępny w sklepie.
+            <strong>Produkt</strong> - towar dostępny w sklepie.
           </p>
         </Section>
 
@@ -66,14 +66,14 @@ export default function RegulaminPage() {
           </p>
           <p>
             Zakupy można złożyć jako gość albo po założeniu bezpłatnego, opcjonalnego konta. Logowanie do konta odbywa
-            się bez hasła — na podany e-mail wysyłamy jednorazowy link. W koncie Klient ma dostęp do historii zamówień i
+            się bez hasła - na podany e-mail wysyłamy jednorazowy link. W koncie Klient ma dostęp do historii zamówień i
             zapisanych adresów dostawy i może je samodzielnie usunąć w dowolnym momencie.
           </p>
         </Section>
 
         <Section title="§4. Płatności">
           <p>
-            Dostępne metody płatności: karta płatnicza, BLIK oraz Przelewy24 — obsługiwane bezpiecznie przez operatora
+            Dostępne metody płatności: karta płatnicza, BLIK oraz Przelewy24 - obsługiwane bezpiecznie przez operatora
             Stripe. Realizacja zamówienia rozpoczyna się po zaksięgowaniu płatności.
           </p>
         </Section>
@@ -98,11 +98,11 @@ export default function RegulaminPage() {
             będące wynikiem korzystania z niej w sposób wykraczający poza konieczny do stwierdzenia charakteru, cech i
             funkcjonowania rzeczy. Prawo odstąpienia nie przysługuje m.in. dla produktów wykonanych na indywidualne
             zamówienie oraz dla towarów w zapieczętowanym opakowaniu, których po otwarciu nie można zwrócić ze względów
-            higienicznych — oraz w innych przypadkach wskazanych w art. 38 ustawy o prawach konsumenta.
+            higienicznych - oraz w innych przypadkach wskazanych w art. 38 ustawy o prawach konsumenta.
           </p>
         </Section>
 
-        <Section title="§7. Reklamacje — brak zgodności towaru z umową">
+        <Section title="§7. Reklamacje - brak zgodności towaru z umową">
           <p>
             Sprzedawca odpowiada wobec Konsumenta za brak zgodności towaru z umową na zasadach określonych w rozdziale
             5a ustawy o prawach konsumenta. Odpowiedzialność obejmuje brak zgodności istniejący w chwili dostarczenia
@@ -111,7 +111,7 @@ export default function RegulaminPage() {
           <p>
             Reklamację można złożyć e-mailem na {SELLER.email}, opisując problem i dołączając zdjęcia. W pierwszej
             kolejności Konsument może żądać naprawy lub wymiany; gdy jest to niemożliwe lub wiązałoby się z nadmiernymi
-            kosztami — obniżenia ceny albo odstąpienia od umowy. Reklamację rozpatrujemy w terminie <strong>14 dni</strong>.
+            kosztami - obniżenia ceny albo odstąpienia od umowy. Reklamację rozpatrujemy w terminie <strong>14 dni</strong>.
           </p>
         </Section>
 
@@ -125,7 +125,7 @@ export default function RegulaminPage() {
         <Section title="§9. Konto i usługi świadczone drogą elektroniczną">
           <p>
             Sprzedawca świadczy drogą elektroniczną usługi: prowadzenie Konta, obsługę koszyka i składania zamówień
-            oraz — za zgodą — newsletter. Założenie Konta jest bezpłatne i dobrowolne; logowanie odbywa się bez hasła
+            oraz - za zgodą - newsletter. Założenie Konta jest bezpłatne i dobrowolne; logowanie odbywa się bez hasła
             (jednorazowy link wysyłany na e-mail). Umowa o prowadzenie Konta zawierana jest na czas nieoznaczony i może
             zostać rozwiązana przez Klienta w każdej chwili poprzez usunięcie Konta („Moje konto → Dane konta → Usuń
             konto").
@@ -133,7 +133,7 @@ export default function RegulaminPage() {
           <p>
             Do korzystania ze sklepu wystarczy urządzenie z aktualną przeglądarką, dostępem do internetu i aktywnym
             kontem e-mail. Zakazane jest dostarczanie treści o charakterze bezprawnym. Reklamacje dotyczące usług
-            świadczonych drogą elektroniczną można składać na {SELLER.email} — rozpatrujemy je w terminie 14 dni.
+            świadczonych drogą elektroniczną można składać na {SELLER.email} - rozpatrujemy je w terminie 14 dni.
           </p>
         </Section>
 

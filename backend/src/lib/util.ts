@@ -14,7 +14,7 @@ export function serverError(res: Response, where: string, err: unknown) {
   return res.status(500).json({ error: "Błąd serwera. Spróbuj ponownie." });
 }
 
-// Gdy :id nie jest poprawnym UUID — odsyła 404 i zwraca true (przerwij handler).
+// Gdy :id nie jest poprawnym UUID - odsyła 404 i zwraca true (przerwij handler).
 // Bez tego zła wartość trafia do bazy i Postgres oddaje 500 z komunikatem schematu.
 export function badId(res: Response, id: string): boolean {
   if (UUID_RE.test(id)) return false;

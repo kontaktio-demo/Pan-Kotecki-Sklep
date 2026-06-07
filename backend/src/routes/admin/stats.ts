@@ -55,7 +55,7 @@ statsRouter.get("/", async (_req, res) => {
   });
 });
 
-// Podsumowanie miesiąca — motywujące dane.
+// Podsumowanie miesiąca - motywujące dane.
 statsRouter.get("/monthly", async (_req, res) => {
   const now = new Date();
   const y = now.getFullYear();

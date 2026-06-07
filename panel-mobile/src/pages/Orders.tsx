@@ -140,7 +140,7 @@ function Detail({ order, onClose, onSaved }: { order: Order; onClose: () => void
       const r = await api.post(`/api/admin/orders/${order.id}/label`, {});
       if (r?.tracking_number) setTracking(r.tracking_number);
       setStatus("packed");
-      setShipMsg(`Przesyłka utworzona${r?.tracking_number ? ` · ${r.tracking_number}` : ""}.`);
+      setShipMsg(`Przesyłka utworzona${r?.tracking_number ? ` - ${r.tracking_number}` : ""}.`);
     } catch (e) {
       setShipMsg((e as Error).message);
     }
@@ -175,7 +175,7 @@ function Detail({ order, onClose, onSaved }: { order: Order; onClose: () => void
       footer={
         <div className="flex gap-3">
           <button className="btn-ghost flex-1" onClick={onClose}>Zamknij</button>
-          <button className="btn-primary flex-1" onClick={save} disabled={saving}>{saving ? "Zapisuję…" : "Zapisz"}</button>
+          <button className="btn-primary flex-1" onClick={save} disabled={saving}>{saving ? "Zapisuję..." : "Zapisz"}</button>
         </div>
       }
     >
@@ -189,7 +189,7 @@ function Detail({ order, onClose, onSaved }: { order: Order; onClose: () => void
             {order.items?.map((it) => (
               <div key={it.id} className="flex items-center justify-between gap-2 py-2 text-sm">
                 <span className="min-w-0 flex-1 truncate">{it.name}</span>
-                <span className="shrink-0 text-ash">{it.qty}×</span>
+                <span className="shrink-0 text-ash">{it.qty}x</span>
                 <span className="shrink-0 tabular-nums">{zl(it.price_grosze * it.qty)}</span>
               </div>
             ))}
@@ -205,9 +205,9 @@ function Detail({ order, onClose, onSaved }: { order: Order; onClose: () => void
         {/* Klient */}
         <div className="card p-4 text-sm">
           <div className="mb-1 font-semibold">Klient i dostawa</div>
-          <div className="text-ash">{order.email}{order.phone ? ` · ${order.phone}` : ""}</div>
+          <div className="text-ash">{order.email}{order.phone ? ` - ${order.phone}` : ""}</div>
           <div className="mt-1 text-ash">
-            {order.shipping_method ?? ""} {order.parcel_locker ? `· ${order.parcel_locker}` : ""}
+            {order.shipping_method ?? ""} {order.parcel_locker ? `- ${order.parcel_locker}` : ""}
           </div>
           {Object.keys(addr).length > 0 && (
             <div className="mt-1 text-ash">
@@ -222,7 +222,7 @@ function Detail({ order, onClose, onSaved }: { order: Order; onClose: () => void
             <div className="mb-2 font-semibold">Przesyłka InPost</div>
             <div className="flex flex-col gap-2">
               <button className="btn-orange w-full" onClick={genLabel} disabled={shipBusy}>
-                {shipBusy ? "Pracuję…" : "Generuj etykietę"}
+                {shipBusy ? "Pracuję..." : "Generuj etykietę"}
               </button>
               <button className="btn-ghost w-full" onClick={openLabel} disabled={shipBusy}>Pobierz etykietę (PDF)</button>
             </div>

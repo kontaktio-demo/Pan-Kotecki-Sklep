@@ -75,7 +75,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-[120] border-b border-line bg-milk/95 backdrop-blur-md">
       <div className="container-edge flex h-16 items-center gap-4">
-        <Link href="/" aria-label="Pan Kotecki — strona główna" className="shrink-0">
+        <Link href="/" aria-label="Pan Kotecki - strona główna" className="shrink-0">
           <Logo />
         </Link>
 
@@ -141,7 +141,7 @@ export default function Header() {
               {c.label}
             </Link>
           ))}
-          <span className="ml-auto text-xs text-ash">Darmowa dostawa od 149 zł · Wysyłka 24h</span>
+          <span className="ml-auto text-xs text-ash">Darmowa dostawa od 149 zł - Wysyłka 24h</span>
         </div>
       </nav>
 

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Icon from "./icons";
 
-export function Spinner({ label = "Ładuję…" }: { label?: string }) {
+export function Spinner({ label = "Ładuję..." }: { label?: string }) {
   return (
     <div className="flex items-center justify-center gap-2 py-20 text-ash">
       <span className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-orange" />
@@ -42,7 +42,7 @@ export function StatusPill({ label, tone }: { label: string; tone: string }) {
   return <span className={`statuspill ${tone}`}>{label}</span>;
 }
 
-// Dolny arkusz (bottom sheet) — używany do edycji/podglądu. Czuć jak natywna appka.
+// Dolny arkusz (bottom sheet) - używany do edycji/podglądu. Czuć jak natywna appka.
 export function Sheet({
   title,
   onClose,

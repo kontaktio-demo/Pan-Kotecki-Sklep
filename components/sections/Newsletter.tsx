@@ -36,7 +36,7 @@ export default function Newsletter() {
       }
       if (!captchaToken) {
         setBusy(false);
-        setErr("Weryfikacja nie powiodła się — spróbuj ponownie 🐾");
+        setErr("Weryfikacja nie powiodła się - spróbuj ponownie 🐾");
         return;
       }
     }
@@ -76,12 +76,12 @@ export default function Newsletter() {
           </h2>
           <p className="mx-auto mt-4 max-w-md text-ink/80">
             Zapisz się i odbierz <span className="font-semibold">10% rabatu</span> na pierwsze
-            zamówienie. Wrzucamy tylko nowości i drobne premie — obiecujemy, żadnego spamu.
+            zamówienie. Wrzucamy tylko nowości i drobne premie - obiecujemy, żadnego spamu.
           </p>
 
           {sent ? (
             <p className="mx-auto mt-8 max-w-md text-lg font-semibold">
-              Sprawdź skrzynkę i potwierdź zapis 🐾 — kod –10% czeka zaraz po potwierdzeniu.
+              Sprawdź skrzynkę i potwierdź zapis 🐾 - kod -10% czeka zaraz po potwierdzeniu.
             </p>
           ) : (
             <form onSubmit={submit} className="mx-auto mt-8 max-w-md">
@@ -99,7 +99,7 @@ export default function Newsletter() {
                   disabled={busy}
                   className="tap rounded-xl bg-ink px-7 py-3.5 text-sm font-semibold text-milk transition-colors hover:bg-night disabled:opacity-60"
                 >
-                  {busy ? "Zapisuję…" : "Zapisz się"}
+                  {busy ? "Zapisuję..." : "Zapisz się"}
                 </button>
               </div>
               <label className="mt-3 flex cursor-pointer items-start gap-2 text-left text-xs text-ink/70">

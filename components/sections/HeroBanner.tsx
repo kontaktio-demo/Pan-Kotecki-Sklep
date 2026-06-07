@@ -27,11 +27,11 @@ export default function HeroBanner() {
             className="rise text-[2.6rem] font-semibold leading-[1.02] tracking-tight md:text-6xl"
             style={{ animationDelay: "90ms" }}
           >
-            Wszystko dla kota —{" "}
+            Wszystko dla kota -{" "}
             <span className="italic text-peach">i dla jego człowieka.</span>
           </h1>
           <p className="rise mt-5 max-w-md text-[0.98rem] leading-relaxed text-milk/85 md:text-base" style={{ animationDelay: "180ms" }}>
-            Zabawki, drapaki, kubki i kocie drobiazgi. Wybrane przez nas, zatwierdzone przez koty —
+            Zabawki, drapaki, kubki i kocie drobiazgi. Wybrane przez nas, zatwierdzone przez koty -
             a one, jak wiadomo, nie dają nic za darmo.
           </p>
           <div className="rise mt-7 flex flex-wrap gap-2.5 md:mt-8 md:gap-3" style={{ animationDelay: "270ms" }}>

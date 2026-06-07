@@ -25,7 +25,7 @@ const ITEMS = [
 
 import Reveal from "@/components/ui/Reveal";
 
-// Naprzemienne kolory ikon — ciepły pomarańcz i chłodny teal (para komplementarna)
+// Naprzemienne kolory ikon - ciepły pomarańcz i chłodny teal (para komplementarna)
 const ICON_TONES = [
   "bg-orange/12 text-orange-deep",
   "bg-teal/12 text-teal",

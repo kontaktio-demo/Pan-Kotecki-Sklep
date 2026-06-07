@@ -12,7 +12,7 @@ const SORTS = [
   { key: "polecane", label: "Polecane" },
   { key: "cena-rosnaco", label: "Cena: od najniższej" },
   { key: "cena-malejaco", label: "Cena: od najwyższej" },
-  { key: "nazwa", label: "Nazwa A–Z" },
+  { key: "nazwa", label: "Nazwa A-Z" },
 ];
 
 type Props = {
@@ -96,7 +96,7 @@ export default function ShopClient({ products, categories, initialCategory, init
         </p>
         <h1 className="text-4xl font-semibold tracking-tight md:text-5xl">Wszystko dla Twojego kota</h1>
         <p className="mt-3 max-w-lg text-ink-soft">
-          Starannie wybrane zabawki, akcesoria, kubki i drobiazgi — same rzeczy,
+          Starannie wybrane zabawki, akcesoria, kubki i drobiazgi - same rzeczy,
           które dalibyśmy własnym kotom.
         </p>
       </div>
@@ -216,7 +216,7 @@ export default function ShopClient({ products, categories, initialCategory, init
           <div className="flex flex-col items-center gap-4 py-20 text-center">
             <span className="text-4xl" aria-hidden="true">🐾</span>
             <p className="text-lg font-semibold">Tu nawet kot niczego nie znalazł</p>
-            <p className="max-w-xs text-sm text-ash">Spróbuj poluzować filtry — być może skarb czeka tuż obok.</p>
+            <p className="max-w-xs text-sm text-ash">Spróbuj poluzować filtry - być może skarb czeka tuż obok.</p>
             <button onClick={resetFilters} className="tap mt-1 rounded-xl bg-ink px-6 py-3 text-sm text-milk hover:bg-coral">
               Wyczyść filtry
             </button>

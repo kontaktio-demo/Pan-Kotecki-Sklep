@@ -50,7 +50,7 @@ export default function StatsPage() {
       </div>
 
       <div className="card p-5">
-        <div className="mb-4 text-sm font-semibold">Przychód — ostatnie 30 dni</div>
+        <div className="mb-4 text-sm font-semibold">Przychód - ostatnie 30 dni</div>
         <div className="flex h-32 items-end gap-0.5">
           {s.revenueByDay.map((d) => (
             <div

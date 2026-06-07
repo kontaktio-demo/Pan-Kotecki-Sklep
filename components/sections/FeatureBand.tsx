@@ -21,7 +21,7 @@ export default function FeatureBand() {
               <span className="italic text-orange">jest cieplejszy</span>.
             </h2>
             <p className="mt-5 max-w-md leading-relaxed text-milk/70">
-              Wybieramy rzeczy, które wnoszą do domu trochę ciepła i mruczenia —
+              Wybieramy rzeczy, które wnoszą do domu trochę ciepła i mruczenia -
               proste, ładne i zrobione z myślą o wspólnym życiu z kotem.
             </p>
             <Link

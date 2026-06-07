@@ -73,7 +73,7 @@ export default function App() {
   }, [configured]);
 
   // gdy apka jest już otwarta, service worker po kliknięciu powiadomienia
-  // wysyła wiadomość — przełączamy zakładkę (sama zmiana #hash nie odpala Reacta).
+  // wysyła wiadomość - przełączamy zakładkę (sama zmiana #hash nie odpala Reacta).
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
     const onMsg = (e: MessageEvent) => {
@@ -84,7 +84,7 @@ export default function App() {
     return () => navigator.serviceWorker.removeEventListener("message", onMsg);
   }, []);
 
-  if (!ready) return <div className="grid h-full place-items-center text-ash">Ładowanie…</div>;
+  if (!ready) return <div className="grid h-full place-items-center text-ash">Ładowanie...</div>;
 
   if (!configured) {
     return (

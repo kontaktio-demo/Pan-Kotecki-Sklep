@@ -86,7 +86,7 @@ export default function Products() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Szukaj produktu…"
+            placeholder="Szukaj produktu..."
             className="w-full bg-transparent text-[15px] outline-none"
             autoCapitalize="none"
           />
@@ -114,7 +114,7 @@ export default function Products() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-semibold">{p.name}</div>
-                  <div className="text-xs text-ash">{p.category?.name ?? "—"}</div>
+                  <div className="text-xs text-ash">{p.category?.name ?? "-"}</div>
                   <div className="mt-1 flex items-center gap-2">
                     <span className="font-semibold tabular-nums">{zl(p.sale_price_grosze ?? p.price_grosze)}</span>
                     {p.sale_price_grosze != null && <span className="text-xs text-ash line-through">{zl(p.price_grosze)}</span>}
@@ -227,7 +227,7 @@ function Editor({
     <Sheet
       title={p.id ? "Edytuj produkt" : "Nowy produkt"}
       onClose={onClose}
-      footer={<button className="btn-primary w-full" onClick={save} disabled={saving || !p.name.trim()}>{saving ? "Zapisuję…" : "Zapisz"}</button>}
+      footer={<button className="btn-primary w-full" onClick={save} disabled={saving || !p.name.trim()}>{saving ? "Zapisuję..." : "Zapisz"}</button>}
     >
       <div className="space-y-4">
         <div>
@@ -241,13 +241,13 @@ function Editor({
           </div>
           <div>
             <label className="label">Promocyjna (zł)</label>
-            <input className="input" inputMode="decimal" value={saleZl} onChange={(e) => setSaleZl(e.target.value)} placeholder="—" />
+            <input className="input" inputMode="decimal" value={saleZl} onChange={(e) => setSaleZl(e.target.value)} placeholder="-" />
           </div>
         </div>
         <div>
           <label className="label">Kategoria</label>
           <select className="input" value={p.category_id ?? ""} onChange={(e) => set("category_id", e.target.value || null)}>
-            <option value="">— brak —</option>
+            <option value="">- brak -</option>
             {cats.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}

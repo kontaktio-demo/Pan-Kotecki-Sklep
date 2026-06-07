@@ -28,18 +28,18 @@ export default function ZwrotyPage() {
     <>
       <PageHeader eyebrow="Informacje" title="Zwroty i reklamacje" />
       <div className="container-edge max-w-3xl pb-24">
-        <p className="text-sm text-ash">Twoje prawa jako Konsumenta — jasno i po ludzku 🐾</p>
+        <p className="text-sm text-ash">Twoje prawa jako Konsumenta - jasno i po ludzku 🐾</p>
 
-        <Section title="Zwrot (odstąpienie od umowy) — 14 dni">
+        <Section title="Zwrot (odstąpienie od umowy) - 14 dni">
           <p>
             Jako Konsument możesz odstąpić od umowy <strong>bez podania przyczyny w terminie 14 dni</strong> od dnia
             otrzymania produktu. Aby zachować termin, wystarczy wysłać oświadczenie przed jego upływem.
           </p>
           <ol className="ml-5 list-decimal">
             <li>
-              Napisz do nas na <strong>{SELLER.email}</strong> (możesz użyć formularza poniżej) — podaj numer zamówienia.
+              Napisz do nas na <strong>{SELLER.email}</strong> (możesz użyć formularza poniżej) - podaj numer zamówienia.
             </li>
-            <li>Odeślij produkt na adres: {SELLER.name}, {SELLER.address} — w terminie 14 dni od złożenia oświadczenia.</li>
+            <li>Odeślij produkt na adres: {SELLER.name}, {SELLER.address} - w terminie 14 dni od złożenia oświadczenia.</li>
             <li>Zwrócimy pieniądze tą samą metodą płatności, w ciągu 14 dni.</li>
           </ol>
         </Section>
@@ -52,7 +52,7 @@ export default function ZwrotyPage() {
           </p>
           <p>
             Zgodnie z prawem możemy <strong>wstrzymać zwrot płatności</strong> do chwili otrzymania produktu z powrotem
-            lub dostarczenia dowodu jego odesłania — w zależności co nastąpi wcześniej.
+            lub dostarczenia dowodu jego odesłania - w zależności co nastąpi wcześniej.
           </p>
         </Section>
 
@@ -68,21 +68,21 @@ export default function ZwrotyPage() {
           <p>
             Jeśli produkt jest wadliwy lub niezgodny z umową, masz prawo do reklamacji. Zgłoś ją na {SELLER.email},
             opisując problem i dołączając zdjęcia. <strong>Rozpatrzymy reklamację w ciągu 14 dni.</strong> W pierwszej
-            kolejności możemy naprawić lub wymienić produkt; gdy nie jest to możliwe — obniżymy cenę lub zwrócimy
+            kolejności możemy naprawić lub wymienić produkt; gdy nie jest to możliwe - obniżymy cenę lub zwrócimy
             pieniądze.
           </p>
         </Section>
 
         <Section title="Wzór formularza odstąpienia od umowy">
           <div className="rounded-2xl border border-line bg-cream/60 p-5 text-sm">
-            <p className="text-ash">— Adresat: {SELLER.name}, {SELLER.address}, {SELLER.email}</p>
+            <p className="text-ash">- Adresat: {SELLER.name}, {SELLER.address}, {SELLER.email}</p>
             <p className="mt-2">
-              Ja, niżej podpisany/a, niniejszym odstępuję od umowy sprzedaży następujących produktów: …………………………
+              Ja, niżej podpisany/a, niniejszym odstępuję od umowy sprzedaży następujących produktów: ..............................
             </p>
-            <p className="mt-2">Numer zamówienia: ………………… · Data zamówienia/odbioru: …………………</p>
-            <p className="mt-2">Imię i nazwisko: ………………… · Adres: …………………</p>
-            <p className="mt-2">Numer konta do zwrotu (jeśli inny niż płatność): …………………</p>
-            <p className="mt-2">Data i podpis (jeśli papierowo): …………………</p>
+            <p className="mt-2">Numer zamówienia: ..................... - Data zamówienia/odbioru: .....................</p>
+            <p className="mt-2">Imię i nazwisko: ..................... - Adres: .....................</p>
+            <p className="mt-2">Numer konta do zwrotu (jeśli inny niż płatność): .....................</p>
+            <p className="mt-2">Data i podpis (jeśli papierowo): .....................</p>
           </div>
         </Section>
 

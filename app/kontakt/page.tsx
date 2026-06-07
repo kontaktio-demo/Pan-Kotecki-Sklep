@@ -5,7 +5,7 @@ import RevealPhone from "@/components/RevealPhone";
 
 export const metadata: Metadata = {
   title: "Kontakt",
-  description: "Napisz do nas — chętnie pomożemy w doborze rzeczy dla Twojego kota.",
+  description: "Napisz do nas - chętnie pomożemy w doborze rzeczy dla Twojego kota.",
 };
 
 export default function KontaktPage() {
@@ -31,10 +31,10 @@ export default function KontaktPage() {
           </div>
           <div>
             <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-ash">Godziny</p>
-            <p className="text-2xl font-semibold">pon.–pt. 9:00–17:00</p>
+            <p className="text-2xl font-semibold">pon.-pt. 9:00-17:00</p>
           </div>
           <p className="max-w-xs text-sm leading-relaxed text-ash">
-            Najszybciej odpowiemy mailem — zwykle tego samego dnia. 🐾
+            Najszybciej odpowiemy mailem - zwykle tego samego dnia. 🐾
           </p>
         </div>
 

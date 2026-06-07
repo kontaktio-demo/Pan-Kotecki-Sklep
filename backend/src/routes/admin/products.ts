@@ -10,11 +10,11 @@ export const productsRouter = Router();
 const BUCKET = "product-images";
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
 const ALLOWED_EXT = new Set(["jpg", "jpeg", "png", "webp", "gif", "avif"]);
-const MAX_DIM = 1600; // px — większe zdjęcia zmniejszamy (szybsze ładowanie)
-const MAX_PIXELS = 40_000_000; // ~40 Mpx — twardy limit dekodowania (anty decompression-bomb)
+const MAX_DIM = 1600; // px - większe zdjęcia zmniejszamy (szybsze ładowanie)
+const MAX_PIXELS = 40_000_000; // ~40 Mpx - twardy limit dekodowania (anty decompression-bomb)
 
 // Wstępny filtr po nagłówkach (szybkie odrzucenie zanim zbuforujemy plik).
-// Prawdziwą walidacją jest i tak sharp — odrzuci wszystko, co nie jest obrazem.
+// Prawdziwą walidacją jest i tak sharp - odrzuci wszystko, co nie jest obrazem.
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 12 * 1024 * 1024, files: 1 },

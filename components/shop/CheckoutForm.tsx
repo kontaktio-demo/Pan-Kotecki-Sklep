@@ -16,8 +16,8 @@ const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 const STRIPE_PK = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
 const DELIVERY = [
-  { id: "paczkomat", label: "Paczkomat InPost 24/7", sub: "1–2 dni robocze", cost: 11.99, method: "inpost_locker" },
-  { id: "kurier", label: "Kurier InPost", sub: "1–2 dni robocze", cost: 14.99, method: "inpost_courier" },
+  { id: "paczkomat", label: "Paczkomat InPost 24/7", sub: "1-2 dni robocze", cost: 11.99, method: "inpost_locker" },
+  { id: "kurier", label: "Kurier InPost", sub: "1-2 dni robocze", cost: 14.99, method: "inpost_courier" },
 ] as const;
 
 const inputCls =
@@ -121,7 +121,7 @@ export default function CheckoutForm() {
       if (d?.valid) {
         setPromoDiscount((d.discountGrosze ?? 0) / 100);
         setPromoOk(true);
-        setPromoMsg(`Kod zastosowany — rabat ${formatPrice((d.discountGrosze ?? 0) / 100)} 🐾`);
+        setPromoMsg(`Kod zastosowany - rabat ${formatPrice((d.discountGrosze ?? 0) / 100)} 🐾`);
       } else {
         setPromoDiscount(0);
         setPromoOk(false);
@@ -178,7 +178,7 @@ export default function CheckoutForm() {
     };
 
     // Tryb demo TYLKO poza produkcją (lokalnie bez backendu). W produkcji brak API
-    // nie może udawać sukcesu — leci normalny fetch (i ewentualny błąd).
+    // nie może udawać sukcesu - leci normalny fetch (i ewentualny błąd).
     if (!API && process.env.NODE_ENV !== "production") {
       const nr = `KOT-${String(Date.now()).slice(-6)}`;
       try {
@@ -226,7 +226,7 @@ export default function CheckoutForm() {
         sessionStorage.setItem("kotecki-order", JSON.stringify({ nr: data.number, total: data.total ?? total }));
       } catch {}
       if (data.clientSecret) {
-        // Embedded Checkout — płatność na NASZEJ stronie (klient nie wychodzi).
+        // Embedded Checkout - płatność na NASZEJ stronie (klient nie wychodzi).
         try {
           sessionStorage.setItem("kotecki-pay", data.clientSecret);
           sessionStorage.setItem(
@@ -245,7 +245,7 @@ export default function CheckoutForm() {
         return;
       }
       if (data.checkoutUrl) {
-        // Płatność na stronie Stripe (gdy brak klucza publicznego — tryb hosted).
+        // Płatność na stronie Stripe (gdy brak klucza publicznego - tryb hosted).
         window.location.href = data.checkoutUrl;
         return;
       }
@@ -261,7 +261,7 @@ export default function CheckoutForm() {
     <form onSubmit={placeOrder} className="container-edge grid gap-10 pb-24 lg:grid-cols-[1.4fr_1fr]">
       {canceled && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 lg:col-span-2">
-          Płatność została anulowana. Twój koszyk jest nadal aktywny — możesz spróbować ponownie.
+          Płatność została anulowana. Twój koszyk jest nadal aktywny - możesz spróbować ponownie.
         </div>
       )}
       <div className="flex flex-col gap-9">
@@ -271,7 +271,7 @@ export default function CheckoutForm() {
             className="tap flex items-center justify-between gap-3 rounded-xl border border-line bg-cream/60 px-4 py-3 text-sm hover:border-ink/30"
           >
             <span className="text-ink-soft">
-              Masz konto? <span className="font-medium text-ink">Zaloguj się</span> — dane i adres podstawią się same.
+              Masz konto? <span className="font-medium text-ink">Zaloguj się</span> - dane i adres podstawią się same.
             </span>
             <span aria-hidden="true">→</span>
           </Link>
@@ -351,7 +351,7 @@ export default function CheckoutForm() {
                     }`}
                   >
                     {a.label || `${a.street} ${a.building}`}
-                    {a.is_default ? " · ★" : ""}
+                    {a.is_default ? " - ★" : ""}
                   </button>
                 ))}
               </div>
@@ -376,7 +376,7 @@ export default function CheckoutForm() {
         )}
 
         <div className="rounded-lg border border-line bg-cream/60 px-4 py-3 text-sm text-ink-soft">
-          Płatność: <span className="font-medium text-ink">karta, BLIK lub Przelewy24</span> — wybierzesz ją na
+          Płatność: <span className="font-medium text-ink">karta, BLIK lub Przelewy24</span> - wybierzesz ją na
           bezpiecznej stronie Stripe po kliknięciu „Zamawiam i płacę”.
         </div>
       </div>
@@ -466,10 +466,10 @@ export default function CheckoutForm() {
           disabled={loading || !accept}
           className="tap mt-4 w-full rounded-xl bg-coral px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-coral/20 hover:bg-coral-deep disabled:cursor-not-allowed disabled:opacity-60 disabled:shadow-none"
         >
-          {loading ? "Przekierowuję do płatności…" : "Zamawiam i płacę"}
+          {loading ? "Przekierowuję do płatności..." : "Zamawiam i płacę"}
         </button>
         <p className="mt-3 flex items-center justify-center gap-1 text-center text-xs text-mist">
-          <span aria-hidden="true">🔒</span> Bezpieczna płatność — karta, BLIK, Przelewy24
+          <span aria-hidden="true">🔒</span> Bezpieczna płatność - karta, BLIK, Przelewy24
         </p>
       </aside>
     </form>

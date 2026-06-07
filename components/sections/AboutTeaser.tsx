@@ -22,7 +22,7 @@ export default function AboutTeaser() {
             lines={[
               "Wybrane ręcznie, zatwierdzone łapą",
               "Testowane na własnych kotach",
-              "Sierść gratis — to nasz znak firmowy",
+              "Sierść gratis - to nasz znak firmowy",
             ]}
           />
         </div>
@@ -35,7 +35,7 @@ export default function AboutTeaser() {
             Sklep stworzony przez <span className="italic text-teal">kociarzy</span>
           </h2>
           <p className="mt-4 max-w-md leading-relaxed text-ink-soft">
-            Wybieramy rzeczy, które sami daliśmy swoim kotom — proste, ładne i
+            Wybieramy rzeczy, które sami daliśmy swoim kotom - proste, ładne i
             naprawdę używane. Bez przypadkowych gadżetów, które lądują w szufladzie.
           </p>
           <Link

@@ -19,22 +19,22 @@ process.on("unhandledRejection", (e) => console.error("[unhandledRejection]", e)
 
 const isProd = process.env.NODE_ENV === "production";
 
-// Ostrzeżenia konfiguracyjne — NIE crashujemy serwera (sklep na żywo musi działać),
+// Ostrzeżenia konfiguracyjne - NIE crashujemy serwera (sklep na żywo musi działać),
 // ale głośno logujemy braki, żeby misconfig był widoczny w logach Rendera.
 const adminKey = process.env.ADMIN_API_KEY ?? "";
 if (adminKey && adminKey.length < 32) {
-  console.warn("[boot] ⚠️ ADMIN_API_KEY jest krótki (<32 znaki) — ustaw długi, losowy klucz.");
+  console.warn("[boot] ⚠️ ADMIN_API_KEY jest krótki (<32 znaki) - ustaw długi, losowy klucz.");
 }
 if (isProd) {
-  if (!process.env.SITE_URL) console.warn("[boot] ⚠️ SITE_URL nie ustawiony — płatność Stripe niemożliwa (brak success_url).");
-  if (!process.env.STRIPE_WEBHOOK_SECRET) console.warn("[boot] ⚠️ STRIPE_WEBHOOK_SECRET nie ustawiony — opłacone zamówienia NIE oznaczą się jako 'paid'.");
-  if (!process.env.RESEND_API_KEY) console.warn("[boot] ⚠️ RESEND_API_KEY nie ustawiony — maile (potwierdzenia, newsletter) NIE będą wysyłane.");
-  if (!process.env.HCAPTCHA_SECRET) console.warn("[boot] ⚠️ HCAPTCHA_SECRET nie ustawiony — captcha formularzy jest WYŁĄCZONA (fail-open).");
+  if (!process.env.SITE_URL) console.warn("[boot] ⚠️ SITE_URL nie ustawiony - płatność Stripe niemożliwa (brak success_url).");
+  if (!process.env.STRIPE_WEBHOOK_SECRET) console.warn("[boot] ⚠️ STRIPE_WEBHOOK_SECRET nie ustawiony - opłacone zamówienia NIE oznaczą się jako 'paid'.");
+  if (!process.env.RESEND_API_KEY) console.warn("[boot] ⚠️ RESEND_API_KEY nie ustawiony - maile (potwierdzenia, newsletter) NIE będą wysyłane.");
+  if (!process.env.HCAPTCHA_SECRET) console.warn("[boot] ⚠️ HCAPTCHA_SECRET nie ustawiony - captcha formularzy jest WYŁĄCZONA (fail-open).");
 }
 
 const app = express();
 
-// Render działa za proxy — potrzebne do poprawnego IP w rate-limit.
+// Render działa za proxy - potrzebne do poprawnego IP w rate-limit.
 app.set("trust proxy", 1);
 app.disable("x-powered-by");
 
@@ -64,7 +64,7 @@ const envOrigins = (process.env.CLIENT_ORIGIN ?? "").split(",").map((s) => s.tri
 const allowAll = envOrigins.includes("*");
 const allowList = new Set([...CANON, ...envOrigins.filter((o) => o !== "*")]);
 if (isProd && allowAll) {
-  console.warn("[boot] ⚠️ CLIENT_ORIGIN zawiera '*' — CORS otwarty na wszystkich. Zostaw same konkretne adresy.");
+  console.warn("[boot] ⚠️ CLIENT_ORIGIN zawiera '*' - CORS otwarty na wszystkich. Zostaw same konkretne adresy.");
 }
 app.use(
   cors({
@@ -94,20 +94,20 @@ app.use("/api/admin", rateLimit({ windowMs: 60_000, max: 100, standardHeaders: t
 app.use("/api", catalogRouter);
 app.use("/api/checkout", checkoutRouter);
 
-// Konta klientów (chronione tokenem Supabase — weryfikacja w routerze)
+// Konta klientów (chronione tokenem Supabase - weryfikacja w routerze)
 app.use("/api/account", accountRouter);
 
-// Formularze publiczne (zapisywane do bazy — nic nie ginie)
+// Formularze publiczne (zapisywane do bazy - nic nie ginie)
 app.use("/api/contact", contactRouter);
 app.use("/api/newsletter", newsletterRouter);
 
 // Panel (chronione kluczem ADMIN_API_KEY)
 app.use("/api/admin", adminRouter);
 
-// 404 dla nieznanych tras /api — spójna, nieujawniająca odpowiedź JSON.
+// 404 dla nieznanych tras /api - spójna, nieujawniająca odpowiedź JSON.
 app.use("/api", (_req, res) => res.status(404).json({ error: "Nie znaleziono" }));
 
-// Globalny handler błędów — nigdy nie wycieka stack trace do klienta.
+// Globalny handler błędów - nigdy nie wycieka stack trace do klienta.
 const onError: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof multer.MulterError) {
     const msg = err.code === "LIMIT_FILE_SIZE" ? "Plik za duży (max 12 MB)" : "Błąd przesyłania pliku";

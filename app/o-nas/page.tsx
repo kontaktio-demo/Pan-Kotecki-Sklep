@@ -22,7 +22,7 @@ export default function ONasPage() {
       <PageHeader
         eyebrow="O nas"
         title="Sklep stworzony przez kociarzy"
-        description="Pan Kotecki powstał z prostego przekonania: rzeczy dla kota mogą być przemyślane, estetyczne i naprawdę służyć — kotu i Tobie."
+        description="Pan Kotecki powstał z prostego przekonania: rzeczy dla kota mogą być przemyślane, estetyczne i naprawdę służyć - kotu i Tobie."
       />
 
       <section className="container-edge grid items-center gap-10 pb-4 lg:grid-cols-2 lg:gap-16">
@@ -40,7 +40,7 @@ export default function ONasPage() {
           <p className="mt-4 leading-relaxed text-ink-soft">
             Mieliśmy dość wybierania spośród setek przypadkowych gadżetów, które
             lądowały w szufladzie po tygodniu. Postanowiliśmy zrobić sklep, w
-            którym każda rzecz przeszła test codzienności — drapania, gonienia,
+            którym każda rzecz przeszła test codzienności - drapania, gonienia,
             spania i porannej kawy obok mruczącego towarzysza.
           </p>
           <p className="mt-4 leading-relaxed text-ink-soft">
@@ -66,7 +66,7 @@ export default function ONasPage() {
         <div className="order-2 max-w-md lg:order-1">
           <h2 className="text-2xl font-semibold md:text-3xl">Dla kotów i ich ludzi</h2>
           <p className="mt-4 leading-relaxed text-ink-soft">
-            Wierzymy, że dobry przedmiot łączy dwie strony — wygodę kota i spokój
+            Wierzymy, że dobry przedmiot łączy dwie strony - wygodę kota i spokój
             właściciela. Tworzymy Pana Koteckiego tak, żeby zakupy były tu przyjemnością,
             a nie kolejnym przeglądaniem tysiąca podobnych rzeczy.
           </p>

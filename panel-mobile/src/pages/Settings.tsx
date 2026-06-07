@@ -27,7 +27,7 @@ export default function Settings() {
       .catch((e) => setErr(e.message));
   }, []);
 
-  // zapis CAŁEGO obiektu store (open + próg) — żeby nic się nie nadpisało
+  // zapis CAŁEGO obiektu store (open + próg) - żeby nic się nie nadpisało
   function storeValue(nextOpen: boolean) {
     return { free_shipping_grosze: toGrosze(freeZl), currency: "PLN", open: nextOpen };
   }
@@ -72,7 +72,7 @@ export default function Settings() {
           <div>
             <div className="text-base font-semibold">{open ? "Sklep otwarty 🟢" : "Tryb „Wkrótce” 🟡"}</div>
             <div className="text-sm text-ash">
-              {open ? "Klienci mogą kupować." : "Sklep ukryty — strona pokazuje „Wkrótce otwieramy”."}
+              {open ? "Klienci mogą kupować." : "Sklep ukryty - strona pokazuje „Wkrótce otwieramy”."}
             </div>
           </div>
           <button
@@ -85,7 +85,7 @@ export default function Settings() {
           </button>
         </div>
         <p className="mt-3 text-xs text-ash">
-          Produkty możesz dodawać przez cały czas — niezależnie od trybu. Zmiana działa na stronie w ~30 s.
+          Produkty możesz dodawać przez cały czas - niezależnie od trybu. Zmiana działa na stronie w ~30 s.
         </p>
       </div>
 
@@ -106,7 +106,7 @@ export default function Settings() {
       </div>
 
       <button className="btn-primary w-full" onClick={save} disabled={saving}>
-        {saving ? "Zapisuję…" : "Zapisz ustawienia"}
+        {saving ? "Zapisuję..." : "Zapisz ustawienia"}
       </button>
       {savedMsg && <p className="text-center text-sm text-emerald-600">{savedMsg}</p>}
     </div>

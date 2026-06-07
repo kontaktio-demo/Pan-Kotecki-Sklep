@@ -16,7 +16,7 @@ const schema = z.object({
 });
 
 // Zapisuje wiadomość do bazy (nic nie ginie). E-mail powiadamiający można
-// dołożyć później po podłączeniu dostawcy (Resend/Postmark) — tu nie wymagany.
+// dołożyć później po podłączeniu dostawcy (Resend/Postmark) - tu nie wymagany.
 contactRouter.post("/", async (req, res) => {
   const body = parseBody(schema, req.body, res);
   if (!body) return;

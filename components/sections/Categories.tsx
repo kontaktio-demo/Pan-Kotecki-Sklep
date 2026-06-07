@@ -17,7 +17,7 @@ export default async function Categories() {
             Kategorie
           </p>
           <h2 className="text-2xl font-semibold md:text-3xl">Czego dziś szuka Twój kot?</h2>
-          <p className="mt-1.5 text-sm text-ink-soft/80">Cztery działy, jeden szef — a szefem jest kot.</p>
+          <p className="mt-1.5 text-sm text-ink-soft/80">Cztery działy, jeden szef - a szefem jest kot.</p>
         </Reveal>
 
         <Reveal delay={70} className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">

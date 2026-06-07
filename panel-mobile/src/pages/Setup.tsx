@@ -25,7 +25,7 @@ export default function Setup({ onDone }: { onDone: (c: PanelConfig) => void }) 
     }
     const local = ["localhost", "127.0.0.1"].includes(parsed.hostname);
     if (parsed.protocol !== "https:" && !local) {
-      setMsg("Użyj adresu https:// — klucz nie może iść przez niezabezpieczone http.");
+      setMsg("Użyj adresu https:// - klucz nie może iść przez niezabezpieczone http.");
       return;
     }
     setTesting(true);
@@ -82,7 +82,7 @@ export default function Setup({ onDone }: { onDone: (c: PanelConfig) => void }) 
         {msg && <p className="mb-4 text-sm text-red-600">{msg}</p>}
 
         <button className="btn-primary w-full py-3.5" onClick={connect} disabled={testing}>
-          {testing ? "Łączę…" : "Połącz"}
+          {testing ? "Łączę..." : "Połącz"}
         </button>
       </div>
     </div>

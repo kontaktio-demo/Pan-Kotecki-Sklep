@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 
 export const metadata: Metadata = {
   title: "Sklep otwieramy wkrótce",
-  description: "Sklep Pan Kotecki szykuje się do startu — już niedługo ruszamy!",
+  description: "Sklep Pan Kotecki szykuje się do startu - już niedługo ruszamy!",
   robots: { index: false },
 };
 
@@ -25,7 +25,7 @@ export default function WkrotcePage() {
           Sklep otwieramy <span className="text-coral">wkrótce</span>
         </h1>
         <p className="mt-5 max-w-md text-lg text-ink-soft">
-          Dopinamy ostatnie kocie detale 🐈 Zaglądaj — niedługo ruszamy z pełnym sklepem dla Twojego kota (i Ciebie).
+          Dopinamy ostatnie kocie detale 🐈 Zaglądaj - niedługo ruszamy z pełnym sklepem dla Twojego kota (i Ciebie).
         </p>
 
         <div className="mt-9 flex flex-wrap justify-center gap-3">

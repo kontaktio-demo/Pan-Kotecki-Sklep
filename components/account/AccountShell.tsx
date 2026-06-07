@@ -29,7 +29,7 @@ export default function AccountShell({ children }: { children: React.ReactNode }
         </span>
         <h1 className="text-2xl font-semibold md:text-3xl">Zaloguj się do konta</h1>
         <p className="mt-3 max-w-md text-ink-soft">
-          Tutaj zobaczysz swoje zamówienia i zapisane adresy. Konto jest opcjonalne — kupować możesz też jako gość.
+          Tutaj zobaczysz swoje zamówienia i zapisane adresy. Konto jest opcjonalne - kupować możesz też jako gość.
         </p>
         <Link
           href="/logowanie"

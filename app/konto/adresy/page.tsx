@@ -91,7 +91,7 @@ export default function AdresyPage() {
         <form onSubmit={save} className="mt-6 rounded-2xl border border-line bg-white p-5 md:p-6">
           <p className="mb-4 font-semibold">{editing === "new" ? "Nowy adres" : "Edytuj adres"}</p>
           <div className="grid gap-3">
-            <input className={inputCls} placeholder="Nazwa (np. Dom, Praca) — opcjonalnie" value={form.label ?? ""} onChange={set("label")} />
+            <input className={inputCls} placeholder="Nazwa (np. Dom, Praca) - opcjonalnie" value={form.label ?? ""} onChange={set("label")} />
             <div className="grid gap-3 sm:grid-cols-2">
               <input required className={inputCls} placeholder="Imię" value={form.first_name} onChange={set("first_name")} />
               <input required className={inputCls} placeholder="Nazwisko" value={form.last_name} onChange={set("last_name")} />
@@ -113,7 +113,7 @@ export default function AdresyPage() {
           </div>
           <div className="mt-5 flex gap-2">
             <button type="submit" disabled={busy} className="tap rounded-xl bg-coral px-6 py-3 text-sm font-semibold text-white hover:bg-coral-deep disabled:opacity-60">
-              {busy ? "Zapisuję…" : "Zapisz adres"}
+              {busy ? "Zapisuję..." : "Zapisz adres"}
             </button>
             <button type="button" onClick={() => setEditing(null)} className="tap rounded-xl border border-line px-5 py-3 text-sm font-medium hover:border-ink">
               Anuluj

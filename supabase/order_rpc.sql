@@ -1,4 +1,4 @@
--- Pan Kotecki — atomowe składanie zamówienia.
+-- Pan Kotecki - atomowe składanie zamówienia.
 -- Jedna funkcja = jedna transakcja Postgres → brak oversell i wyścigów (TOCTOU).
 -- Ceny, rabat i dostawę liczy backend (z danych z bazy); tutaj egzekwujemy
 -- ATOMOWO stan magazynowy i limit użyć kodu rabatowego, a potem zapisujemy zamówienie.
@@ -8,14 +8,14 @@
 -- Kolumna na id przesyłki InPost (do generowania etykiet z panelu).
 alter table orders add column if not exists shipping_ref text;
 
--- Idempotencja webhooków Stripe — każde zdarzenie przetwarzamy dokładnie raz.
+-- Idempotencja webhooków Stripe - każde zdarzenie przetwarzamy dokładnie raz.
 create table if not exists stripe_events (
   id          text primary key,
   received_at timestamptz not null default now()
 );
 alter table stripe_events enable row level security;
 
--- Subskrypcje powiadomień push (telefony właścicieli — panel mobilny).
+-- Subskrypcje powiadomień push (telefony właścicieli - panel mobilny).
 create table if not exists push_subscriptions (
   id           uuid primary key default gen_random_uuid(),
   endpoint     text unique not null,
@@ -142,7 +142,7 @@ $$;
 revoke all on function release_order(uuid) from public, anon, authenticated;
 grant execute on function release_order(uuid) to service_role;
 
--- Niezmienniki kwot/ilości (poziom Allegro) — baza odrzuca ujemne/błędne wartości.
+-- Niezmienniki kwot/ilości (poziom Allegro) - baza odrzuca ujemne/błędne wartości.
 -- Idempotentne: ponowne uruchomienie pomija już istniejące ograniczenia.
 do $$ begin alter table products    add constraint products_price_nonneg   check (price_grosze >= 0); exception when duplicate_object then null; end $$;
 do $$ begin alter table products    add constraint products_sale_nonneg    check (sale_price_grosze is null or sale_price_grosze >= 0); exception when duplicate_object then null; end $$;

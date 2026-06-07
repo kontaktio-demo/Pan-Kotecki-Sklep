@@ -54,7 +54,7 @@ function verifyLocalHs256(token: string): { id: string; email: string } | null {
 }
 
 // Weryfikacja tokenu konta klienta: najpierw lokalnie (szybko), w razie potrzeby
-// autorytatywnie przez Supabase Auth. Zwraca usera albo null — bez wyjątku.
+// autorytatywnie przez Supabase Auth. Zwraca usera albo null - bez wyjątku.
 async function verify(token: string): Promise<{ id: string; email: string } | null> {
   const local = verifyLocalHs256(token);
   if (local) return local;
@@ -67,17 +67,17 @@ async function verify(token: string): Promise<{ id: string; email: string } | nu
   }
 }
 
-// Wymaga zalogowanego klienta — w przeciwnym razie 401.
+// Wymaga zalogowanego klienta - w przeciwnym razie 401.
 export async function requireCustomer(req: CustomerRequest, res: Response, next: NextFunction) {
   const token = bearer(req);
   if (!token) return res.status(401).json({ error: "Zaloguj się, aby kontynuować" });
   const user = await verify(token);
-  if (!user) return res.status(401).json({ error: "Sesja wygasła — zaloguj się ponownie" });
+  if (!user) return res.status(401).json({ error: "Sesja wygasła - zaloguj się ponownie" });
   req.customer = user;
   next();
 }
 
-// Opcjonalne logowanie — jeśli token jest i jest poprawny, doklej req.customer.
+// Opcjonalne logowanie - jeśli token jest i jest poprawny, doklej req.customer.
 // Jeśli go nie ma (gość), po prostu przepuść. Używane w checkoucie.
 export async function withCustomer(req: CustomerRequest, _res: Response, next: NextFunction) {
   const token = bearer(req);

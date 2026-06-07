@@ -40,7 +40,7 @@ export default function Footer() {
           <Logo className="text-milk" />
           <p className="mt-5 text-sm leading-relaxed text-milk/60">
             Sami jesteśmy kociarzami i wybieramy tylko to, co dajemy własnym
-            kotom. Wiemy, czego potrzebuje kot (i jego człowiek) — bez
+            kotom. Wiemy, czego potrzebuje kot (i jego człowiek) - bez
             przypadkowych gadżetów, za to z głową i sercem.
           </p>
           <p className="mt-5 inline-flex items-center gap-2 text-sm text-milk/85">
@@ -78,8 +78,8 @@ export default function Footer() {
       </div>
 
       <div className="container-edge relative flex flex-col gap-3 border-t border-white/10 py-6 text-xs text-milk/40 md:flex-row md:items-center md:justify-between">
-        <span>© {new Date().getFullYear()} Pan Kotecki · pankotecki.pl — Wszystkie prawa zastrzeżone.</span>
-        <span>Darmowa dostawa od 149 zł · Wysyłka 24h · 14 dni na zwrot</span>
+        <span>© {new Date().getFullYear()} Pan Kotecki - pankotecki.pl - Wszystkie prawa zastrzeżone.</span>
+        <span>Darmowa dostawa od 149 zł - Wysyłka 24h - 14 dni na zwrot</span>
       </div>
     </footer>
   );

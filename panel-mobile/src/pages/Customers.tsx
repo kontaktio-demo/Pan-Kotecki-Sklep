@@ -79,7 +79,7 @@ function KlienciList() {
               <div className="truncate font-medium">{c.name ?? c.email}</div>
               <div className="truncate text-xs text-ash">
                 {c.email}
-                {c.phone ? ` · ${c.phone}` : ""}
+                {c.phone ? ` - ${c.phone}` : ""}
               </div>
             </div>
             <Icon name="chevron" size={18} className="shrink-0 text-ash" />
@@ -92,7 +92,7 @@ function KlienciList() {
           <div className="space-y-3">
             <div className="text-sm text-ash">
               {open.email}
-              {open.phone ? ` · ${open.phone}` : ""}
+              {open.phone ? ` - ${open.phone}` : ""}
             </div>
             <div className="text-sm font-semibold">Zamówienia ({open.orders.length})</div>
             {open.orders.length === 0 ? (
@@ -103,7 +103,7 @@ function KlienciList() {
                   <div key={o.id} className="flex items-center justify-between px-4 py-3 text-sm">
                     <div>
                       <div className="font-medium">{o.number}</div>
-                      <div className="text-xs text-ash">{STATUS_LABELS[o.status] ?? o.status} · {dateShort(o.created_at)}</div>
+                      <div className="text-xs text-ash">{STATUS_LABELS[o.status] ?? o.status} - {dateShort(o.created_at)}</div>
                     </div>
                     <span className="tabular-nums">{zl(o.total_grosze)}</span>
                   </div>
@@ -128,7 +128,7 @@ function KontaList() {
   }, []);
 
   async function removeAccount(a: Account) {
-    if (!confirm(`Usunąć konto ${a.email}? (RODO — profil i adresy znikną, zamówienia zostaną odpięte)`)) return;
+    if (!confirm(`Usunąć konto ${a.email}? (RODO - profil i adresy znikną, zamówienia zostaną odpięte)`)) return;
     try {
       await api.del(`/api/admin/customers/accounts/${a.id}`);
       setItems((list) => list.filter((x) => x.id !== a.id));
@@ -150,7 +150,7 @@ function KontaList() {
       ) : (
         <>
           <div className="px-1 text-xs text-ash">
-            {items.length} {items.length === 1 ? "konto" : "kont"} · {consents} ze zgodą na newsletter
+            {items.length} {items.length === 1 ? "konto" : "kont"} - {consents} ze zgodą na newsletter
           </div>
           {items.map((a) => (
             <button key={a.id} className="listcard w-full" onClick={() => setOpen(a)}>
@@ -163,7 +163,7 @@ function KontaList() {
                   {a.marketingConsent && <span className="shrink-0 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">news</span>}
                 </div>
                 <div className="truncate text-xs text-ash">
-                  {a.email} · {a.orders} zam. · {zl(a.spentGrosze)}
+                  {a.email} - {a.orders} zam. - {zl(a.spentGrosze)}
                 </div>
               </div>
               <Icon name="chevron" size={18} className="shrink-0 text-ash" />

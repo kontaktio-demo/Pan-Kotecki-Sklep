@@ -99,7 +99,7 @@ export default function CartDrawer() {
                           aria-label="Usuń"
                           data-hover
                         >
-                          ×
+                          x
                         </button>
                       </div>
                       <div className="mt-auto flex items-center justify-between pt-3">

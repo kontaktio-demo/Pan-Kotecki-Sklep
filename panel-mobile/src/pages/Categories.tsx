@@ -44,7 +44,7 @@ export default function Categories() {
             <div key={c.id} className="listcard">
               <button className="min-w-0 flex-1 text-left" onClick={() => setEditing(c)}>
                 <div className="truncate font-semibold">{c.name}</div>
-                <div className="truncate text-xs text-ash">{c.tagline || "—"}</div>
+                <div className="truncate text-xs text-ash">{c.tagline || "-"}</div>
               </button>
               <button onClick={() => remove(c)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-red-500 active:bg-red-50">
                 <Icon name="trash" size={18} />
@@ -84,7 +84,7 @@ function Editor({ cat, onClose, onSaved }: { cat: Cat; onClose: () => void; onSa
     <Sheet
       title={c.id ? "Edytuj kategorię" : "Nowa kategoria"}
       onClose={onClose}
-      footer={<button className="btn-primary w-full" onClick={save} disabled={saving || !c.name.trim()}>{saving ? "Zapisuję…" : "Zapisz"}</button>}
+      footer={<button className="btn-primary w-full" onClick={save} disabled={saving || !c.name.trim()}>{saving ? "Zapisuję..." : "Zapisz"}</button>}
     >
       <div className="space-y-3">
         <div>
