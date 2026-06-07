@@ -3,10 +3,14 @@ import { Router } from "express";
 import { z } from "zod";
 import { supabase } from "../lib/supabase.js";
 import { parseBody, serverError } from "../lib/util.js";
-import { sendNewsletterConfirm, welcomeCodeHtml } from "../lib/email.js";
+import { sendNewsletterConfirm } from "../lib/email.js";
 import { verifyCaptcha } from "../lib/captcha.js";
+import { siteUrl } from "../lib/stripe.js";
 
 export const newsletterRouter = Router();
+
+const WELCOME_CODE = process.env.NEWSLETTER_WELCOME_CODE || "KOT10";
+const shopUrl = () => siteUrl() || "https://pankotecki.pl";
 
 const schema = z.object({
   email: z.string().email().max(160),
@@ -57,33 +61,29 @@ newsletterRouter.post("/", async (req, res) => {
   res.status(201).json({ ok: true });
 });
 
-// Potwierdzenie zapisu (klik z maila) → confirmed=true + strona z kodem.
+// Potwierdzenie zapisu (klik z maila) → confirmed=true, potem PRZEKIEROWANIE
+// na ładną podstronę sklepu (pełny branding, favicon, czcionki).
 newsletterRouter.get("/confirm", async (req, res) => {
   const token = String(req.query.token ?? "").slice(0, 80);
-  if (!token) return res.status(400).send("Brak tokenu");
-  const { data, error } = await supabase
-    .from("newsletter_subscribers")
-    .update({ confirmed: true, confirm_token: null })
-    .eq("confirm_token", token)
-    .select("email")
-    .maybeSingle();
-  if (error) return serverError(res, "newsletter.confirm", error);
-  res.set("Content-Type", "text/html; charset=utf-8");
-  if (!data) return res.status(404).send(welcomeCodeHtml()); // token zużyty/nieznany — i tak pokaż przyjaznie
-  res.send(welcomeCodeHtml());
+  let ok = false;
+  if (token) {
+    const { data } = await supabase
+      .from("newsletter_subscribers")
+      .update({ confirmed: true, confirm_token: null })
+      .eq("confirm_token", token)
+      .select("email")
+      .maybeSingle();
+    ok = !!data;
+  }
+  const url = ok
+    ? `${shopUrl()}/newsletter/potwierdzono?kod=${encodeURIComponent(WELCOME_CODE)}`
+    : `${shopUrl()}/newsletter/potwierdzono`;
+  res.redirect(302, url);
 });
 
-// Wypisanie (link ze stopki newslettera).
+// Wypisanie (link ze stopki newslettera) → przekierowanie na podstronę sklepu.
 newsletterRouter.get("/unsubscribe", async (req, res) => {
   const token = String(req.query.token ?? "").slice(0, 80);
-  res.set("Content-Type", "text/html; charset=utf-8");
   if (token) await supabase.from("newsletter_subscribers").delete().eq("unsub_token", token);
-  res.send(
-    `<div style="font-family:Arial,sans-serif;max-width:480px;margin:60px auto;text-align:center;color:#1d1810">
-       <div style="font-size:22px;font-weight:700">Pan Kotecki<span style="color:#ef7a30">.</span> 🐾</div>
-       <h1 style="font-size:22px">Wypisano z newslettera</h1>
-       <p style="color:#3c352b">Nie będziemy już wysyłać Ci wiadomości. Zawsze możesz wrócić.</p>
-       <a href="https://pankotecki.pl" style="color:#ee5340;font-weight:700;text-decoration:none">Wróć do sklepu →</a>
-     </div>`,
-  );
+  res.redirect(302, `${shopUrl()}/newsletter/wypisano`);
 });
