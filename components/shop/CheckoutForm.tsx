@@ -229,6 +229,17 @@ export default function CheckoutForm() {
         // Embedded Checkout — płatność na NASZEJ stronie (klient nie wychodzi).
         try {
           sessionStorage.setItem("kotecki-pay", data.clientSecret);
+          sessionStorage.setItem(
+            "kotecki-pay-summary",
+            JSON.stringify({
+              items: items.map((i) => ({ slug: i.slug, name: i.name, price: i.price, qty: i.qty, image: i.image, motif: i.motif })),
+              subtotal,
+              shipping: deliveryCost,
+              discount,
+              total: data.total ?? total,
+              delivery: selected.label,
+            }),
+          );
         } catch {}
         router.push("/kasa/platnosc");
         return;
