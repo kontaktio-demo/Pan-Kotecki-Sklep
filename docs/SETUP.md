@@ -157,13 +157,52 @@ Redeploy backend.
 
 ---
 
+## Etap 7 — Panel na telefon (iOS, PWA) + powiadomienia o zakupach
+
+Mobilny panel to osobna apka webowa (folder `panel-mobile/`) — wygląda i działa
+jak natywna appka (własna ikona, pełny ekran), a przy **każdym opłaconym
+zamówieniu** dzwoni powiadomienie na telefon.
+
+### 7A. Klucze powiadomień (VAPID) na Render
+Wygeneruj parę kluczy (raz):
+```
+cd backend && npx web-push generate-vapid-keys
+```
+Dodaj na **Render → backend → Environment**:
+- `VAPID_PUBLIC_KEY` = (publiczny)
+- `VAPID_PRIVATE_KEY` = (prywatny)
+- `VAPID_SUBJECT` = `mailto:twoj@email.pl`
+
+Upewnij się, że uruchomiłeś `supabase/order_rpc.sql` (zawiera tabelę
+`push_subscriptions`). Render się przeładuje.
+
+### 7B. Postaw mobilny panel na Vercel (za darmo)
+- Vercel → **Add New → Project** → ten sam repo `Pan-Kotecki-Sklep`.
+- **Root Directory:** `panel-mobile`  · **Framework:** Vite (wykryje sam).
+- Deploy. Dostaniesz adres, np. `https://panel-pan-kotecki.vercel.app`.
+
+### 7C. Zainstaluj na iPhone (obie osoby)
+1. Otwórz adres panelu w **Safari**.
+2. **Udostępnij** (kwadrat ze strzałką) → **Do ekranu głównego** → Dodaj.
+3. Otwórz apkę **z ikony na ekranie** (ważne — nie z Safari).
+4. Wpisz raz **adres API** (Render) + **ADMIN_API_KEY** → Połącz.
+5. Zakładka **Powiadomienia** (dzwonek u góry) → **Włącz powiadomienia** → zezwól.
+6. Sprawdź: **Wyślij testowe 🔔** — powinno przyjść powiadomienie.
+
+Od teraz każde opłacone zamówienie = dzwonek na obu telefonach.
+
+---
+
 ## Skrót: wszystkie zmienne środowiskowe
 
 **Render (backend):** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_API_KEY`,
 `CLIENT_ORIGIN`, `SITE_URL`, `NODE_ENV=production`, `STRIPE_SECRET_KEY`,
-`STRIPE_WEBHOOK_SECRET`, `INPOST_TOKEN`, `INPOST_ORG_ID`.
+`STRIPE_WEBHOOK_SECRET`, `INPOST_TOKEN`, `INPOST_ORG_ID`, `VAPID_PUBLIC_KEY`,
+`VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`.
 
 **Vercel (sklep):** `NEXT_PUBLIC_API_URL` (wymagane), `NEXT_PUBLIC_SUPABASE_URL`
 (zalecane — zawęża hosty zdjęć), `NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN` (opcjonalne).
 
-**Panel (.exe):** adres API + `ADMIN_API_KEY` (wpisujesz raz w aplikacji).
+**Vercel (panel mobilny):** osobny projekt, Root Directory = `panel-mobile`. Bez zmiennych.
+
+**Panel (.exe / mobilny):** adres API + `ADMIN_API_KEY` (wpisujesz raz w aplikacji).
