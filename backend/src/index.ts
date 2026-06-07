@@ -19,12 +19,10 @@ process.on("unhandledRejection", (e) => console.error("[unhandledRejection]", e)
 
 const isProd = process.env.NODE_ENV === "production";
 
-// Bezpieczeństwo konfiguracji na starcie (fail-fast na produkcji):
+// Ostrzeżenie konfiguracyjne — NIE crashujemy serwera (sklep na żywo musi działać).
 const adminKey = process.env.ADMIN_API_KEY ?? "";
-if (isProd && adminKey.length < 32) {
-  throw new Error("[boot] ADMIN_API_KEY musi mieć min. 32 znaki na produkcji — ustaw mocny, losowy klucz.");
-} else if (adminKey && adminKey.length < 32) {
-  console.warn("[boot] ADMIN_API_KEY jest krótki (<32 znaki) — użyj długiego, losowego klucza.");
+if (adminKey && adminKey.length < 32) {
+  console.warn("[boot] ⚠️ ADMIN_API_KEY jest krótki (<32 znaki) — ustaw długi, losowy klucz.");
 }
 
 const app = express();
@@ -45,18 +43,25 @@ app.use(
   }),
 );
 
-// CORS: przy jawnej liście CLIENT_ORIGIN dopuszczamy te originy + żądania bez origin
-// (server-to-server, panel Electron z file://). Na produkcji NIE wolno zostać z "*".
-const allow = (process.env.CLIENT_ORIGIN ?? "*").split(",").map((s) => s.trim()).filter(Boolean);
-if (isProd && allow.includes("*")) {
-  throw new Error("[boot] CLIENT_ORIGIN nie może być '*' na produkcji — ustaw dokładne adresy sklepu i paneli.");
+// CORS: własne domeny marki są ZAWSZE dopuszczone (sklep na żywo nie może paść
+// przez literówkę/brak CLIENT_ORIGIN). Dodatkowo to, co w CLIENT_ORIGIN
+// (panele / preview Vercel), żądania bez Origin (server-to-server) oraz Origin
+// "null" (panel desktop Electron z file://). "*" = wszystko (tylko awaryjnie/dev).
+const CANON = [
+  "https://pankotecki.pl",
+  "https://www.pankotecki.pl",
+  "https://pankotecki.com",
+  "https://www.pankotecki.com",
+];
+const envOrigins = (process.env.CLIENT_ORIGIN ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+const allowAll = envOrigins.includes("*");
+const allowList = new Set([...CANON, ...envOrigins.filter((o) => o !== "*")]);
+if (isProd && allowAll) {
+  console.warn("[boot] ⚠️ CLIENT_ORIGIN zawiera '*' — CORS otwarty na wszystkich. Zostaw same konkretne adresy.");
 }
 app.use(
   cors({
-    origin: allow.includes("*")
-      ? true
-      // brak Origin = klient nie-przeglądarkowy (dozwolone). "null" tylko poza produkcją (panel file://).
-      : (origin, cb) => cb(null, !origin || (origin === "null" && !isProd) || allow.includes(origin)),
+    origin: allowAll ? true : (origin, cb) => cb(null, !origin || origin === "null" || allowList.has(origin)),
   }),
 );
 app.use(compression());

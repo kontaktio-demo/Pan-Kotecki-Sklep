@@ -16,7 +16,6 @@ const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 const DELIVERY = [
   { id: "paczkomat", label: "Paczkomat InPost 24/7", sub: "1–2 dni robocze", cost: 11.99, method: "inpost_locker" },
   { id: "kurier", label: "Kurier InPost", sub: "1–2 dni robocze", cost: 14.99, method: "inpost_courier" },
-  { id: "odbior", label: "Odbiór osobisty", sub: "Bedoń-Wieś, ul. Brzezińska 84", cost: 0, method: "pickup" },
 ] as const;
 
 const inputCls =
@@ -144,7 +143,7 @@ export default function CheckoutForm() {
   }
 
   const selected = DELIVERY.find((d) => d.id === delivery)!;
-  const freeShipping = subtotal >= freeFrom && selected.method !== "pickup";
+  const freeShipping = subtotal >= freeFrom;
   const deliveryCost = freeShipping ? 0 : selected.cost;
   const discount = promoOk ? Math.min(promoDiscount, subtotal) : 0;
   const total = Math.max(0, subtotal + deliveryCost - discount);
@@ -271,7 +270,7 @@ export default function CheckoutForm() {
           <legend className="mb-3 text-lg font-semibold">Sposób dostawy</legend>
           <div className="flex flex-col gap-2">
             {DELIVERY.map((d) => {
-              const cost = subtotal >= freeFrom && d.method !== "pickup" ? 0 : d.cost;
+              const cost = subtotal >= freeFrom ? 0 : d.cost;
               return (
                 <label
                   key={d.id}
