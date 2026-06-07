@@ -89,19 +89,29 @@ export default function RegulaminPage() {
         <Section title="§6. Prawo odstąpienia od umowy">
           <p>
             Konsument może odstąpić od umowy bez podania przyczyny w terminie <strong>14 dni</strong> od otrzymania
-            produktu, składając oświadczenie (np. e-mailem na {SELLER.email}). Zwracany produkt należy odesłać w stanie
-            niezmienionym. Sprzedawca zwraca wszystkie otrzymane płatności w terminie 14 dni.
+            produktu, składając oświadczenie (np. e-mailem na {SELLER.email} lub przy użyciu wzoru formularza
+            dostępnego na stronie „Zwroty i reklamacje"). Sprzedawca zwraca wszystkie otrzymane płatności w terminie
+            14 dni, tą samą metodą płatności.
           </p>
           <p>
-            Prawo odstąpienia nie przysługuje m.in. dla produktów wykonanych na indywidualne zamówienie oraz w innych
-            przypadkach wskazanych w art. 38 ustawy o prawach konsumenta.
+            Bezpośredni koszt odesłania produktu ponosi Konsument. Konsument odpowiada za zmniejszenie wartości rzeczy
+            będące wynikiem korzystania z niej w sposób wykraczający poza konieczny do stwierdzenia charakteru, cech i
+            funkcjonowania rzeczy. Prawo odstąpienia nie przysługuje m.in. dla produktów wykonanych na indywidualne
+            zamówienie oraz dla towarów w zapieczętowanym opakowaniu, których po otwarciu nie można zwrócić ze względów
+            higienicznych — oraz w innych przypadkach wskazanych w art. 38 ustawy o prawach konsumenta.
           </p>
         </Section>
 
-        <Section title="§7. Reklamacje (rękojmia)">
+        <Section title="§7. Reklamacje — brak zgodności towaru z umową">
           <p>
-            Sprzedawca odpowiada za zgodność produktu z umową. Reklamację można złożyć e-mailem na {SELLER.email},
-            opisując wadę. Reklamacja rozpatrywana jest w terminie 14 dni.
+            Sprzedawca odpowiada wobec Konsumenta za brak zgodności towaru z umową na zasadach określonych w rozdziale
+            5a ustawy o prawach konsumenta. Odpowiedzialność obejmuje brak zgodności istniejący w chwili dostarczenia
+            towaru i ujawniony w ciągu <strong>2 lat</strong> od tego momentu.
+          </p>
+          <p>
+            Reklamację można złożyć e-mailem na {SELLER.email}, opisując problem i dołączając zdjęcia. W pierwszej
+            kolejności Konsument może żądać naprawy lub wymiany; gdy jest to niemożliwe lub wiązałoby się z nadmiernymi
+            kosztami — obniżenia ceny albo odstąpienia od umowy. Reklamację rozpatrujemy w terminie <strong>14 dni</strong>.
           </p>
         </Section>
 
@@ -112,18 +122,28 @@ export default function RegulaminPage() {
           </p>
         </Section>
 
-        <Section title="§9. Postanowienia końcowe">
+        <Section title="§9. Konto i usługi świadczone drogą elektroniczną">
+          <p>
+            Sprzedawca świadczy drogą elektroniczną usługi: prowadzenie Konta, obsługę koszyka i składania zamówień
+            oraz — za zgodą — newsletter. Założenie Konta jest bezpłatne i dobrowolne; logowanie odbywa się bez hasła
+            (jednorazowy link wysyłany na e-mail). Umowa o prowadzenie Konta zawierana jest na czas nieoznaczony i może
+            zostać rozwiązana przez Klienta w każdej chwili poprzez usunięcie Konta („Moje konto → Dane konta → Usuń
+            konto").
+          </p>
+          <p>
+            Do korzystania ze sklepu wystarczy urządzenie z aktualną przeglądarką, dostępem do internetu i aktywnym
+            kontem e-mail. Zakazane jest dostarczanie treści o charakterze bezprawnym. Reklamacje dotyczące usług
+            świadczonych drogą elektroniczną można składać na {SELLER.email} — rozpatrujemy je w terminie 14 dni.
+          </p>
+        </Section>
+
+        <Section title="§10. Postanowienia końcowe">
           <p>
             W sprawach nieuregulowanych stosuje się przepisy prawa polskiego, w szczególności Kodeksu cywilnego oraz
             ustawy o prawach konsumenta. Konsument może skorzystać z pozasądowych sposobów rozpatrywania reklamacji,
             w tym platformy ODR: ec.europa.eu/consumers/odr.
           </p>
         </Section>
-
-        <p className="mt-10 rounded-xl bg-cream px-4 py-3 text-xs text-ash">
-          🐾 To szablon startowy. Uzupełnij dane firmy w nawiasach i — jeśli sprzedajesz na większą skalę — zleć
-          weryfikację prawnikowi.
-        </p>
       </div>
     </>
   );

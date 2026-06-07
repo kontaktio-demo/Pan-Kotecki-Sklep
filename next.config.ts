@@ -26,6 +26,24 @@ const nextConfig: NextConfig = {
     // długi cache zoptymalizowanych obrazów
     minimumCacheTTL: 60 * 60 * 24 * 30,
   },
+  // Nagłówki bezpieczeństwa dla całej strony. CSP celowo minimalne (tylko
+  // base-uri + frame-ancestors), żeby nie wywrócić inline-skryptów Next/Turbopack;
+  // pełną CSP można dodać po testach.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Strict-Transport-Security", value: "max-age=15552000; includeSubDomains" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
+          { key: "Content-Security-Policy", value: "base-uri 'self'; frame-ancestors 'none'" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

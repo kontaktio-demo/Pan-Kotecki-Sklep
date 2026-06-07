@@ -65,13 +65,15 @@ customersRouter.get("/accounts", async (_req, res) => {
   }
 });
 
-// RODO — usunięcie konta klienta na żądanie (z panelu). Zamówienia zostają, odpięte.
+// RODO — usunięcie konta klienta na żądanie (z panelu). Atomowo (RPC): profil +
+// adresy + kopia PII w `customers` znikają; zamówienia zostają, odpięte od konta.
 customersRouter.delete("/accounts/:userId", async (req, res) => {
   if (badId(res, req.params.userId)) return;
   const userId = req.params.userId;
-  await supabase.from("account_addresses").delete().eq("user_id", userId);
-  await supabase.from("account_profiles").delete().eq("user_id", userId);
-  await supabase.from("orders").update({ user_id: null }).eq("user_id", userId);
+  const { data: u } = await supabase.auth.admin.getUserById(userId);
+  const email = u?.user?.email ?? "";
+  const { error: rpcErr } = await supabase.rpc("delete_customer_account", { p_user: userId, p_email: email });
+  if (rpcErr) return serverError(res, "accounts.delete.rpc", rpcErr);
   const { error } = await supabase.auth.admin.deleteUser(userId);
   if (error) return serverError(res, "accounts.delete", error);
   res.json({ ok: true });

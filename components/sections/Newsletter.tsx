@@ -1,12 +1,45 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Reveal from "@/components/ui/Reveal";
 import Paw from "@/components/ui/Paw";
 
+const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+
 export default function Newsletter() {
   const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setErr("");
+    if (!consent) {
+      setErr("Zaznacz zgodę, aby zapisać się do newslettera.");
+      return;
+    }
+    setBusy(true);
+    try {
+      if (API) {
+        const res = await fetch(`${API}/api/newsletter`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, consent: true, source: "home" }),
+        });
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error((d as { error?: string })?.error ?? "Nie udało się zapisać.");
+        }
+      }
+      setSent(true);
+    } catch (e) {
+      setErr((e as Error).message);
+    }
+    setBusy(false);
+  }
 
   return (
     <section className="container-edge pt-16 md:pt-24">
@@ -27,29 +60,41 @@ export default function Newsletter() {
           </p>
 
           {sent ? (
-            <p className="mx-auto mt-8 text-lg font-semibold">Dzięki! Sprawdź skrzynkę 🐾</p>
+            <p className="mx-auto mt-8 max-w-md text-lg font-semibold">
+              Dziękujemy za zapis! 🐾 Wkrótce wyślemy Ci kod –10% na pierwsze zakupy.
+            </p>
           ) : (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (email.includes("@")) setSent(true);
-              }}
-              className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row"
-            >
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Twój e-mail"
-                className="flex-1 rounded-xl border border-ink/10 bg-white px-5 py-3.5 text-sm outline-none transition-shadow focus:ring-2 focus:ring-ink/20"
-              />
-              <button
-                type="submit"
-                className="tap rounded-xl bg-ink px-7 py-3.5 text-sm font-semibold text-milk transition-colors hover:bg-night"
-              >
-                Zapisz się
-              </button>
+            <form onSubmit={submit} className="mx-auto mt-8 max-w-md">
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Twój e-mail"
+                  className="flex-1 rounded-xl border border-ink/10 bg-white px-5 py-3.5 text-sm outline-none transition-shadow focus:ring-2 focus:ring-ink/20"
+                />
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="tap rounded-xl bg-ink px-7 py-3.5 text-sm font-semibold text-milk transition-colors hover:bg-night disabled:opacity-60"
+                >
+                  {busy ? "Zapisuję…" : "Zapisz się"}
+                </button>
+              </div>
+              <label className="mt-3 flex cursor-pointer items-start gap-2 text-left text-xs text-ink/70">
+                <input
+                  type="checkbox"
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-ink"
+                />
+                <span>
+                  Zgadzam się na otrzymywanie newslettera (możesz zrezygnować w każdej chwili). Szczegóły w{" "}
+                  <Link href="/polityka-prywatnosci" className="underline">polityce prywatności</Link>.
+                </span>
+              </label>
+              {err && <p className="mt-2 text-left text-xs font-medium text-ink">{err}</p>}
             </form>
           )}
         </Reveal>

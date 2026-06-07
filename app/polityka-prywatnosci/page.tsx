@@ -63,28 +63,39 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="4. Odbiorcy danych">
+        <Section title="4. Odbiorcy danych i transfery poza EOG">
           <p>
             Dane przekazujemy wyłącznie podmiotom niezbędnym do realizacji usługi: operatorowi płatności (Stripe),
             firmie kurierskiej (InPost) oraz dostawcy hostingu, bazy danych i uwierzytelniania kont (Supabase). Podmioty
             te przetwarzają dane na nasze zlecenie. Nie sprzedajemy Twoich danych.
           </p>
+          <p>
+            Część dostawców (m.in. Stripe, Supabase) może przetwarzać dane również na serwerach poza Europejskim
+            Obszarem Gospodarczym. W takim przypadku transfer odbywa się na podstawie standardowych klauzul umownych
+            (SCC) zatwierdzonych przez Komisję Europejską lub decyzji o adekwatności, zapewniających odpowiedni poziom
+            ochrony danych.
+          </p>
         </Section>
 
         <Section title="5. Okres przechowywania">
           <p>
-            Dane przechowujemy przez czas realizacji zamówienia oraz okres wymagany przepisami (m.in. podatkowymi) i
-            przedawnienia roszczeń. Dane konta przechowujemy do czasu jego usunięcia przez Ciebie, a zgodę marketingową
-            — do czasu jej wycofania.
+            Dane zamówień i dokumenty rozliczeniowe przechowujemy przez okres wymagany przepisami podatkowymi
+            (co do zasady 5 lat licząc od końca roku, w którym wystawiono dokument). Dane przydatne do dochodzenia lub
+            obrony roszczeń przechowujemy do czasu ich przedawnienia. Dane konta przechowujemy do czasu jego usunięcia
+            przez Ciebie, a dane przetwarzane na podstawie zgody (np. newsletter) — do czasu jej wycofania.
           </p>
         </Section>
 
         <Section title="6. Twoje prawa">
           <p>
             Masz prawo dostępu do danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia oraz
-            wniesienia sprzeciwu. Zgodę marketingową możesz wycofać w każdej chwili (w panelu „Moje konto" lub pisząc do
-            nas) — bez wpływu na zgodność z prawem przetwarzania sprzed wycofania. Możesz też złożyć skargę do Prezesa
-            Urzędu Ochrony Danych Osobowych (UODO).
+            wniesienia sprzeciwu. Zgodę (np. marketingową) możesz wycofać w każdej chwili (w panelu „Moje konto" lub
+            pisząc do nas) — bez wpływu na zgodność z prawem przetwarzania sprzed wycofania. Możesz też złożyć skargę do
+            Prezesa Urzędu Ochrony Danych Osobowych (UODO).
+          </p>
+          <p>
+            Nie podejmujemy wobec Ciebie decyzji opierających się wyłącznie na zautomatyzowanym przetwarzaniu, w tym
+            profilowaniu, które wywoływałyby skutki prawne lub w podobny sposób istotnie na Ciebie wpływały.
           </p>
         </Section>
 
@@ -95,10 +106,6 @@ export default function PrivacyPage() {
             zarządzać cookies w ustawieniach przeglądarki.
           </p>
         </Section>
-
-        <p className="mt-10 rounded-xl bg-cream px-4 py-3 text-xs text-ash">
-          🐾 To szablon startowy. Uzupełnij dane administratora i dostosuj do faktycznego zakresu przetwarzania.
-        </p>
       </div>
     </>
   );

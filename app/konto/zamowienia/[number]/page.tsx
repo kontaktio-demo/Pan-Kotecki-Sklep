@@ -8,6 +8,7 @@ import { CenterSpinner, StatusBadge, formatDate, ErrorNote } from "@/components/
 import { getOrder, type AccountOrderDetail } from "@/lib/account";
 import { formatPrice } from "@/lib/format";
 import { useCart } from "@/store/cart";
+import { getProductBySlug } from "@/lib/products";
 import ProductMedia from "@/components/shop/ProductMedia";
 
 const SHIPPING_LABEL: Record<string, string> = {
@@ -25,6 +26,7 @@ export default function OrderDetailPage() {
 
   const [order, setOrder] = useState<AccountOrderDetail | null>(null);
   const [err, setErr] = useState("");
+  const [reordering, setReordering] = useState(false);
 
   useEffect(() => {
     if (loading || !user) return;
@@ -43,11 +45,19 @@ export default function OrderDetailPage() {
   }
   if (!order) return <CenterSpinner />;
 
-  function reorder() {
-    if (!order) return;
+  async function reorder() {
+    if (!order || reordering) return;
+    setReordering(true);
+    // Pobierz AKTUALNE ceny i dostępność (nie historyczne) — pomiń niedostępne.
     for (const it of order.items) {
       if (!it.slug) continue;
-      add({ slug: it.slug, name: it.name, price: it.price, motif: "", tone: "", image: it.image ?? undefined }, it.qty);
+      const prod = await getProductBySlug(it.slug).catch(() => undefined);
+      if (prod && prod.inStock) {
+        add(
+          { slug: prod.slug, name: prod.name, price: prod.price, motif: prod.visual?.motif ?? "", tone: prod.visual?.tone ?? "", image: prod.images?.[0] },
+          it.qty,
+        );
+      }
     }
     router.push("/koszyk");
   }
@@ -62,8 +72,8 @@ export default function OrderDetailPage() {
           <h1 className="text-2xl font-semibold md:text-3xl">{order.number}</h1>
           <StatusBadge status={order.status} />
         </div>
-        <button onClick={reorder} className="tap rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-milk hover:bg-coral">
-          Zamów ponownie
+        <button onClick={reorder} disabled={reordering} className="tap rounded-xl bg-ink px-5 py-2.5 text-sm font-semibold text-milk hover:bg-coral disabled:opacity-60">
+          {reordering ? "Dodaję…" : "Zamów ponownie"}
         </button>
       </div>
       <p className="mt-1 text-sm text-ash">Złożone {formatDate(order.createdAt)}</p>

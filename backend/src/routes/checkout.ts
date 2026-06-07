@@ -114,8 +114,9 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
   const total = subtotal - discount + shipping;
   if (total < 0) return res.status(400).json({ error: "Błąd wyceny zamówienia" });
 
-  // 4) Klient (znajdź lub utwórz)
-  const email = body.email.toLowerCase();
+  // 4) Klient (znajdź lub utwórz). Dla zalogowanych wiążemy zamówienie z
+  //    ZWERYFIKOWANYM e-mailem konta (a nie dowolnym z body) — bez spoofingu.
+  const email = (req.customer?.email || body.email).toLowerCase();
   let customerId: string | null = null;
   const { data: existing } = await supabase.from("customers").select("id").eq("email", email).maybeSingle();
   if (existing) customerId = existing.id;

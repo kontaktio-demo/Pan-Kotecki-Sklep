@@ -92,13 +92,10 @@ export default function ZwrotyPage() {
             <a href="https://ec.europa.eu/consumers/odr" className="text-orange-deep underline" target="_blank" rel="noreferrer">
               ec.europa.eu/consumers/odr
             </a>
-            .
+            . Dotyczy to także osoby fizycznej prowadzącej działalność gospodarczą, gdy zakup nie ma dla niej
+            charakteru zawodowego (przedsiębiorca na prawach konsumenta).
           </p>
         </Section>
-
-        <p className="mt-10 rounded-xl bg-cream px-4 py-3 text-xs text-ash">
-          🐾 Terminy zgodne z ustawą o prawach konsumenta (14 dni to ustawowe minimum). Uzupełnij dane firmy w nawiasach.
-        </p>
       </div>
     </>
   );

@@ -73,6 +73,16 @@ export async function stripeWebhook(req: Request, res: Response) {
     if (error) throw error;
   };
 
+  // Zwrot / chargeback OPŁACONEGO zamówienia → 'refunded' + przywrócenie stanu i promocji.
+  // Dopasowanie po payment_ref = payment_intent (ustawiane w markPaid).
+  const refundByPaymentIntent = async (pi: string | null) => {
+    if (!pi) return;
+    const { data: ord } = await supabase.from("orders").select("id").eq("payment_ref", pi).maybeSingle();
+    if (!ord) return;
+    const { error } = await supabase.rpc("refund_order", { p_order: ord.id });
+    if (error) throw error;
+  };
+
   try {
     switch (event.type) {
       case "checkout.session.completed": {
@@ -87,6 +97,18 @@ export async function stripeWebhook(req: Request, res: Response) {
       case "checkout.session.expired":
         await release(event.data.object as Stripe.Checkout.Session);
         break;
+      case "charge.refunded": {
+        const ch = event.data.object as Stripe.Charge;
+        const pi = typeof ch.payment_intent === "string" ? ch.payment_intent : ch.payment_intent?.id ?? null;
+        await refundByPaymentIntent(pi);
+        break;
+      }
+      case "charge.dispute.created": {
+        const dp = event.data.object as Stripe.Dispute;
+        const pi = typeof dp.payment_intent === "string" ? dp.payment_intent : null;
+        await refundByPaymentIntent(pi);
+        break;
+      }
     }
   } catch (err) {
     // Cofnij znacznik idempotencji → Stripe ponowi dostarczenie (backoff).

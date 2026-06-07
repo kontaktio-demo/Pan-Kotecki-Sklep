@@ -45,21 +45,24 @@ accountRouter.put("/me", async (req: CustomerRequest, res) => {
   const patch: Record<string, unknown> = { user_id: id };
   if (body.full_name !== undefined) patch.full_name = body.full_name.trim() || null;
   if (body.phone !== undefined) patch.phone = body.phone.trim() || null;
-  if (body.marketing_consent !== undefined) patch.marketing_consent = body.marketing_consent;
+  if (body.marketing_consent !== undefined) {
+    patch.marketing_consent = body.marketing_consent;
+    patch.marketing_consent_at = new Date().toISOString(); // dowód zgody/wycofania (RODO)
+  }
 
   const { error } = await supabase.from("account_profiles").upsert(patch, { onConflict: "user_id" });
   if (error) return serverError(res, "account.me.put", error);
   res.json({ ok: true, email });
 });
 
-// RODO — trwałe usunięcie konta. Zamówienia zostają (księgowość), ale odpinamy je od konta.
+// RODO — trwałe usunięcie konta. Atomowo (RPC): profil + adresy + kopia PII w
+// `customers` znikają, zamówienia zostają (księgowość), ale odpięte od konta.
 accountRouter.delete("/me", async (req: CustomerRequest, res) => {
-  const { id } = req.customer!;
-  await supabase.from("account_addresses").delete().eq("user_id", id);
-  await supabase.from("account_profiles").delete().eq("user_id", id);
-  await supabase.from("orders").update({ user_id: null }).eq("user_id", id);
+  const { id, email } = req.customer!;
+  const { error: rpcErr } = await supabase.rpc("delete_customer_account", { p_user: id, p_email: email });
+  if (rpcErr) return serverError(res, "account.delete.rpc", rpcErr);
   const { error } = await supabase.auth.admin.deleteUser(id);
-  if (error) return serverError(res, "account.delete", error);
+  if (error) return serverError(res, "account.delete.auth", error);
   res.json({ ok: true });
 });
 
@@ -105,8 +108,17 @@ function mapOrder(o: OrderRow) {
 // złożone na ten sam (zweryfikowany logowaniem) e-mail.
 accountRouter.get("/orders", async (req: CustomerRequest, res) => {
   const { id, email } = req.customer!;
+  // Przejmij zamówienia gościa złożone na ten (zweryfikowany) e-mail — ale TYLKO
+  // gdy faktycznie są nieprzypisane, żeby nie pisać do bazy przy każdym wejściu.
   if (email) {
-    await supabase.from("orders").update({ user_id: id }).is("user_id", null).eq("email", email);
+    const { count } = await supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .is("user_id", null)
+      .eq("email", email);
+    if (count && count > 0) {
+      await supabase.from("orders").update({ user_id: id }).is("user_id", null).eq("email", email);
+    }
   }
   const { data, error } = await supabase
     .from("orders")
