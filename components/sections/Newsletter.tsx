@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 import Reveal from "@/components/ui/Reveal";
 import Paw from "@/components/ui/Paw";
 
 const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+const HCAPTCHA_SITEKEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
@@ -13,6 +15,8 @@ export default function Newsletter() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -21,13 +25,17 @@ export default function Newsletter() {
       setErr("Zaznacz zgodę, aby zapisać się do newslettera.");
       return;
     }
+    if (HCAPTCHA_SITEKEY && !captchaToken) {
+      setErr("Potwierdź, że nie jesteś robotem 🐾");
+      return;
+    }
     setBusy(true);
     try {
       if (API) {
         const res = await fetch(`${API}/api/newsletter`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, consent: true, source: "home" }),
+          body: JSON.stringify({ email, consent: true, source: "home", captchaToken }),
         });
         if (!res.ok) {
           const d = await res.json().catch(() => ({}));
@@ -38,6 +46,8 @@ export default function Newsletter() {
     } catch (e) {
       setErr((e as Error).message);
     }
+    captchaRef.current?.resetCaptcha();
+    setCaptchaToken(null);
     setBusy(false);
   }
 
@@ -94,6 +104,11 @@ export default function Newsletter() {
                   <Link href="/polityka-prywatnosci" className="underline">polityce prywatności</Link>.
                 </span>
               </label>
+              {HCAPTCHA_SITEKEY && (
+                <div className="mt-3 flex justify-center">
+                  <HCaptcha ref={captchaRef} sitekey={HCAPTCHA_SITEKEY} onVerify={(t) => setCaptchaToken(t)} onExpire={() => setCaptchaToken(null)} />
+                </div>
+              )}
               {err && <p className="mt-2 text-left text-xs font-medium text-ink">{err}</p>}
             </form>
           )}

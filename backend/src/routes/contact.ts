@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabase } from "../lib/supabase.js";
 import { parseBody, serverError } from "../lib/util.js";
 import { notifyOwnerContact } from "../lib/email.js";
+import { verifyCaptcha } from "../lib/captcha.js";
 
 export const contactRouter = Router();
 
@@ -11,6 +12,7 @@ const schema = z.object({
   email: z.string().email().max(160),
   subject: z.string().max(160).optional(),
   message: z.string().min(1).max(5000),
+  captchaToken: z.string().max(5000).optional(),
 });
 
 // Zapisuje wiadomość do bazy (nic nie ginie). E-mail powiadamiający można
@@ -18,6 +20,9 @@ const schema = z.object({
 contactRouter.post("/", async (req, res) => {
   const body = parseBody(schema, req.body, res);
   if (!body) return;
+  if (!(await verifyCaptcha(body.captchaToken))) {
+    return res.status(400).json({ error: "Potwierdź, że nie jesteś robotem." });
+  }
   const ua = String(req.headers["user-agent"] ?? "").slice(0, 300);
   const { error } = await supabase.from("contact_messages").insert({
     name: body.name?.trim() || null,

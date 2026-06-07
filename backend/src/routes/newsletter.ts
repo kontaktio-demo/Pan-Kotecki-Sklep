@@ -4,6 +4,7 @@ import { z } from "zod";
 import { supabase } from "../lib/supabase.js";
 import { parseBody, serverError } from "../lib/util.js";
 import { sendNewsletterConfirm, welcomeCodeHtml } from "../lib/email.js";
+import { verifyCaptcha } from "../lib/captcha.js";
 
 export const newsletterRouter = Router();
 
@@ -11,6 +12,7 @@ const schema = z.object({
   email: z.string().email().max(160),
   consent: z.boolean().optional(),
   source: z.string().max(40).optional(),
+  captchaToken: z.string().max(5000).optional(),
 });
 
 function baseUrl(req: { protocol: string; get: (h: string) => string | undefined }): string {
@@ -23,6 +25,9 @@ newsletterRouter.post("/", async (req, res) => {
   if (!body) return;
   if (body.consent === false) {
     return res.status(400).json({ error: "Do zapisu wymagana jest zgoda na newsletter." });
+  }
+  if (!(await verifyCaptcha(body.captchaToken))) {
+    return res.status(400).json({ error: "Potwierdź, że nie jesteś robotem." });
   }
   const email = body.email.trim().toLowerCase();
   const confirmToken = randomBytes(24).toString("hex");

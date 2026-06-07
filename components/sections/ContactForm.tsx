@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 
 const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+const HCAPTCHA_SITEKEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
 const inputCls =
   "rounded-xl border border-ink/15 bg-milk px-5 py-4 text-sm outline-none transition-colors focus:border-ink";
 
@@ -15,6 +17,8 @@ export default function ContactForm() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   if (sent) {
     return (
@@ -27,6 +31,10 @@ export default function ContactForm() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (HCAPTCHA_SITEKEY && !captchaToken) {
+      setErr("Potwierdź, że nie jesteś robotem 🐾");
+      return;
+    }
     setErr("");
     setBusy(true);
     try {
@@ -34,7 +42,7 @@ export default function ContactForm() {
         const res = await fetch(`${API}/api/contact`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, subject, message }),
+          body: JSON.stringify({ name, email, subject, message, captchaToken }),
         });
         if (!res.ok) {
           const d = await res.json().catch(() => ({}));
@@ -45,6 +53,8 @@ export default function ContactForm() {
     } catch (e) {
       setErr((e as Error).message);
     }
+    captchaRef.current?.resetCaptcha();
+    setCaptchaToken(null);
     setBusy(false);
   }
 
@@ -63,6 +73,9 @@ export default function ContactForm() {
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />
+      {HCAPTCHA_SITEKEY && (
+        <HCaptcha ref={captchaRef} sitekey={HCAPTCHA_SITEKEY} onVerify={(t) => setCaptchaToken(t)} onExpire={() => setCaptchaToken(null)} />
+      )}
       {err && <p className="text-sm text-red-600">{err}</p>}
       <button
         type="submit"
