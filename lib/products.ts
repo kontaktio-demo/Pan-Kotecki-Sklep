@@ -18,10 +18,10 @@ export type ProductVisual = {
 export type Product = {
   slug: string;
   name: string;
-  category: CategorySlug;
+  category: string;
   price: number;
-  currency: "PLN";
-  visual: ProductVisual;
+  currency: "PLN" | string;
+  visual?: ProductVisual;
   images?: string[];
   shortDescription: string;
   description: string;
@@ -330,45 +330,92 @@ const PRODUCTS: Product[] = [
   },
 ];
 
-const delay = () => Promise.resolve();
+// Gdy ustawione NEXT_PUBLIC_API_URL — sklep czyta z backendu (baza).
+// W przeciwnym razie korzysta z danych lokalnych (powyżej) jako fallback.
+const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+
+type ApiProduct = {
+  slug: string;
+  name: string;
+  category: string | null;
+  categoryName?: string | null;
+  price: number;
+  salePrice: number | null;
+  currency: string;
+  shortDescription: string;
+  description: string;
+  details: string[];
+  badges: string[];
+  bestseller: boolean;
+  inStock: boolean;
+  images: string[];
+};
+
+function fromApi(p: ApiProduct): Product {
+  return {
+    slug: p.slug,
+    name: p.name,
+    category: p.category ?? "",
+    price: p.salePrice ?? p.price,
+    currency: p.currency ?? "PLN",
+    images: p.images ?? [],
+    shortDescription: p.shortDescription ?? "",
+    description: p.description ?? "",
+    details: p.details ?? [],
+    badges: p.badges ?? [],
+    bestseller: !!p.bestseller,
+    inStock: p.inStock ?? true,
+  };
+}
+
+async function apiGet<T>(path: string): Promise<T | null> {
+  if (!API) return null;
+  try {
+    const res = await fetch(`${API}${path}`, { next: { revalidate: 60 } });
+    if (!res.ok) return null;
+    return (await res.json()) as T;
+  } catch {
+    return null;
+  }
+}
 
 export async function getCategories(): Promise<Category[]> {
-  await delay();
-  return CATEGORIES;
+  const data = await apiGet<Category[]>("/api/categories");
+  return data && data.length ? data : CATEGORIES;
 }
 
 export async function getCategory(slug: string): Promise<Category | undefined> {
-  await delay();
-  return CATEGORIES.find((c) => c.slug === slug);
+  return (await getCategories()).find((c) => c.slug === slug);
 }
 
 export async function getProducts(): Promise<Product[]> {
-  await delay();
-  return PRODUCTS;
+  const data = await apiGet<ApiProduct[]>("/api/products");
+  return data ? data.map(fromApi) : PRODUCTS;
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {
-  await delay();
+  if (API) {
+    const data = await apiGet<ApiProduct>(`/api/products/${encodeURIComponent(slug)}`);
+    if (data) return fromApi(data);
+  }
   return PRODUCTS.find((p) => p.slug === slug);
 }
 
 export async function getProductsByCategory(category: string): Promise<Product[]> {
-  await delay();
-  return PRODUCTS.filter((p) => p.category === category);
+  const data = await apiGet<ApiProduct[]>(`/api/products?kategoria=${encodeURIComponent(category)}`);
+  return data ? data.map(fromApi) : PRODUCTS.filter((p) => p.category === category);
 }
 
 export async function getBestsellers(limit = 6): Promise<Product[]> {
-  await delay();
-  return PRODUCTS.filter((p) => p.bestseller).slice(0, limit);
+  const all = await getProducts();
+  return all.filter((p) => p.bestseller).slice(0, limit);
 }
 
 export async function getRelated(slug: string, limit = 3): Promise<Product[]> {
-  await delay();
-  const current = PRODUCTS.find((p) => p.slug === slug);
-  if (!current) return PRODUCTS.slice(0, limit);
-  return PRODUCTS.filter(
-    (p) => p.category === current.category && p.slug !== slug,
-  ).slice(0, limit);
+  const all = await getProducts();
+  const current = all.find((p) => p.slug === slug);
+  if (!current) return all.slice(0, limit);
+  return all.filter((p) => p.category === current.category && p.slug !== slug).slice(0, limit);
 }
 
 export function categoryName(slug: string): string {

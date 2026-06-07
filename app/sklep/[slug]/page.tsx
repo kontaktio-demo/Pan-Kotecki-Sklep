@@ -63,8 +63,8 @@ export default async function ProductPage({
     slug: product.slug,
     name: product.name,
     price: product.price,
-    motif: product.visual.motif,
-    tone: product.visual.tone,
+    motif: product.visual?.motif ?? "",
+    tone: product.visual?.tone ?? "",
     image: product.images?.[0],
   };
 
