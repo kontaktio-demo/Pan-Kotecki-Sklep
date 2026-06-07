@@ -1,31 +1,27 @@
-import jwt from "jsonwebtoken";
+import { timingSafeEqual } from "node:crypto";
 import type { Request, Response, NextFunction } from "express";
 
-if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET nie jest ustawiony — wymagany do logowania panelu.");
-}
-const SECRET: string = process.env.JWT_SECRET;
-
-export type AdminPayload = { id: string; email: string };
-
 export interface AdminRequest extends Request {
-  admin?: AdminPayload;
+  admin?: { id: string; email: string };
 }
 
-export function signToken(payload: AdminPayload): string {
-  return jwt.sign(payload, SECRET, { expiresIn: "7d" });
+function safeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return timingSafeEqual(ab, bb);
 }
 
+// Panel desktopowy uwierzytelnia się stałym kluczem (nagłówek x-admin-key).
+// Brak ekranu logowania — klucz wpisuje się w aplikacji raz.
 export function requireAdmin(req: AdminRequest, res: Response, next: NextFunction) {
-  const header = req.headers.authorization;
-  if (!header || !header.startsWith("Bearer ")) {
+  const key = process.env.ADMIN_API_KEY;
+  if (!key) return res.status(503).json({ error: "Panel nieskonfigurowany (brak ADMIN_API_KEY)" });
+
+  const provided = req.headers["x-admin-key"];
+  if (typeof provided !== "string" || !safeEqual(provided, key)) {
     return res.status(401).json({ error: "Brak autoryzacji" });
   }
-  try {
-    const decoded = jwt.verify(header.slice(7), SECRET) as AdminPayload;
-    req.admin = { id: decoded.id, email: decoded.email };
-    next();
-  } catch {
-    res.status(401).json({ error: "Sesja wygasła — zaloguj się ponownie" });
-  }
+  req.admin = { id: "panel", email: "panel" };
+  next();
 }

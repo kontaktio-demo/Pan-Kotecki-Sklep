@@ -44,8 +44,7 @@ GitHub i repo już mamy: `kontaktio-demo/Pan-Kotecki-Sklep`.
 - **Environment** → dodaj zmienne (Add Environment Variable):
   - `SUPABASE_URL` = (Project URL z 1A)
   - `SUPABASE_SERVICE_ROLE_KEY` = (service_role z 1A)
-  - `JWT_SECRET` = dowolny długi losowy ciąg (`openssl rand -hex 32`) — **wymagany**, bez niego API się nie uruchomi
-  - `ADMIN_BOOTSTRAP_KEY` = drugi losowy ciąg — potrzebny jednorazowo do założenia konta admina
+  - `ADMIN_API_KEY` = długi losowy ciąg (`openssl rand -hex 32`) — **klucz panelu**; ten sam wpiszesz w aplikacji desktopowej
   - `CLIENT_ORIGIN` = `https://pankotecki.pl,http://localhost:3000` (na razie może być samo `*`)
   - **NIE** dodawaj `PORT` — Render ustawia sam.
 - Create Web Service. Po zbudowaniu dostaniesz adres typu `https://pan-kotecki-backend.onrender.com`.
@@ -74,20 +73,16 @@ Sklep (Next.js) domyślnie używa danych lokalnych. Żeby czytał z bazy przez A
 > Gdy `NEXT_PUBLIC_API_URL` nie jest ustawione albo API nie odpowiada — sklep
 > automatycznie pokazuje dane lokalne (nigdy nie jest pusty).
 
-## Etap 3 — Konto admina (do panelu)
+## Etap 3 — Panel (aplikacja desktopowa, .exe)
 
-Po postawieniu backendu utwórz pierwszego admina (jednorazowo). Najłatwiej z terminala:
+Panel to **osobna aplikacja na pulpicie** (zwykły `.exe` z ikoną) — nie ma jej
+w repozytorium. Bez logowania: przy pierwszym uruchomieniu wpisujesz raz:
+- **Adres API** = `https://…onrender.com`
+- **Klucz panelu** = ten sam `ADMIN_API_KEY`, który ustawiłeś w Render
 
-```bash
-curl -X POST https://…onrender.com/api/admin/bootstrap \
-  -H "Content-Type: application/json" \
-  -d '{"email":"ty@pankotecki.pl","password":"twoje-haslo","key":"ADMIN_BOOTSTRAP_KEY-z-Render"}'
-```
-
-Dostaniesz token — ale logować będziesz się przez aplikację desktopową (panel),
-którą właśnie buduję.
+Potem aplikacja otwiera się prosto do pulpitu sprzedaży. Plik `.exe` możesz
+przekazać znajomemu — on u siebie wpisze ten sam adres i klucz.
 
 ## Następne etapy (buduję)
-4. Aplikacja desktopowa (Electron) = panel: produkty/zdjęcia/kategorie/promocje/zamówienia/klienci/sprzedaż.
 5. Płatności (Stripe: BLIK/Przelewy24/karta) + webhook + statusy zamówień.
 6. Dostawa (InPost: paczkomaty + kurier, etykiety).

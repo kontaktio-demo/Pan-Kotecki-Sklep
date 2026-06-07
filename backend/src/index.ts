@@ -3,7 +3,6 @@ import express from "express";
 import cors from "cors";
 import { catalogRouter } from "./routes/catalog.js";
 import { checkoutRouter } from "./routes/checkout.js";
-import { authRouter } from "./routes/auth.js";
 import { adminRouter } from "./routes/admin/index.js";
 
 const app = express();
@@ -18,8 +17,7 @@ app.get("/health", (_req, res) => res.json({ ok: true, service: "pan-kotecki-bac
 app.use("/api", catalogRouter);
 app.use("/api/checkout", checkoutRouter);
 
-// Panel: logowanie publiczne, reszta za tokenem
-app.use("/api/admin", authRouter);
+// Panel (chronione kluczem ADMIN_API_KEY)
 app.use("/api/admin", adminRouter);
 
 const port = Number(process.env.PORT ?? 10000);
