@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import HCaptcha from "@hcaptcha/react-hcaptcha";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "./AuthProvider";
 import Paw from "@/components/ui/Paw";
+
+// Gdy ustawisz NEXT_PUBLIC_HCAPTCHA_SITE_KEY — pokazujemy hCaptcha i wymagamy tokenu.
+// Bez tej zmiennej logowanie działa jak dotąd (bez captcha).
+const HCAPTCHA_SITEKEY = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
 
 export default function LoginForm() {
   const router = useRouter();
@@ -14,6 +19,8 @@ export default function LoginForm() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   // Zalogowany? Od razu do panelu.
   useEffect(() => {
@@ -23,6 +30,10 @@ export default function LoginForm() {
   async function send(e: React.FormEvent) {
     e.preventDefault();
     if (!supabase) return;
+    if (HCAPTCHA_SITEKEY && !captchaToken) {
+      setErr("Potwierdź, że nie jesteś robotem 🐾");
+      return;
+    }
     setErr("");
     setBusy(true);
     const { error } = await supabase.auth.signInWithOtp({
@@ -30,8 +41,12 @@ export default function LoginForm() {
       options: {
         emailRedirectTo: `${window.location.origin}/konto`,
         shouldCreateUser: true,
+        ...(captchaToken ? { captchaToken } : {}),
       },
     });
+    // token hCaptcha jest jednorazowy — resetujemy po każdej próbie
+    captchaRef.current?.resetCaptcha();
+    setCaptchaToken(null);
     setBusy(false);
     if (error) setErr("Nie udało się wysłać linku. Sprawdź adres e-mail i spróbuj ponownie.");
     else setSent(true);
@@ -82,6 +97,16 @@ export default function LoginForm() {
               placeholder="kot@example.com"
               className="w-full rounded-xl border border-line bg-milk px-4 py-3.5 text-sm outline-none transition-colors focus:border-ink"
             />
+            {HCAPTCHA_SITEKEY && (
+              <div className="mt-3">
+                <HCaptcha
+                  ref={captchaRef}
+                  sitekey={HCAPTCHA_SITEKEY}
+                  onVerify={(t) => setCaptchaToken(t)}
+                  onExpire={() => setCaptchaToken(null)}
+                />
+              </div>
+            )}
             {err && <p className="mt-2 text-sm text-red-600">{err}</p>}
             <button
               type="submit"
