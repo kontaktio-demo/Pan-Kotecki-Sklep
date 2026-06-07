@@ -25,6 +25,9 @@ async function isShopOpen(): Promise<boolean> {
 }
 
 export async function middleware(req: NextRequest) {
+  // Strona potwierdzenia zamówienia musi działać zawsze — opłacony klient nie
+  // może wpaść w „Wkrótce", nawet gdy sklep jest zamknięty.
+  if (req.nextUrl.pathname.startsWith("/kasa/dziekujemy")) return NextResponse.next();
   if (await isShopOpen()) return NextResponse.next();
   const url = req.nextUrl.clone();
   url.pathname = "/wkrotce";

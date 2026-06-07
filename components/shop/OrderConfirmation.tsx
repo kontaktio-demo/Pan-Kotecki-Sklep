@@ -31,8 +31,8 @@ export default function OrderConfirmation() {
     } catch {}
     if (nr) setOrder({ nr, total });
 
-    // Brak API (tryb demo) lub brak numeru → traktujemy jak złożone.
-    if (!API || !nr) {
+    // Brak numeru → nie ma czego weryfikować. Brak API tylko poza produkcją (demo).
+    if ((!API && process.env.NODE_ENV !== "production") || !nr) {
       setPhase("paid");
       clear();
       return;

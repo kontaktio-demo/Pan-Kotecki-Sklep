@@ -42,10 +42,14 @@ export async function stripeWebhook(req: Request, res: Response) {
       console.warn(`[stripe.webhook] zamówienie ${orderId} nie istnieje — pomijam`);
       return; // brak zamówienia: ponawianie nic nie da
     }
-    // Obrona w głąb: kwota sesji musi zgadzać się z zamówieniem (sesję tworzymy serwerowo).
+    // Obrona w głąb: kwota i waluta sesji muszą zgadzać się z zamówieniem.
     if (s.amount_total != null && s.amount_total !== ord.total_grosze) {
       console.error(`[stripe.webhook] niezgodna kwota: sesja ${s.amount_total} ≠ zamówienie ${ord.total_grosze}`);
       return; // nie oznaczamy jako opłacone przy rozjeździe kwot
+    }
+    if (s.currency && s.currency.toLowerCase() !== "pln") {
+      console.error(`[stripe.webhook] niezgodna waluta: ${s.currency}`);
+      return;
     }
     const alreadyPaid = ord.payment_status === "paid";
     const ref = typeof s.payment_intent === "string" ? s.payment_intent : s.id;

@@ -174,8 +174,9 @@ export default function CheckoutForm() {
       ...(promoOk && promoCode.trim() ? { promo_code: promoCode.trim().toUpperCase() } : {}),
     };
 
-    // Tryb demo (lokalnie bez backendu) — zachowanie poglądowe.
-    if (!API) {
+    // Tryb demo TYLKO poza produkcją (lokalnie bez backendu). W produkcji brak API
+    // nie może udawać sukcesu — leci normalny fetch (i ewentualny błąd).
+    if (!API && process.env.NODE_ENV !== "production") {
       const nr = `KOT-${String(Date.now()).slice(-6)}`;
       try {
         sessionStorage.setItem("kotecki-order", JSON.stringify({ nr, total }));

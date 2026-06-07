@@ -19,10 +19,17 @@ process.on("unhandledRejection", (e) => console.error("[unhandledRejection]", e)
 
 const isProd = process.env.NODE_ENV === "production";
 
-// Ostrzeżenie konfiguracyjne — NIE crashujemy serwera (sklep na żywo musi działać).
+// Ostrzeżenia konfiguracyjne — NIE crashujemy serwera (sklep na żywo musi działać),
+// ale głośno logujemy braki, żeby misconfig był widoczny w logach Rendera.
 const adminKey = process.env.ADMIN_API_KEY ?? "";
 if (adminKey && adminKey.length < 32) {
   console.warn("[boot] ⚠️ ADMIN_API_KEY jest krótki (<32 znaki) — ustaw długi, losowy klucz.");
+}
+if (isProd) {
+  if (!process.env.SITE_URL) console.warn("[boot] ⚠️ SITE_URL nie ustawiony — płatność Stripe niemożliwa (brak success_url).");
+  if (!process.env.STRIPE_WEBHOOK_SECRET) console.warn("[boot] ⚠️ STRIPE_WEBHOOK_SECRET nie ustawiony — opłacone zamówienia NIE oznaczą się jako 'paid'.");
+  if (!process.env.RESEND_API_KEY) console.warn("[boot] ⚠️ RESEND_API_KEY nie ustawiony — maile (potwierdzenia, newsletter) NIE będą wysyłane.");
+  if (!process.env.HCAPTCHA_SECRET) console.warn("[boot] ⚠️ HCAPTCHA_SECRET nie ustawiony — captcha formularzy jest WYŁĄCZONA (fail-open).");
 }
 
 const app = express();

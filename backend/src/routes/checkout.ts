@@ -23,7 +23,7 @@ const schema = z
   .object({
     items: z.array(z.object({ slug: z.string().min(1).max(100), qty: z.number().int().min(1).max(99) })).min(1).max(50),
     email: z.string().email(),
-    phone: z.string().max(40).optional(),
+    phone: z.string().min(5).max(40), // wymagany — InPost potrzebuje telefonu odbiorcy
     name: z.string().max(120).optional(),
     shipping_method: z.enum(["inpost_locker", "inpost_courier", "pickup"]).default("inpost_locker"),
     shipping_address: z.record(z.string(), z.unknown()).optional(),
@@ -106,6 +106,10 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
 
   // 3) Dostawa (darmowa od progu — liczona od wartości produktów, przed rabatem)
   const { data: storeSetting } = await supabase.from("settings").select("value").eq("key", "store").maybeSingle();
+  // Egzekwuj „sklep zamknięty" także po stronie API (nie tylko w middleware).
+  if ((storeSetting?.value as { open?: boolean })?.open === false) {
+    return res.status(503).json({ error: "Sklep jest chwilowo zamknięty — zajrzyj wkrótce." });
+  }
   const rawThreshold = Number((storeSetting?.value as { free_shipping_grosze?: number })?.free_shipping_grosze);
   const freeThreshold = Number.isFinite(rawThreshold) && rawThreshold >= 0 ? rawThreshold : 14900;
   const method = body.shipping_method ?? "inpost_locker";
@@ -181,9 +185,14 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
       const session = await stripe.checkout.sessions.create({
         mode: "payment",
         payment_method_types: ["card", "blik", "p24"],
+        locale: "pl", // polski interfejs płatności
+        submit_type: "pay", // przycisk „Zapłać"
         customer_email: email,
         client_reference_id: order.order_id,
         metadata: { order_id: order.order_id, number: order.number },
+        custom_text: {
+          submit: { message: "Pakujemy z miłością i pod czujnym okiem kota 🐾" },
+        },
         line_items: [
           {
             quantity: 1,
@@ -209,6 +218,11 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
       await supabase.rpc("release_order", { p_order: order.order_id });
       return res.status(502).json({ error: "Płatność chwilowo niedostępna. Spróbuj ponownie za chwilę." });
     }
+  } else {
+    // total > 0, a płatność (Stripe/SITE_URL) niedostępna → NIE wysyłamy na „dziękujemy"
+    // bez zapłaty: zwalniamy stan i zgłaszamy błąd (zamiast oddać produkty za darmo).
+    await supabase.rpc("release_order", { p_order: order.order_id });
+    return res.status(503).json({ error: "Płatność chwilowo niedostępna. Spróbuj ponownie później." });
   }
 
   res.status(201).json({

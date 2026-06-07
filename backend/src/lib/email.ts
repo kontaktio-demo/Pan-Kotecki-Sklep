@@ -85,6 +85,10 @@ export function newsletterHtml(contentHtml: string, unsubUrl: string): string {
 
 const p = (t: string) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:#3c352b">${t}</p>`;
 
+// Escapowanie danych od użytkownika przed wstawieniem do HTML maila (anty-injection).
+const esc = (s: string | null | undefined) =>
+  String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
 const SHIPPING_LABEL: Record<string, string> = {
   inpost_locker: "Paczkomat InPost",
   inpost_courier: "Kurier InPost",
@@ -104,7 +108,7 @@ export async function sendOrderConfirmation(orderId: string): Promise<void> {
   const rows = (items ?? [])
     .map(
       (i) =>
-        `<tr><td style="padding:6px 0;font-size:14px;color:#1d1810">${i.qty}× ${i.name}</td>
+        `<tr><td style="padding:6px 0;font-size:14px;color:#1d1810">${i.qty}× ${esc(i.name)}</td>
          <td align="right" style="padding:6px 0;font-size:14px;color:#1d1810">${zloty(i.price_grosze * i.qty)}</td></tr>`,
     )
     .join("");
@@ -119,7 +123,7 @@ export async function sendOrderConfirmation(orderId: string): Promise<void> {
     p(
       `<strong>Numer zamówienia:</strong> ${o.number}<br><strong>Dostawa:</strong> ${
         SHIPPING_LABEL[o.shipping_method ?? ""] ?? o.shipping_method ?? "—"
-      }${o.parcel_locker ? ` (${o.parcel_locker})` : ""}`,
+      }${o.parcel_locker ? ` (${esc(o.parcel_locker)})` : ""}`,
     ) +
     p(`<a href="https://pankotecki.pl/konto/zamowienia" style="color:#ee5340;font-weight:700;text-decoration:none">Zobacz w „Moim koncie" →</a>`);
 
@@ -147,8 +151,8 @@ export function welcomeCodeHtml(): string {
 // ── Powiadomienie właściciela o wiadomości z kontaktu ────────
 export async function notifyOwnerContact(msg: { name?: string | null; email: string; subject?: string | null; message: string }): Promise<void> {
   const inner =
-    p(`<strong>Od:</strong> ${msg.name ? `${msg.name} · ` : ""}${msg.email}`) +
-    (msg.subject ? p(`<strong>Temat:</strong> ${msg.subject}`) : "") +
-    p(msg.message.replace(/</g, "&lt;").replace(/\n/g, "<br>"));
+    p(`<strong>Od:</strong> ${msg.name ? `${esc(msg.name)} · ` : ""}${esc(msg.email)}`) +
+    (msg.subject ? p(`<strong>Temat:</strong> ${esc(msg.subject)}`) : "") +
+    p(esc(msg.message).replace(/\n/g, "<br>"));
   await sendEmail({ to: OWNER, replyTo: msg.email, subject: `Nowa wiadomość ze sklepu${msg.subject ? `: ${msg.subject}` : ""}`, html: shell("Wiadomość z formularza kontaktu", inner) });
 }
