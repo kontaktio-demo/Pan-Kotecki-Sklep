@@ -8,6 +8,8 @@ import { formatPrice, FREE_SHIPPING_FROM } from "@/lib/format";
 import ProductMedia from "./ProductMedia";
 import LockerPicker from "./LockerPicker";
 import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/components/account/AuthProvider";
+import { getAccessToken, getProfile, getAddresses, addAddress, type AccountAddress } from "@/lib/account";
 
 const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 
@@ -46,6 +48,45 @@ export default function CheckoutForm() {
   const [promoOk, setPromoOk] = useState(false);
   const [promoMsg, setPromoMsg] = useState("");
   const [accept, setAccept] = useState(false);
+
+  // Konto (opcjonalne): prefill danych i zapisanych adresów dla zalogowanych.
+  const { user, configured } = useAuth();
+  const [addresses, setAddresses] = useState<AccountAddress[]>([]);
+  const [activeAddr, setActiveAddr] = useState<string | null>(null);
+  const [saveAddr, setSaveAddr] = useState(false);
+
+  function applyAddress(a: AccountAddress) {
+    setFirstName(a.first_name);
+    setLastName(a.last_name);
+    setStreet(a.street);
+    setBuilding(a.building);
+    setPostal(a.postal_code);
+    setCity(a.city);
+    if (a.phone) setPhone(a.phone);
+    setActiveAddr(a.id);
+  }
+
+  useEffect(() => {
+    if (!user) return;
+    getProfile()
+      .then((p) => {
+        setEmail((e) => e || p.email || "");
+        if (p.full_name) {
+          const parts = p.full_name.split(" ");
+          setFirstName((v) => v || parts[0] || "");
+          setLastName((v) => v || parts.slice(1).join(" "));
+        }
+        setPhone((v) => v || p.phone || "");
+      })
+      .catch(() => {});
+    getAddresses()
+      .then((list) => {
+        setAddresses(list);
+        const def = list.find((a) => a.is_default) ?? list[0];
+        if (def) applyAddress(def);
+      })
+      .catch(() => {});
+  }, [user]);
 
   useEffect(() => {
     try {
@@ -146,10 +187,30 @@ export default function CheckoutForm() {
     }
 
     setLoading(true);
+
+    // Zalogowany? Doklej token (zamówienie trafi na konto) i ewentualnie zapisz adres.
+    const token = user ? await getAccessToken() : null;
+    if (token && saveAddr && selected.method === "inpost_courier") {
+      try {
+        await addAddress({
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          street: street.trim(),
+          building: building.trim(),
+          postal_code: postal.trim(),
+          city: city.trim(),
+          phone: phone.trim() || undefined,
+        });
+      } catch {}
+    }
+
     try {
       const res = await fetch(`${API}/api/checkout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => ({}));
@@ -182,6 +243,18 @@ export default function CheckoutForm() {
         </div>
       )}
       <div className="flex flex-col gap-9">
+        {configured && !user && (
+          <Link
+            href="/logowanie"
+            className="tap flex items-center justify-between gap-3 rounded-xl border border-line bg-cream/60 px-4 py-3 text-sm hover:border-ink/30"
+          >
+            <span className="text-ink-soft">
+              Masz konto? <span className="font-medium text-ink">Zaloguj się</span> — dane i adres podstawią się same.
+            </span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        )}
+
         <fieldset className="flex flex-col gap-4">
           <legend className="mb-2 text-lg font-semibold">Dane kontaktowe</legend>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -243,6 +316,25 @@ export default function CheckoutForm() {
         {selected.method === "inpost_courier" && (
           <fieldset className="flex flex-col gap-4">
             <legend className="mb-2 text-lg font-semibold">Adres dostawy</legend>
+
+            {user && addresses.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {addresses.map((a) => (
+                  <button
+                    type="button"
+                    key={a.id}
+                    onClick={() => applyAddress(a)}
+                    className={`tap rounded-xl border px-3 py-2 text-xs ${
+                      activeAddr === a.id ? "border-ink bg-cream" : "border-line hover:border-ink/40"
+                    }`}
+                  >
+                    {a.label || `${a.street} ${a.building}`}
+                    {a.is_default ? " · ★" : ""}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="grid gap-4 sm:grid-cols-[1fr_0.4fr]">
               <input required placeholder="Ulica" className={inputCls} value={street} onChange={(e) => setStreet(e.target.value)} />
               <input required placeholder="Nr" className={inputCls} value={building} onChange={(e) => setBuilding(e.target.value)} />
@@ -251,6 +343,13 @@ export default function CheckoutForm() {
               <input required placeholder="Kod pocztowy" className={inputCls} value={postal} onChange={(e) => setPostal(e.target.value)} />
               <input required placeholder="Miejscowość" className={inputCls} value={city} onChange={(e) => setCity(e.target.value)} />
             </div>
+
+            {user && (
+              <label className="flex cursor-pointer items-center gap-2.5 text-sm text-ink-soft">
+                <input type="checkbox" checked={saveAddr} onChange={(e) => setSaveAddr(e.target.checked)} className="h-4 w-4 accent-coral" />
+                Zapisz ten adres w moim koncie
+              </label>
+            )}
           </fieldset>
         )}
 

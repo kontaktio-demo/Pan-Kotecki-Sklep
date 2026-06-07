@@ -64,6 +64,11 @@ export default function RegulaminPage() {
             Umowa sprzedaży zostaje zawarta z chwilą potwierdzenia przyjęcia zamówienia przez Sprzedawcę (e-mail
             potwierdzający). Ceny w sklepie podane są w złotych polskich i zawierają podatek VAT.
           </p>
+          <p>
+            Zakupy można złożyć jako gość albo po założeniu bezpłatnego, opcjonalnego konta. Logowanie do konta odbywa
+            się bez hasła — na podany e-mail wysyłamy jednorazowy link. W koncie Klient ma dostęp do historii zamówień i
+            zapisanych adresów dostawy i może je samodzielnie usunąć w dowolnym momencie.
+          </p>
         </Section>
 
         <Section title="§4. Płatności">

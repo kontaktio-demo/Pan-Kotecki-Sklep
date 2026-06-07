@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { useCart } from "@/store/cart";
+import { useAuth } from "@/components/account/AuthProvider";
 import { formatPrice } from "@/lib/format";
 
 const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
@@ -11,6 +13,7 @@ type Phase = "checking" | "paid" | "pending" | "failed";
 
 export default function OrderConfirmation() {
   const clear = useCart((s) => s.clear);
+  const { user, configured } = useAuth();
   const [order, setOrder] = useState<{ nr: string; total?: number } | null>(null);
   const [phase, setPhase] = useState<Phase>("checking");
 
@@ -141,6 +144,23 @@ export default function OrderConfirmation() {
           Strona główna
         </Button>
       </div>
+
+      {!failed && configured && !user && (
+        <p className="mt-8 text-sm text-ash">
+          Chcesz mieć zamówienia w jednym miejscu?{" "}
+          <Link href="/logowanie" className="font-medium text-ink underline-offset-2 hover:underline">
+            Załóż konto na ten sam e-mail
+          </Link>{" "}
+          — to zamówienie pojawi się na nim automatycznie.
+        </p>
+      )}
+      {!failed && user && (
+        <p className="mt-8 text-sm text-ash">
+          <Link href="/konto/zamowienia" className="font-medium text-ink underline-offset-2 hover:underline">
+            Zobacz w „Moim koncie"
+          </Link>
+        </p>
+      )}
     </div>
   );
 }

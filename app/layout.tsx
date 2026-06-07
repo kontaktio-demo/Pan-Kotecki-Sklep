@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/shop/CartDrawer";
 import CatPeek from "@/components/shop/CatPeek";
 import CookieConsent from "@/components/CookieConsent";
+import { AuthProvider } from "@/components/account/AuthProvider";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -55,12 +56,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="pl" className={`h-full ${inter.variable} ${fraunces.variable}`}>
       <body className="flex min-h-full flex-col bg-milk text-ink">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <CartDrawer />
-        <CatPeek />
-        <CookieConsent />
+        <AuthProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <CartDrawer />
+          <CatPeek />
+          <CookieConsent />
+        </AuthProvider>
       </body>
     </html>
   );

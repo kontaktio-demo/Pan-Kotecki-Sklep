@@ -42,36 +42,57 @@ export default function PrivacyPage() {
           <ul className="ml-5 list-disc">
             <li>realizacji zamówienia i umowy sprzedaży (art. 6 ust. 1 lit. b RODO),</li>
             <li>wypełnienia obowiązków podatkowo-księgowych (art. 6 ust. 1 lit. c RODO),</li>
-            <li>obsługi reklamacji i ewentualnych roszczeń (art. 6 ust. 1 lit. f RODO).</li>
+            <li>obsługi reklamacji i ewentualnych roszczeń (art. 6 ust. 1 lit. f RODO),</li>
+            <li>wysyłki newslettera — wyłącznie po wyrażeniu zgody (art. 6 ust. 1 lit. a RODO).</li>
           </ul>
+          <p>Zakupy możesz zrobić jako gość — założenie konta nie jest wymagane.</p>
         </Section>
 
-        <Section title="3. Odbiorcy danych">
+        <Section title="3. Konto klienta (opcjonalne)">
           <p>
-            Dane przekazujemy wyłącznie podmiotom niezbędnym do realizacji zamówienia: operatorowi płatności (Stripe),
-            firmie kurierskiej (InPost) oraz dostawcy hostingu/bazy danych. Nie sprzedajemy Twoich danych.
+            Możesz — ale nie musisz — założyć konto. Logowanie odbywa się bez hasła: na podany e-mail wysyłamy
+            jednorazowy link. W ramach konta przetwarzamy: Twój adres e-mail, opcjonalnie imię, nazwisko i telefon,
+            zapisane adresy dostawy oraz historię zamówień powiązaną z kontem. Podstawą jest wykonanie umowy i nasz
+            uzasadniony interes w ułatwieniu kolejnych zakupów (art. 6 ust. 1 lit. b i f RODO), a w przypadku zgody
+            marketingowej — Twoja zgoda (lit. a).
+          </p>
+          <p>
+            Konto możesz usunąć w każdej chwili w panelu <strong>Moje konto → Dane konta → Usuń konto</strong>. Usuwamy
+            wtedy profil i zapisane adresy; zamówienia pozostają w dokumentacji księgowej (wymóg prawa), ale przestają
+            być powiązane z kontem.
           </p>
         </Section>
 
-        <Section title="4. Okres przechowywania">
+        <Section title="4. Odbiorcy danych">
+          <p>
+            Dane przekazujemy wyłącznie podmiotom niezbędnym do realizacji usługi: operatorowi płatności (Stripe),
+            firmie kurierskiej (InPost) oraz dostawcy hostingu, bazy danych i uwierzytelniania kont (Supabase). Podmioty
+            te przetwarzają dane na nasze zlecenie. Nie sprzedajemy Twoich danych.
+          </p>
+        </Section>
+
+        <Section title="5. Okres przechowywania">
           <p>
             Dane przechowujemy przez czas realizacji zamówienia oraz okres wymagany przepisami (m.in. podatkowymi) i
-            przedawnienia roszczeń.
+            przedawnienia roszczeń. Dane konta przechowujemy do czasu jego usunięcia przez Ciebie, a zgodę marketingową
+            — do czasu jej wycofania.
           </p>
         </Section>
 
-        <Section title="5. Twoje prawa">
+        <Section title="6. Twoje prawa">
           <p>
             Masz prawo dostępu do danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia oraz
-            wniesienia sprzeciwu. Możesz też złożyć skargę do Prezesa Urzędu Ochrony Danych Osobowych (UODO).
+            wniesienia sprzeciwu. Zgodę marketingową możesz wycofać w każdej chwili (w panelu „Moje konto" lub pisząc do
+            nas) — bez wpływu na zgodność z prawem przetwarzania sprzed wycofania. Możesz też złożyć skargę do Prezesa
+            Urzędu Ochrony Danych Osobowych (UODO).
           </p>
         </Section>
 
-        <Section title="6. Pliki cookies">
+        <Section title="7. Pliki cookies">
           <p>
-            Sklep używa niezbędnych plików cookies oraz pamięci przeglądarki (localStorage) do działania koszyka i
-            podstawowych funkcji. Nie używamy cookies marketingowych bez Twojej zgody. Możesz zarządzać cookies w
-            ustawieniach przeglądarki.
+            Sklep używa niezbędnych plików cookies oraz pamięci przeglądarki (localStorage) do działania koszyka,
+            logowania do konta i podstawowych funkcji. Nie używamy cookies marketingowych bez Twojej zgody. Możesz
+            zarządzać cookies w ustawieniach przeglądarki.
           </p>
         </Section>
 

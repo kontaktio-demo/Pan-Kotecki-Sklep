@@ -5,6 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Logo from "./Logo";
 import { useCart, cartCount } from "@/store/cart";
+import { useAuth } from "@/components/account/AuthProvider";
+
+function UserIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.4" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M5.5 19.5a6.5 6.5 0 0 1 13 0" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 const CATEGORIES = [
   { href: "/sklep", label: "Wszystko" },
@@ -48,6 +58,7 @@ export default function Header() {
   const items = useCart((s) => s.items);
   const openCart = useCart((s) => s.open);
   const bump = useCart((s) => s.bump);
+  const { user, configured } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -79,6 +90,16 @@ export default function Header() {
           >
             Pomoc
           </Link>
+          {configured && (
+            <Link
+              href={mounted && user ? "/konto" : "/logowanie"}
+              className="tap hidden items-center gap-2 rounded-xl border border-line bg-white px-3.5 py-2 text-sm hover:border-ink sm:inline-flex"
+              aria-label={mounted && user ? "Moje konto" : "Zaloguj się"}
+            >
+              <UserIcon />
+              <span className="hidden lg:inline">{mounted && user ? "Konto" : "Zaloguj"}</span>
+            </Link>
+          )}
           <button
             onClick={openCart}
             className="tap relative inline-flex items-center gap-2 rounded-xl border border-line bg-white px-3.5 py-2 text-sm hover:border-ink"
@@ -145,6 +166,17 @@ export default function Header() {
               Kontakt
             </Link>
           </nav>
+
+          {configured && (
+            <Link
+              href={mounted && user ? "/konto" : "/logowanie"}
+              onClick={() => setMenuOpen(false)}
+              className="tap mt-4 inline-flex items-center gap-2 rounded-xl border border-line bg-white px-4 py-3 text-base font-medium"
+            >
+              <UserIcon />
+              {mounted && user ? "Moje konto" : "Zaloguj / Załóż konto"}
+            </Link>
+          )}
         </div>
       )}
     </header>

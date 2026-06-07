@@ -4,8 +4,13 @@ import { supabase } from "../lib/supabase.js";
 import { orderNumber, parseBody, serverError, zloty } from "../lib/util.js";
 import { stripe, siteUrl } from "../lib/stripe.js";
 import { sendPushToAll } from "../lib/push.js";
+import { withCustomer, type CustomerRequest } from "../lib/customerAuth.js";
 
 export const checkoutRouter = Router();
+
+// Gość domyślnie. Jeśli klient jest zalogowany (token Supabase), wiążemy
+// zamówienie z jego kontem — bez wymuszania logowania.
+checkoutRouter.use(withCustomer);
 
 const SHIPPING_GROSZE: Record<string, number> = {
   inpost_locker: 1199,
@@ -36,7 +41,7 @@ const schema = z
     }
   });
 
-checkoutRouter.post("/", async (req, res) => {
+checkoutRouter.post("/", async (req: CustomerRequest, res) => {
   const body = parseBody(schema, req.body, res);
   if (!body) return;
 
@@ -129,6 +134,7 @@ checkoutRouter.post("/", async (req, res) => {
     p: {
       number: orderNumber(),
       customer_id: customerId,
+      user_id: req.customer?.id ?? null,
       email,
       phone: body.phone ?? null,
       subtotal_grosze: subtotal,

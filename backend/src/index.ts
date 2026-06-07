@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import multer from "multer";
 import { catalogRouter } from "./routes/catalog.js";
 import { checkoutRouter } from "./routes/checkout.js";
+import { accountRouter } from "./routes/account.js";
 import { adminRouter } from "./routes/admin/index.js";
 import { stripeWebhook } from "./routes/payments.js";
 
@@ -46,11 +47,15 @@ app.get("/health", (_req, res) => res.json({ ok: true, service: "pan-kotecki-bac
 app.use("/api", rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, legacyHeaders: false }));
 app.use("/api/checkout", rateLimit({ windowMs: 15 * 60_000, max: 30, standardHeaders: true, legacyHeaders: false }));
 app.use("/api/order-status", rateLimit({ windowMs: 60_000, max: 60, standardHeaders: true, legacyHeaders: false }));
+app.use("/api/account", rateLimit({ windowMs: 60_000, max: 120, standardHeaders: true, legacyHeaders: false }));
 app.use("/api/admin", rateLimit({ windowMs: 60_000, max: 100, standardHeaders: true, legacyHeaders: false }));
 
 // Publiczne (sklep)
 app.use("/api", catalogRouter);
 app.use("/api/checkout", checkoutRouter);
+
+// Konta klientów (chronione tokenem Supabase — weryfikacja w routerze)
+app.use("/api/account", accountRouter);
 
 // Panel (chronione kluczem ADMIN_API_KEY)
 app.use("/api/admin", adminRouter);
