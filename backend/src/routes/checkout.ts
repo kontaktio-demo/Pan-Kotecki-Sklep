@@ -208,21 +208,31 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
         ],
       };
       if (embedded) {
-        // Embedded Checkout — płatność zostaje NA pankotecki.pl (klient nie wychodzi).
-        params.ui_mode = "embedded";
-        params.return_url = `${base}/kasa/dziekujemy?order=${encodeURIComponent(order.number)}&session_id={CHECKOUT_SESSION_ID}`;
+        // Payment Element — w pełni custom formularz NA naszej stronie (PaymentIntent).
+        const pi = await stripe.paymentIntents.create({
+          amount: total,
+          currency: "pln",
+          payment_method_types: ["card", "blik", "p24"],
+          metadata: { order_id: order.order_id, number: order.number },
+          receipt_email: email,
+        });
+        clientSecret = pi.client_secret;
+        await supabase
+          .from("orders")
+          .update({ payment_provider: "stripe", payment_ref: pi.id })
+          .eq("id", order.order_id);
       } else {
+        // Hosted Checkout (przekierowanie) — fallback gdy brak klucza publicznego.
         params.submit_type = "pay";
         params.success_url = `${base}/kasa/dziekujemy?order=${encodeURIComponent(order.number)}`;
         params.cancel_url = `${base}/kasa?anulowano=1`;
+        const session = await stripe.checkout.sessions.create(params);
+        checkoutUrl = session.url;
+        await supabase
+          .from("orders")
+          .update({ payment_provider: "stripe", payment_ref: session.id })
+          .eq("id", order.order_id);
       }
-      const session = await stripe.checkout.sessions.create(params);
-      checkoutUrl = session.url;
-      clientSecret = session.client_secret;
-      await supabase
-        .from("orders")
-        .update({ payment_provider: "stripe", payment_ref: session.id })
-        .eq("id", order.order_id);
     } catch (err) {
       console.error("[checkout.stripe]", err);
       // Stripe włączony, ale sesja się nie utworzyła → zwolnij stan i zgłoś błąd

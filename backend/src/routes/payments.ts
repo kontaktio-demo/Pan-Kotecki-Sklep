@@ -28,10 +28,9 @@ export async function stripeWebhook(req: Request, res: Response) {
   if (dupErr?.code === "23505") return res.json({ received: true, duplicate: true });
   if (dupErr) console.error("[stripe.webhook] stripe_events insert", dupErr); // np. brak tabeli — i tak przetwarzamy
 
-  const markPaid = async (s: Stripe.Checkout.Session) => {
-    const orderId = s.metadata?.order_id || (s.client_reference_id ?? null);
+  // Wspólna logika potwierdzenia płatności (Checkout Session i PaymentIntent).
+  const confirmPaid = async (orderId: string | null, amount: number | null, currency: string | null, ref: string) => {
     if (!orderId) return;
-    // Wczytaj zamówienie: weryfikacja kwoty + własny total do powiadomienia.
     const { data: ord, error: ordErr } = await supabase
       .from("orders")
       .select("id, number, total_grosze, payment_status")
@@ -40,36 +39,39 @@ export async function stripeWebhook(req: Request, res: Response) {
     if (ordErr) throw ordErr;
     if (!ord) {
       console.warn(`[stripe.webhook] zamówienie ${orderId} nie istnieje — pomijam`);
-      return; // brak zamówienia: ponawianie nic nie da
+      return;
     }
-    // Obrona w głąb: kwota i waluta sesji muszą zgadzać się z zamówieniem.
-    if (s.amount_total != null && s.amount_total !== ord.total_grosze) {
-      console.error(`[stripe.webhook] niezgodna kwota: sesja ${s.amount_total} ≠ zamówienie ${ord.total_grosze}`);
-      return; // nie oznaczamy jako opłacone przy rozjeździe kwot
+    // Obrona w głąb: kwota i waluta muszą zgadzać się z zamówieniem.
+    if (amount != null && amount !== ord.total_grosze) {
+      console.error(`[stripe.webhook] niezgodna kwota: ${amount} ≠ zamówienie ${ord.total_grosze}`);
+      return;
     }
-    if (s.currency && s.currency.toLowerCase() !== "pln") {
-      console.error(`[stripe.webhook] niezgodna waluta: ${s.currency}`);
+    if (currency && currency.toLowerCase() !== "pln") {
+      console.error(`[stripe.webhook] niezgodna waluta: ${currency}`);
       return;
     }
     const alreadyPaid = ord.payment_status === "paid";
-    const ref = typeof s.payment_intent === "string" ? s.payment_intent : s.id;
     const { error: e1 } = await supabase
       .from("orders")
       .update({ payment_status: "paid", payment_provider: "stripe", payment_ref: ref })
       .eq("id", orderId);
     if (e1) throw e1;
-    // Realizacja: 'pending' → 'paid' (nie cofamy packed/shipped).
     const { error: e2 } = await supabase.from("orders").update({ status: "paid" }).eq("id", orderId).eq("status", "pending");
     if (e2) throw e2;
-    // 🔔 Push + e-mail z potwierdzeniem tylko przy realnym przejściu na opłacone.
     if (!alreadyPaid) {
-      void sendPushToAll({
-        title: "🛒 Opłacone zamówienie",
-        body: `${ord.number} — ${zloty(ord.total_grosze)}`,
-        url: "/#orders",
-      });
+      void sendPushToAll({ title: "🛒 Opłacone zamówienie", body: `${ord.number} — ${zloty(ord.total_grosze)}`, url: "/#orders" });
       void sendOrderConfirmation(orderId);
     }
+  };
+
+  const markPaid = async (s: Stripe.Checkout.Session) => {
+    const orderId = s.metadata?.order_id || (s.client_reference_id ?? null);
+    const ref = typeof s.payment_intent === "string" ? s.payment_intent : s.id;
+    await confirmPaid(orderId, s.amount_total, s.currency, ref);
+  };
+
+  const markPaidByPI = async (pi: Stripe.PaymentIntent) => {
+    await confirmPaid(pi.metadata?.order_id ?? null, pi.amount, pi.currency, pi.id);
   };
 
   const release = async (s: Stripe.Checkout.Session) => {
@@ -102,6 +104,10 @@ export async function stripeWebhook(req: Request, res: Response) {
       case "checkout.session.async_payment_failed":
       case "checkout.session.expired":
         await release(event.data.object as Stripe.Checkout.Session);
+        break;
+      case "payment_intent.succeeded":
+        // Payment Element (płatność na naszej stronie)
+        await markPaidByPI(event.data.object as Stripe.PaymentIntent);
         break;
       case "charge.refunded": {
         const ch = event.data.object as Stripe.Charge;
