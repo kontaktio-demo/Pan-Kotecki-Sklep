@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/shop/CartDrawer";
 import CatPeek from "@/components/shop/CatPeek";
+import CookieConsent from "@/components/CookieConsent";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <Footer />
         <CartDrawer />
         <CatPeek />
+        <CookieConsent />
       </body>
     </html>
   );

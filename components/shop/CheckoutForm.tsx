@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart, cartTotal } from "@/store/cart";
 import { formatPrice, FREE_SHIPPING_FROM } from "@/lib/format";
@@ -39,12 +40,55 @@ export default function CheckoutForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [canceled, setCanceled] = useState(false);
+  const [freeFrom, setFreeFrom] = useState(FREE_SHIPPING_FROM);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoDiscount, setPromoDiscount] = useState(0); // zł
+  const [promoOk, setPromoOk] = useState(false);
+  const [promoMsg, setPromoMsg] = useState("");
+  const [accept, setAccept] = useState(false);
 
   useEffect(() => {
     try {
       if (new URLSearchParams(window.location.search).get("anulowano") === "1") setCanceled(true);
     } catch {}
+    if (API) {
+      fetch(`${API}/api/settings/public`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (d?.freeShippingGrosze != null) setFreeFrom(d.freeShippingGrosze / 100);
+        })
+        .catch(() => {});
+    }
   }, []);
+
+  async function applyPromo() {
+    const code = promoCode.trim().toUpperCase();
+    setPromoMsg("");
+    if (!code) return;
+    if (!API) {
+      setPromoMsg("Kody rabatowe działają po podłączeniu sklepu do API.");
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/api/promo/validate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, subtotal_grosze: Math.round(subtotal * 100) }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (d?.valid) {
+        setPromoDiscount((d.discountGrosze ?? 0) / 100);
+        setPromoOk(true);
+        setPromoMsg(`Kod zastosowany — rabat ${formatPrice((d.discountGrosze ?? 0) / 100)} 🐾`);
+      } else {
+        setPromoDiscount(0);
+        setPromoOk(false);
+        setPromoMsg(d?.message ?? "Kod nieprawidłowy.");
+      }
+    } catch {
+      setPromoMsg("Nie udało się sprawdzić kodu.");
+    }
+  }
 
   if (items.length === 0) {
     return (
@@ -59,9 +103,10 @@ export default function CheckoutForm() {
   }
 
   const selected = DELIVERY.find((d) => d.id === delivery)!;
-  const freeShipping = subtotal >= FREE_SHIPPING_FROM && selected.method !== "pickup";
+  const freeShipping = subtotal >= freeFrom && selected.method !== "pickup";
   const deliveryCost = freeShipping ? 0 : selected.cost;
-  const total = subtotal + deliveryCost;
+  const discount = promoOk ? Math.min(promoDiscount, subtotal) : 0;
+  const total = Math.max(0, subtotal + deliveryCost - discount);
 
   async function placeOrder(e: React.FormEvent) {
     e.preventDefault();
@@ -86,6 +131,7 @@ export default function CheckoutForm() {
           : {}),
       },
       ...(selected.method === "inpost_locker" ? { parcel_locker: locker } : {}),
+      ...(promoOk && promoCode.trim() ? { promo_code: promoCode.trim().toUpperCase() } : {}),
     };
 
     // Tryb demo (lokalnie bez backendu) — zachowanie poglądowe.
@@ -152,7 +198,7 @@ export default function CheckoutForm() {
           <legend className="mb-3 text-lg font-semibold">Sposób dostawy</legend>
           <div className="flex flex-col gap-2">
             {DELIVERY.map((d) => {
-              const cost = subtotal >= FREE_SHIPPING_FROM && d.method !== "pickup" ? 0 : d.cost;
+              const cost = subtotal >= freeFrom && d.method !== "pickup" ? 0 : d.cost;
               return (
                 <label
                   key={d.id}
@@ -231,11 +277,42 @@ export default function CheckoutForm() {
           ))}
         </ul>
 
-        <div className="mt-6 flex flex-col gap-2 border-t border-line pt-5 text-sm">
+        {/* Kod rabatowy */}
+        <div className="mt-5 border-t border-line pt-4">
+          <label className="mb-1.5 block text-xs font-medium text-ash">Kod rabatowy 🐾</label>
+          <div className="flex gap-2">
+            <input
+              value={promoCode}
+              onChange={(e) => {
+                setPromoCode(e.target.value.toUpperCase());
+                setPromoOk(false);
+                setPromoDiscount(0);
+              }}
+              placeholder="np. KOTEK10"
+              className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm uppercase outline-none focus:border-orange"
+            />
+            <button
+              type="button"
+              onClick={applyPromo}
+              className="shrink-0 rounded-lg border border-line bg-cream px-4 py-2.5 text-sm font-semibold transition-colors hover:border-ink"
+            >
+              Zastosuj
+            </button>
+          </div>
+          {promoMsg && <p className={`mt-1.5 text-xs ${promoOk ? "text-emerald-600" : "text-ash"}`}>{promoMsg}</p>}
+        </div>
+
+        <div className="mt-5 flex flex-col gap-2 border-t border-line pt-5 text-sm">
           <div className="flex justify-between">
             <span className="text-ink-soft">Produkty</span>
             <span className="tabular-nums">{formatPrice(subtotal)}</span>
           </div>
+          {discount > 0 && (
+            <div className="flex justify-between text-emerald-600">
+              <span>Rabat</span>
+              <span className="tabular-nums">−{formatPrice(discount)}</span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-ink-soft">Dostawa</span>
             <span className="tabular-nums">{deliveryCost === 0 ? "0 zł" : formatPrice(deliveryCost)}</span>
@@ -246,17 +323,32 @@ export default function CheckoutForm() {
           <span className="text-2xl font-semibold tabular-nums">{formatPrice(total)}</span>
         </div>
 
+        <label className="mt-5 flex cursor-pointer items-start gap-2.5 text-xs text-ink-soft">
+          <input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-coral" />
+          <span>
+            Akceptuję{" "}
+            <Link href="/regulamin" target="_blank" className="underline hover:text-ink">
+              regulamin
+            </Link>{" "}
+            i{" "}
+            <Link href="/polityka-prywatnosci" target="_blank" className="underline hover:text-ink">
+              politykę prywatności
+            </Link>
+            .
+          </span>
+        </label>
+
         {error && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
         <button
           type="submit"
-          disabled={loading}
-          className="mt-6 w-full rounded-lg bg-coral px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-coral-deep disabled:opacity-60"
+          disabled={loading || !accept}
+          className="mt-4 w-full rounded-lg bg-coral px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-coral-deep disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? "Przekierowuję do płatności…" : "Zamawiam i płacę"}
         </button>
-        <p className="mt-3 text-center text-xs text-mist">
-          Klikając „Zamawiam i płacę" akceptujesz regulamin sklepu.
+        <p className="mt-3 flex items-center justify-center gap-1 text-center text-xs text-mist">
+          <span aria-hidden="true">🔒</span> Bezpieczna płatność — karta, BLIK, Przelewy24
         </p>
       </aside>
     </form>

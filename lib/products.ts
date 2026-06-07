@@ -20,6 +20,7 @@ export type Product = {
   name: string;
   category: string;
   price: number;
+  originalPrice?: number; // cena sprzed obniżki (gdy promocja) — do przekreślenia
   currency: "PLN" | string;
   visual?: ProductVisual;
   images?: string[];
@@ -357,6 +358,7 @@ function fromApi(p: ApiProduct): Product {
     name: p.name,
     category: p.category ?? "",
     price: p.salePrice ?? p.price,
+    originalPrice: p.salePrice != null && p.salePrice < p.price ? p.price : undefined,
     currency: p.currency ?? "PLN",
     images: p.images ?? [],
     shortDescription: p.shortDescription ?? "",

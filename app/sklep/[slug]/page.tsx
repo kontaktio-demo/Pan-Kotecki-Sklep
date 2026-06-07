@@ -66,6 +66,7 @@ export default async function ProductPage({
     motif: product.visual?.motif ?? "",
     tone: product.visual?.tone ?? "",
     image: product.images?.[0],
+    inStock: product.inStock,
   };
 
   return (
@@ -86,6 +87,7 @@ export default async function ProductPage({
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
           <ProductGallery
             image={item.image}
+            images={product.images}
             name={product.name}
             motif={item.motif}
             badge={product.badges?.[0]}
@@ -102,6 +104,9 @@ export default async function ProductPage({
 
             <div className="mt-5 flex items-end gap-3">
               <p className="text-3xl font-semibold tabular-nums">{formatPrice(product.price)}</p>
+              {product.originalPrice && (
+                <span className="mb-1 text-lg text-ash line-through tabular-nums">{formatPrice(product.originalPrice)}</span>
+              )}
               <span className={`mb-1 text-sm ${freeShipping ? "text-emerald-600" : "text-ash"}`}>
                 {freeShipping ? "+ darmowa dostawa" : `darmowa dostawa od ${FREE_SHIPPING_FROM} zł`}
               </span>

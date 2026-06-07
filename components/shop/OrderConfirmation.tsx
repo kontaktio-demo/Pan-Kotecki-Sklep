@@ -57,13 +57,9 @@ export default function OrderConfirmation() {
       } catch {}
       tries += 1;
       if (!alive) return;
-      if (tries < 6) {
-        setPhase("pending");
-        setTimeout(poll, 2500);
-      } else {
-        setPhase("pending");
-        clear(); // po czasie i tak czyścimy — zamówienie zostało złożone
-      }
+      setPhase("pending");
+      // koszyka NIE czyścimy przy oczekiwaniu — opróżniamy dopiero po potwierdzeniu 'paid'
+      if (tries < 8) setTimeout(poll, 3000);
     };
     poll();
     return () => {

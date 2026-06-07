@@ -10,6 +10,7 @@ type Item = {
   motif: string;
   tone: string;
   image?: string;
+  inStock?: boolean;
 };
 
 function CartIcon() {
@@ -31,6 +32,18 @@ function CartIcon() {
 export function AddToCartCompact({ item }: { item: Item }) {
   const add = useCart((s) => s.add);
   const [added, setAdded] = useState(false);
+  const unavailable = item.inStock === false;
+
+  if (unavailable) {
+    return (
+      <button
+        disabled
+        className="mt-3 inline-flex w-full cursor-not-allowed items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-line bg-cream px-3 py-2.5 text-sm font-medium text-ash"
+      >
+        Niedostępny
+      </button>
+    );
+  }
 
   return (
     <button
@@ -52,6 +65,18 @@ export function AddToCartFull({ item }: { item: Item }) {
   const add = useCart((s) => s.add);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
+  const unavailable = item.inStock === false;
+
+  if (unavailable) {
+    return (
+      <button
+        disabled
+        className="inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-line bg-cream px-8 py-4 text-sm font-semibold text-ash"
+      >
+        Chwilowo niedostępny
+      </button>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">

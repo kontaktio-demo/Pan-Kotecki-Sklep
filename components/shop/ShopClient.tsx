@@ -23,7 +23,7 @@ type Props = {
 };
 
 export default function ShopClient({ products, categories, initialCategory, initialSearch }: Props) {
-  const maxAll = useMemo(() => Math.max(...products.map((p) => p.price)), [products]);
+  const maxAll = useMemo(() => (products.length ? Math.max(...products.map((p) => p.price)) : 1000), [products]);
 
   const [cat, setCat] = useState(initialCategory ?? "wszystko");
   const [sort, setSort] = useState("polecane");

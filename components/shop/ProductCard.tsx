@@ -24,6 +24,7 @@ export default function ProductCard({ product }: { product: Product }) {
     motif: product.visual?.motif ?? "",
     tone: product.visual?.tone ?? "",
     image: product.images?.[0],
+    inStock: product.inStock,
   };
   const { rating, reviews } = productRating(product.slug);
   const freeShipping = product.price >= FREE_SHIPPING_FROM;
@@ -46,6 +47,16 @@ export default function ProductCard({ product }: { product: Product }) {
             {product.badges[0]}
           </span>
         )}
+        {product.originalPrice && (
+          <span className="absolute right-3 top-3 rounded-md bg-coral px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-white">
+            Promocja
+          </span>
+        )}
+        {!product.inStock && (
+          <span className="absolute inset-x-0 bottom-0 bg-ink/75 py-1.5 text-center text-xs font-medium text-milk">
+            Chwilowo niedostępny
+          </span>
+        )}
       </Link>
 
       <div className="flex flex-1 flex-col p-4">
@@ -63,7 +74,12 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
 
         <div className="mt-auto pt-3">
-          <p className="text-xl font-semibold tabular-nums">{formatPrice(product.price)}</p>
+          <p className="flex items-baseline gap-2">
+            <span className="text-xl font-semibold tabular-nums">{formatPrice(product.price)}</span>
+            {product.originalPrice && (
+              <span className="text-sm text-ash line-through tabular-nums">{formatPrice(product.originalPrice)}</span>
+            )}
+          </p>
           <p className={`mt-0.5 text-xs ${freeShipping ? "text-emerald-600" : "text-ash"}`}>
             {freeShipping ? "Darmowa dostawa" : "Wysyłka 24h"}
           </p>
