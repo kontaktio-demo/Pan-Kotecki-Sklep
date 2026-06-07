@@ -4,7 +4,7 @@ import { supabase } from "./supabase.js";
 // Powiadomienia push (Web Push / VAPID). Działają tylko, gdy ustawione są klucze.
 const PUBLIC = process.env.VAPID_PUBLIC_KEY ?? "";
 const PRIVATE = process.env.VAPID_PRIVATE_KEY ?? "";
-const SUBJECT = process.env.VAPID_SUBJECT ?? "mailto:kontakt@kotecki.pl";
+const SUBJECT = process.env.VAPID_SUBJECT ?? "mailto:biuro@pankotecki.pl";
 
 export const pushEnabled = Boolean(PUBLIC && PRIVATE);
 if (pushEnabled) {

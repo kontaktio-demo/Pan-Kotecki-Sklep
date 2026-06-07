@@ -7,9 +7,11 @@ export const metadata: Metadata = {
 };
 
 const ADMIN = {
-  name: "Pan Kotecki [nazwa firmy / imię i nazwisko]",
-  address: "[ulica, kod pocztowy, miasto]",
-  email: "kontakt@kotecki.pl",
+  name: "Kontaktio Bartosz Fiks",
+  address: "ul. Brzezińska 84, 95-020 Bedoń-Wieś",
+  nip: "7282909882",
+  regon: "544475638",
+  email: "biuro@pankotecki.pl",
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -30,8 +32,8 @@ export default function PrivacyPage() {
 
         <Section title="1. Administrator danych">
           <p>
-            Administratorem Twoich danych osobowych jest {ADMIN.name}, {ADMIN.address}. Kontakt w sprawie danych:{" "}
-            {ADMIN.email}.
+            Administratorem Twoich danych osobowych jest {ADMIN.name} (NIP: {ADMIN.nip}, REGON: {ADMIN.regon}),{" "}
+            {ADMIN.address}, prowadzący sklep internetowy „Pan Kotecki”. Kontakt w sprawie danych: {ADMIN.email}.
           </p>
         </Section>
 

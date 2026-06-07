@@ -7,9 +7,11 @@ export const metadata: Metadata = {
 };
 
 const SELLER = {
-  name: "Pan Kotecki [nazwa firmy / imię i nazwisko]",
-  address: "[ulica, kod pocztowy, miasto]",
-  email: "kontakt@kotecki.pl",
+  name: "Kontaktio Bartosz Fiks",
+  address: "ul. Brzezińska 84, 95-020 Bedoń-Wieś",
+  nip: "7282909882",
+  regon: "544475638",
+  email: "biuro@pankotecki.pl",
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

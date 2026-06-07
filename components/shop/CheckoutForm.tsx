@@ -14,7 +14,7 @@ const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 const DELIVERY = [
   { id: "paczkomat", label: "Paczkomat InPost 24/7", sub: "1–2 dni robocze", cost: 11.99, method: "inpost_locker" },
   { id: "kurier", label: "Kurier InPost", sub: "1–2 dni robocze", cost: 14.99, method: "inpost_courier" },
-  { id: "odbior", label: "Odbiór osobisty", sub: "Łódź, ul. Przykładowa 1", cost: 0, method: "pickup" },
+  { id: "odbior", label: "Odbiór osobisty", sub: "Bedoń-Wieś, ul. Brzezińska 84", cost: 0, method: "pickup" },
 ] as const;
 
 const inputCls =

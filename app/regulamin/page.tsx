@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 import PageHeader from "@/components/layout/PageHeader";
+import RevealPhone from "@/components/RevealPhone";
 
 export const metadata: Metadata = {
   title: "Regulamin",
   description: "Regulamin sklepu internetowego Pan Kotecki.",
 };
 
-// UWAGA: szablon regulaminu. Uzupełnij dane sprzedawcy w [NAWIASACH] i — przy
-// sprzedaży na większą skalę — zleć weryfikację prawnikowi.
+// Dane sprzedawcy (podmiot prawny). Marka handlowa to „Pan Kotecki".
 const SELLER = {
-  name: "Pan Kotecki [nazwa firmy / imię i nazwisko]",
-  address: "[ulica, kod pocztowy, miasto]",
-  nip: "[NIP]",
-  email: "kontakt@kotecki.pl",
+  name: "Kontaktio Bartosz Fiks",
+  address: "ul. Brzezińska 84, 95-020 Bedoń-Wieś",
+  nip: "7282909882",
+  regon: "544475638",
+  email: "biuro@pankotecki.pl",
 };
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -34,8 +35,8 @@ export default function RegulaminPage() {
         <Section title="§1. Postanowienia ogólne">
           <p>
             Sklep internetowy „Pan Kotecki” działający pod adresem kotecki.pl prowadzony jest przez{" "}
-            {SELLER.name}, {SELLER.address}, NIP: {SELLER.nip} (dalej „Sprzedawca”). Kontakt:{" "}
-            {SELLER.email}.
+            {SELLER.name}, {SELLER.address}, NIP: {SELLER.nip}, REGON: {SELLER.regon} (dalej „Sprzedawca”). Kontakt:{" "}
+            {SELLER.email}, tel.: <RevealPhone className="font-medium text-ink" />.
           </p>
           <p>
             Regulamin określa zasady zawierania umów sprzedaży za pośrednictwem sklepu oraz prawa i obowiązki
