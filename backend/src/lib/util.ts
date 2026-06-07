@@ -4,6 +4,10 @@ import { ZodError, type ZodSchema } from "zod";
 
 export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// grosze → ładny zapis w złotówkach (np. „128,00 zł")
+export const zloty = (grosze: number) =>
+  new Intl.NumberFormat("pl-PL", { style: "currency", currency: "PLN" }).format((grosze ?? 0) / 100);
+
 // Loguje prawdziwy błąd po stronie serwera, klientowi oddaje ogólny komunikat.
 export function serverError(res: Response, where: string, err: unknown) {
   console.error(`[${where}]`, err);

@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: #f7f4ee;
+    color: #1d1810;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  /* brak zaznaczania/menu przy długim przytrzymaniu — czuć appkę, nie stronę */
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors active:scale-[0.98];
+  }
+  .btn-primary {
+    @apply btn bg-ink text-milk hover:bg-orange-deep;
+  }
+  .btn-orange {
+    @apply btn bg-orange text-white hover:bg-orange-deep;
+  }
+  .btn-ghost {
+    @apply btn border border-line bg-white text-ink hover:border-ink;
+  }
+  .btn-danger {
+    @apply btn border border-red-200 text-red-600 hover:bg-red-50;
+  }
+  .input {
+    @apply w-full rounded-xl border border-line bg-white px-3.5 py-3 text-[15px] outline-none transition-colors focus:border-orange;
+  }
+  .label {
+    @apply mb-1 block text-xs font-medium text-ash;
+  }
+  .card {
+    @apply rounded-2xl border border-line bg-white;
+  }
+  /* karta listy (Allegro-style) */
+  .listcard {
+    @apply flex items-center gap-3 rounded-2xl border border-line bg-white px-3.5 py-3 text-left transition-colors active:bg-cream/60;
+  }
+  /* filtr-pigułka */
+  .pill {
+    @apply whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors;
+  }
+  .pill-on {
+    @apply border-ink bg-ink text-milk;
+  }
+  .pill-off {
+    @apply border-line bg-white text-ash;
+  }
+  .statuspill {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+}
+
+/* bezpieczne marginesy iPhone (notch / pasek u dołu) */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.h-safe-bottom {
+  height: env(safe-area-inset-bottom);
+}
+
+/* ukryj pasek przewijania poziomy przy pigułkach filtrów */
+.noscrollbar::-webkit-scrollbar {
+  display: none;
+}
+.noscrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

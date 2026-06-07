@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { z } from "zod";
 import { supabase } from "../../lib/supabase.js";
-import { badId, parseBody, serverError } from "../../lib/util.js";
+import { badId, parseBody, serverError, zloty } from "../../lib/util.js";
 import { createShipment, fetchLabel, getShipment, inpostConfigured, type Receiver } from "../../lib/inpost.js";
+import { sendPushToAll } from "../../lib/push.js";
 
 export const ordersRouter = Router();
 
@@ -53,9 +54,26 @@ ordersRouter.patch("/:id", async (req, res) => {
   if (badId(res, req.params.id)) return;
   const body = parseBody(patchSchema, req.body, res);
   if (!body) return;
+
+  // Czy to przejście na „opłacone"? (żeby wysłać push tylko raz, przy zmianie)
+  let wasPaid = true;
+  if (body.payment_status === "paid") {
+    const { data: prev } = await supabase.from("orders").select("payment_status").eq("id", req.params.id).maybeSingle();
+    wasPaid = prev?.payment_status === "paid";
+  }
+
   const { data, error } = await supabase.from("orders").update(body).eq("id", req.params.id).select(SELECT).maybeSingle();
   if (error) return serverError(res, "orders.update", error);
   if (!data) return res.status(404).json({ error: "Nie znaleziono" });
+
+  if (body.payment_status === "paid" && !wasPaid) {
+    void sendPushToAll({
+      title: "🛒 Opłacone zamówienie",
+      body: `${data.number} — ${zloty(data.total_grosze)}`,
+      url: "/#orders",
+    });
+  }
+
   res.json(data);
 });
 

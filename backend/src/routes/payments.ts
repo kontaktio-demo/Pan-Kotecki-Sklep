@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import type Stripe from "stripe";
 import { stripe } from "../lib/stripe.js";
 import { supabase } from "../lib/supabase.js";
+import { sendPushToAll } from "../lib/push.js";
+import { zloty } from "../lib/util.js";
 
 // Webhook Stripe — POTWIERDZA płatność po stronie serwera (nie ufamy klientowi).
 // Wymaga surowego body (express.raw) do weryfikacji podpisu.
@@ -37,9 +39,19 @@ export async function stripeWebhook(req: Request, res: Response) {
         })
         .eq("id", orderId)
         .select("id");
-      if (!updated?.length) console.warn(`[stripe.webhook] zamówienie ${orderId} nie istnieje`);
+      if (!updated?.length) {
+        console.warn(`[stripe.webhook] zamówienie ${orderId} nie istnieje`);
+        return;
+      }
       // Realizacja — podnosimy do 'paid' tylko gdy nadal 'pending' (nie cofamy packed/shipped).
       await supabase.from("orders").update({ status: "paid" }).eq("id", orderId).eq("status", "pending");
+      // 🔔 Powiadomienie push do właścicieli — tylko po realnym opłaceniu.
+      const number = s.metadata?.number ?? "";
+      void sendPushToAll({
+        title: "🛒 Opłacone zamówienie",
+        body: `${number} — ${zloty(s.amount_total ?? 0)}`.trim(),
+        url: "/#orders",
+      });
     };
 
     switch (event.type) {

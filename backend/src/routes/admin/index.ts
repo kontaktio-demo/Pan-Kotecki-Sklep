@@ -7,6 +7,7 @@ import { ordersRouter } from "./orders.js";
 import { customersRouter } from "./customers.js";
 import { statsRouter } from "./stats.js";
 import { settingsRouter } from "./settings.js";
+import { pushRouter } from "./push.js";
 
 export const adminRouter = Router();
 
@@ -21,3 +22,4 @@ adminRouter.use("/orders", ordersRouter);
 adminRouter.use("/customers", customersRouter);
 adminRouter.use("/stats", statsRouter);
 adminRouter.use("/settings", settingsRouter);
+adminRouter.use("/push", pushRouter);

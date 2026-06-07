@@ -15,6 +15,15 @@ create table if not exists stripe_events (
 );
 alter table stripe_events enable row level security;
 
+-- Subskrypcje powiadomień push (telefony właścicieli — panel mobilny).
+create table if not exists push_subscriptions (
+  id           uuid primary key default gen_random_uuid(),
+  endpoint     text unique not null,
+  subscription jsonb not null,
+  created_at   timestamptz not null default now()
+);
+alter table push_subscriptions enable row level security;
+
 create or replace function create_order(p jsonb)
 returns jsonb
 language plpgsql
