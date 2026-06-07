@@ -25,12 +25,11 @@ GitHub i repo już mamy: `kontaktio-demo/Pan-Kotecki-Sklep`.
   - **service_role** key (sekret!) → to `SUPABASE_SERVICE_ROLE_KEY`
   - **anon public** key (przyda się później dla sklepu)
 
-### 1B. Załóż tabele
+### 1B. Załóż tabele (jedna komenda)
 - W Supabase: **SQL Editor → New query**.
-- Wklej całą zawartość pliku `supabase/schema.sql` → **Run**.
-- Potem to samo z `supabase/policies.sql` → **Run**.
-- Potem `supabase/seed.sql` → **Run** (doda 4 kategorie).
-- Potem `supabase/seed_products.sql` → **Run** (doda 20 produktów startowych).
+- Wklej **całą** zawartość pliku `supabase/setup_all.sql` → **Run**.
+  (To jeden plik: tabele + RLS + 4 kategorie + 20 produktów. Bezpieczny do
+  ponownego uruchomienia.)
 - Sprawdź: **Table Editor** → tabele (products, orders itd.), 4 kategorie i 20 produktów.
 
 ### 1C. Bucket na zdjęcia produktów
