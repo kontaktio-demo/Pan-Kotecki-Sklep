@@ -89,7 +89,9 @@ function Editor({ promo, onClose, onSaved }: { promo: Promo; onClose: () => void
   async function save() {
     setSaving(true);
     setErr("");
-    const value = p.kind === "fixed" ? toGrosze(valueInput) : Math.round(Number(valueInput) || 0);
+    let value = p.kind === "fixed" ? toGrosze(valueInput) : Math.round(Number(valueInput) || 0);
+    if (p.kind === "percent") value = Math.min(100, Math.max(1, value)); // procent 1–100
+    value = Math.max(0, value);
     const payload = {
       code: p.code,
       name: p.name,

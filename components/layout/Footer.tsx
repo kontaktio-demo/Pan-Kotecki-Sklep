@@ -20,6 +20,14 @@ const COLS = [
       { href: "/kontakt", label: "Kontakt" },
     ],
   },
+  {
+    title: "Informacje",
+    links: [
+      { href: "/regulamin", label: "Regulamin" },
+      { href: "/zwroty", label: "Zwroty i reklamacje" },
+      { href: "/polityka-prywatnosci", label: "Polityka prywatności" },
+    ],
+  },
 ];
 
 export default function Footer() {
@@ -27,7 +35,7 @@ export default function Footer() {
     <footer className="relative mt-24 overflow-hidden bg-ink text-milk">
       <div className="paw-pattern pointer-events-none absolute inset-0 opacity-[0.04]" />
 
-      <div className="container-edge relative grid gap-12 py-14 md:grid-cols-[1.4fr_1fr_1fr] md:py-16">
+      <div className="container-edge relative grid gap-12 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr] md:py-16">
         <div className="max-w-sm">
           <Logo className="text-milk" />
           <p className="mt-5 text-sm leading-relaxed text-milk/60">
@@ -71,7 +79,7 @@ export default function Footer() {
 
       <div className="container-edge relative flex flex-col gap-3 border-t border-white/10 py-6 text-xs text-milk/40 md:flex-row md:items-center md:justify-between">
         <span>© {new Date().getFullYear()} Pan Kotecki · pankotecki.pl — Wszystkie prawa zastrzeżone.</span>
-        <span>Darmowa dostawa od 149 zł · Wysyłka 24h · 30 dni na zwrot</span>
+        <span>Darmowa dostawa od 149 zł · Wysyłka 24h · 14 dni na zwrot</span>
       </div>
     </footer>
   );

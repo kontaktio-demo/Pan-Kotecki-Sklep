@@ -38,7 +38,7 @@ const BENEFITS = [
     icon: <path d="M3 7h11v8H3zM14 10h4l3 3v2h-7zM7 18a2 2 0 1 0 .1 0M18 18a2 2 0 1 0 .1 0" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />,
   },
   {
-    t: "30 dni na zwrot",
+    t: "14 dni na zwrot",
     icon: <path d="M4 8h11a5 5 0 0 1 0 10H9M4 8l4-4M4 8l4 4" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />,
   },
   {

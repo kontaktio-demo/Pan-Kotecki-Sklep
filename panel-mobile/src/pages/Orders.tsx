@@ -152,8 +152,15 @@ function Detail({ order, onClose, onSaved }: { order: Order; onClose: () => void
     setShipMsg("");
     try {
       const blob = await api.getBlob(`/api/admin/orders/${order.id}/label-file`);
+      // pobranie przez <a download> działa też w PWA standalone na iOS (window.open bywa blokowany)
       const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `etykieta-${order.number}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setShipMsg("Etykieta pobrana ✓");
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (e) {
       setShipMsg((e as Error).message);

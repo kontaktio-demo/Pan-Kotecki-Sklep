@@ -18,7 +18,7 @@ const ITEMS = [
   },
   {
     title: "Łatwe zwroty",
-    sub: "30 dni na zwrot",
+    sub: "14 dni na zwrot",
     icon: <path d="M4 8h11a5 5 0 0 1 0 10H9M4 8l4-4M4 8l4 4" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />,
   },
 ];

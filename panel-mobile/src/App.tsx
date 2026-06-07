@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { loadConfig, saveConfig } from "./config";
 import { setCfg } from "./api";
-import { refreshPushSilently } from "./push";
+import { refreshPushSilently, unsubscribePush } from "./push";
 import type { PanelConfig } from "./global";
 import Icon from "./icons";
 
@@ -71,6 +71,18 @@ export default function App() {
   useEffect(() => {
     if (configured && window.location.hash.includes("orders")) setPage("orders");
   }, [configured]);
+
+  // gdy apka jest już otwarta, service worker po kliknięciu powiadomienia
+  // wysyła wiadomość — przełączamy zakładkę (sama zmiana #hash nie odpala Reacta).
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    const onMsg = (e: MessageEvent) => {
+      const nav = (e.data as { nav?: string })?.nav;
+      if (nav === "orders" || nav === "home") setPage(nav as Page);
+    };
+    navigator.serviceWorker.addEventListener("message", onMsg);
+    return () => navigator.serviceWorker.removeEventListener("message", onMsg);
+  }, []);
 
   if (!ready) return <div className="grid h-full place-items-center text-ash">Ładowanie…</div>;
 
@@ -160,8 +172,9 @@ export default function App() {
 }
 
 // szybkie przełączenie połączenia (używane w „Więcej")
-export function resetConnection() {
+export async function resetConnection() {
   if (confirm("Zmienić połączenie? Trzeba będzie wpisać adres i klucz ponownie.")) {
+    await unsubscribePush(); // żeby to urządzenie przestało dostawać powiadomienia
     saveConfig({});
     location.reload();
   }

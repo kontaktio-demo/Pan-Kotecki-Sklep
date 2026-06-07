@@ -35,12 +35,15 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const url = (event.notification.data && event.notification.data.url) || "/";
+  const nav = url.includes("orders") ? "orders" : "home";
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {
         if ("focus" in client) {
-          (client as WindowClient).navigate?.(url);
-          return (client as WindowClient).focus();
+          const wc = client as WindowClient;
+          // okno już otwarte: powiadom apkę, żeby przełączyła zakładkę (sama zmiana #hash nie wystarcza)
+          wc.postMessage?.({ nav });
+          return wc.focus();
         }
       }
       return self.clients.openWindow(url);
