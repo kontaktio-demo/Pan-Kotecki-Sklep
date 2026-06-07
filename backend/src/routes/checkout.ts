@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase.js";
 import { orderNumber, parseBody, serverError, zloty } from "../lib/util.js";
 import { stripe, siteUrl } from "../lib/stripe.js";
 import { sendPushToAll } from "../lib/push.js";
+import { sendOrderConfirmation } from "../lib/email.js";
 import { withCustomer, type CustomerRequest } from "../lib/customerAuth.js";
 
 export const checkoutRouter = Router();
@@ -174,6 +175,7 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
     // Darmowe zamówienie (np. 100% rabat + odbiór) — od razu opłacone, bez Stripe.
     await supabase.from("orders").update({ status: "paid", payment_status: "paid" }).eq("id", order.order_id);
     void sendPushToAll({ title: "🛒 Opłacone zamówienie", body: `${order.number} — ${zloty(0)}`, url: "/#orders" });
+    void sendOrderConfirmation(order.order_id);
   } else if (stripe && base) {
     try {
       const session = await stripe.checkout.sessions.create({

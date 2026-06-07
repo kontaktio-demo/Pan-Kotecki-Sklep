@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { supabase } from "../lib/supabase.js";
 import { parseBody, serverError } from "../lib/util.js";
+import { notifyOwnerContact } from "../lib/email.js";
 
 export const contactRouter = Router();
 
@@ -26,5 +27,6 @@ contactRouter.post("/", async (req, res) => {
     user_agent: ua,
   });
   if (error) return serverError(res, "contact", error);
+  void notifyOwnerContact({ name: body.name ?? null, email: body.email, subject: body.subject ?? null, message: body.message });
   res.status(201).json({ ok: true });
 });

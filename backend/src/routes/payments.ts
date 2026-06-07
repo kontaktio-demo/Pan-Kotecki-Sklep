@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { stripe } from "../lib/stripe.js";
 import { supabase } from "../lib/supabase.js";
 import { sendPushToAll } from "../lib/push.js";
+import { sendOrderConfirmation } from "../lib/email.js";
 import { zloty } from "../lib/util.js";
 
 // Webhook Stripe — POTWIERDZA płatność po stronie serwera (nie ufamy klientowi).
@@ -56,13 +57,14 @@ export async function stripeWebhook(req: Request, res: Response) {
     // Realizacja: 'pending' → 'paid' (nie cofamy packed/shipped).
     const { error: e2 } = await supabase.from("orders").update({ status: "paid" }).eq("id", orderId).eq("status", "pending");
     if (e2) throw e2;
-    // 🔔 Push tylko przy realnym przejściu na opłacone (własny total, nie z sesji).
+    // 🔔 Push + e-mail z potwierdzeniem tylko przy realnym przejściu na opłacone.
     if (!alreadyPaid) {
       void sendPushToAll({
         title: "🛒 Opłacone zamówienie",
         body: `${ord.number} — ${zloty(ord.total_grosze)}`,
         url: "/#orders",
       });
+      void sendOrderConfirmation(orderId);
     }
   };
 

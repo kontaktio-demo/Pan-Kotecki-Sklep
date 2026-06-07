@@ -110,14 +110,20 @@ create index if not exists contact_messages_created_idx on contact_messages (cre
 
 -- ===== 8. Zapisy do newslettera (z dowodem zgody) =====
 create table if not exists newsletter_subscribers (
-  id         uuid primary key default gen_random_uuid(),
-  email      text not null,
-  consent    boolean not null default true,
-  consent_at timestamptz not null default now(),
-  source     text,
-  confirmed  boolean not null default false,  -- double opt-in (gdy podłączysz e-mail)
-  created_at timestamptz not null default now()
+  id            uuid primary key default gen_random_uuid(),
+  email         text not null,
+  consent       boolean not null default true,
+  consent_at    timestamptz not null default now(),
+  source        text,
+  confirmed     boolean not null default false,  -- double opt-in
+  confirm_token text,                            -- jednorazowy token potwierdzenia
+  unsub_token   text,                            -- stały token „wypisz się"
+  created_at    timestamptz not null default now()
 );
+-- dla istniejących baz (gdy tabela była już utworzona):
+alter table newsletter_subscribers add column if not exists confirm_token text;
+alter table newsletter_subscribers add column if not exists unsub_token text;
+update newsletter_subscribers set unsub_token = encode(gen_random_bytes(16), 'hex') where unsub_token is null;
 create unique index if not exists newsletter_email_uidx on newsletter_subscribers (lower(email));
 alter table newsletter_subscribers enable row level security; -- tylko backend
 

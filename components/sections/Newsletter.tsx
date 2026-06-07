@@ -61,7 +61,7 @@ export default function Newsletter() {
 
           {sent ? (
             <p className="mx-auto mt-8 max-w-md text-lg font-semibold">
-              Dziękujemy za zapis! 🐾 Wkrótce wyślemy Ci kod –10% na pierwsze zakupy.
+              Sprawdź skrzynkę i potwierdź zapis 🐾 — kod –10% czeka zaraz po potwierdzeniu.
             </p>
           ) : (
             <form onSubmit={submit} className="mx-auto mt-8 max-w-md">
