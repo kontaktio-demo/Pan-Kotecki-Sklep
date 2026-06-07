@@ -1,4 +1,5 @@
 import { Router } from "express";
+import type Stripe from "stripe";
 import { z } from "zod";
 import { supabase } from "../lib/supabase.js";
 import { orderNumber, parseBody, serverError, zloty } from "../lib/util.js";
@@ -29,6 +30,7 @@ const schema = z
     shipping_address: z.record(z.string(), z.unknown()).optional(),
     parcel_locker: z.string().max(60).optional(),
     promo_code: z.string().max(40).optional(),
+    ui: z.enum(["hosted", "embedded"]).optional(), // tryb płatności (embedded = na naszej stronie)
   })
   // Cel dostawy musi pasować do metody — żeby nie powstało opłacone, niewysyłalne zamówienie.
   .superRefine((b, ctx) => {
@@ -174,7 +176,9 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
 
   // 6) Płatność.
   let checkoutUrl: string | null = null;
+  let clientSecret: string | null = null;
   const base = siteUrl();
+  const embedded = body.ui === "embedded";
   if (total === 0) {
     // Darmowe zamówienie (np. 100% rabat + odbiór) — od razu opłacone, bez Stripe.
     await supabase.from("orders").update({ status: "paid", payment_status: "paid" }).eq("id", order.order_id);
@@ -182,11 +186,10 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
     void sendOrderConfirmation(order.order_id);
   } else if (stripe && base) {
     try {
-      const session = await stripe.checkout.sessions.create({
+      const params: Stripe.Checkout.SessionCreateParams = {
         mode: "payment",
         payment_method_types: ["card", "blik", "p24"],
         locale: "pl", // polski interfejs płatności
-        submit_type: "pay", // przycisk „Zapłać"
         customer_email: email,
         client_reference_id: order.order_id,
         metadata: { order_id: order.order_id, number: order.number },
@@ -203,10 +206,19 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
             },
           },
         ],
-        success_url: `${base}/kasa/dziekujemy?order=${encodeURIComponent(order.number)}`,
-        cancel_url: `${base}/kasa?anulowano=1`,
-      });
+      };
+      if (embedded) {
+        // Embedded Checkout — płatność zostaje NA pankotecki.pl (klient nie wychodzi).
+        params.ui_mode = "embedded";
+        params.return_url = `${base}/kasa/dziekujemy?order=${encodeURIComponent(order.number)}&session_id={CHECKOUT_SESSION_ID}`;
+      } else {
+        params.submit_type = "pay";
+        params.success_url = `${base}/kasa/dziekujemy?order=${encodeURIComponent(order.number)}`;
+        params.cancel_url = `${base}/kasa?anulowano=1`;
+      }
+      const session = await stripe.checkout.sessions.create(params);
       checkoutUrl = session.url;
+      clientSecret = session.client_secret;
       await supabase
         .from("orders")
         .update({ payment_provider: "stripe", payment_ref: session.id })
@@ -234,5 +246,6 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
     total: total / 100,
     totalGrosze: total,
     checkoutUrl,
+    clientSecret,
   });
 });

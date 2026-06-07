@@ -25,9 +25,10 @@ async function isShopOpen(): Promise<boolean> {
 }
 
 export async function middleware(req: NextRequest) {
-  // Strona potwierdzenia zamówienia musi działać zawsze — opłacony klient nie
-  // może wpaść w „Wkrótce", nawet gdy sklep jest zamknięty.
-  if (req.nextUrl.pathname.startsWith("/kasa/dziekujemy")) return NextResponse.next();
+  // Strony płatności i potwierdzenia muszą działać zawsze — klient w trakcie
+  // płatności nie może wpaść w „Wkrótce", nawet gdy sklep jest zamknięty.
+  const path = req.nextUrl.pathname;
+  if (path.startsWith("/kasa/dziekujemy") || path.startsWith("/kasa/platnosc")) return NextResponse.next();
   if (await isShopOpen()) return NextResponse.next();
   const url = req.nextUrl.clone();
   url.pathname = "/wkrotce";

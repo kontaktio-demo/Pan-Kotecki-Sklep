@@ -12,6 +12,8 @@ import { useAuth } from "@/components/account/AuthProvider";
 import { getAccessToken, getProfile, getAddresses, addAddress, type AccountAddress } from "@/lib/account";
 
 const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+// Gdy ustawisz klucz publiczny Stripe → płatność osadzona NA naszej stronie (embedded).
+const STRIPE_PK = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
 const DELIVERY = [
   { id: "paczkomat", label: "Paczkomat InPost 24/7", sub: "1–2 dni robocze", cost: 11.99, method: "inpost_locker" },
@@ -162,6 +164,7 @@ export default function CheckoutForm() {
       email: email.trim(),
       phone: phone.trim(),
       name: `${firstName} ${lastName}`.trim(),
+      ui: STRIPE_PK ? "embedded" : "hosted",
       shipping_method: selected.method,
       shipping_address: {
         first_name: firstName.trim(),
@@ -222,8 +225,16 @@ export default function CheckoutForm() {
       try {
         sessionStorage.setItem("kotecki-order", JSON.stringify({ nr: data.number, total: data.total ?? total }));
       } catch {}
+      if (data.clientSecret) {
+        // Embedded Checkout — płatność na NASZEJ stronie (klient nie wychodzi).
+        try {
+          sessionStorage.setItem("kotecki-pay", data.clientSecret);
+        } catch {}
+        router.push("/kasa/platnosc");
+        return;
+      }
       if (data.checkoutUrl) {
-        // Płatność na bezpiecznej stronie Stripe (karta / BLIK / Przelewy24).
+        // Płatność na stronie Stripe (gdy brak klucza publicznego — tryb hosted).
         window.location.href = data.checkoutUrl;
         return;
       }
