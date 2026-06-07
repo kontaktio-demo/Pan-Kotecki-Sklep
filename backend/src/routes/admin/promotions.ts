@@ -6,10 +6,10 @@ import { badId, parseBody, serverError, writeError } from "../../lib/util.js";
 export const promotionsRouter = Router();
 
 const base = z.object({
-  code: z.string().min(2),
-  name: z.string().optional().default(""),
+  code: z.string().min(2).max(40),
+  name: z.string().max(120).optional().default(""),
   kind: z.enum(["percent", "fixed"]).default("percent"),
-  value: z.number().int().min(0),
+  value: z.number().int().min(0).max(10_000_000),
   min_order_grosze: z.number().int().min(0).optional().default(0),
   active: z.boolean().optional().default(true),
   starts_at: z.string().datetime().nullable().optional(),
@@ -17,11 +17,14 @@ const base = z.object({
   usage_limit: z.number().int().min(0).nullable().optional(),
 });
 
-const schema = base.superRefine((d, ctx) => {
-  if (d.kind === "percent" && d.value > 100) {
+const percentGuard = (d: { kind?: string; value?: number }, ctx: z.RefinementCtx) => {
+  if (d.kind === "percent" && d.value != null && d.value > 100) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["value"], message: "Rabat procentowy nie może przekraczać 100%" });
   }
-});
+};
+
+const schema = base.superRefine(percentGuard);
+const patchSchema = base.partial().superRefine(percentGuard);
 
 promotionsRouter.get("/", async (_req, res) => {
   const { data, error } = await supabase.from("promotions").select("*").order("created_at", { ascending: false });
@@ -43,7 +46,7 @@ promotionsRouter.post("/", async (req, res) => {
 
 promotionsRouter.patch("/:id", async (req, res) => {
   if (badId(res, req.params.id)) return;
-  const body = parseBody(base.partial(), req.body, res);
+  const body = parseBody(patchSchema, req.body, res);
   if (!body) return;
   const patch: Record<string, unknown> = { ...body };
   if (typeof body.code === "string") patch.code = body.code.toUpperCase();

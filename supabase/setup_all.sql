@@ -11,12 +11,15 @@
 create extension if not exists "pgcrypto";
 
 -- helper: automatyczny updated_at
-create or replace function set_updated_at() returns trigger as $$
+create or replace function set_updated_at() returns trigger
+language plpgsql
+set search_path = public, pg_temp
+as $$
 begin
   new.updated_at = now();
   return new;
 end;
-$$ language plpgsql;
+$$;
 
 -- ── Kategorie ────────────────────────────────────────────────
 create table if not exists categories (
@@ -258,6 +261,7 @@ alter table push_subscriptions enable row level security;
 create or replace function create_order(p jsonb)
 returns jsonb
 language plpgsql
+set search_path = public, pg_temp
 as $$
 declare
   it        jsonb;
@@ -336,6 +340,7 @@ grant execute on function create_order(jsonb) to service_role;
 create or replace function release_order(p_order uuid)
 returns void
 language plpgsql
+set search_path = public, pg_temp
 as $$
 declare
   v_status  text;
@@ -363,3 +368,13 @@ $$;
 
 revoke all on function release_order(uuid) from public, anon, authenticated;
 grant execute on function release_order(uuid) to service_role;
+
+-- Niezmienniki kwot/ilości (poziom Allegro) — baza odrzuca ujemne/błędne wartości.
+do $$ begin alter table products    add constraint products_price_nonneg   check (price_grosze >= 0); exception when duplicate_object then null; end $$;
+do $$ begin alter table products    add constraint products_sale_nonneg    check (sale_price_grosze is null or sale_price_grosze >= 0); exception when duplicate_object then null; end $$;
+do $$ begin alter table products    add constraint products_stock_nonneg   check (stock_qty is null or stock_qty >= 0); exception when duplicate_object then null; end $$;
+do $$ begin alter table order_items add constraint order_items_price_nonneg check (price_grosze >= 0); exception when duplicate_object then null; end $$;
+do $$ begin alter table order_items add constraint order_items_qty_pos      check (qty > 0); exception when duplicate_object then null; end $$;
+do $$ begin alter table orders      add constraint orders_amounts_nonneg    check (subtotal_grosze >= 0 and discount_grosze >= 0 and shipping_grosze >= 0 and total_grosze >= 0); exception when duplicate_object then null; end $$;
+do $$ begin alter table promotions  add constraint promotions_value_nonneg  check (value >= 0); exception when duplicate_object then null; end $$;
+do $$ begin alter table promotions  add constraint promotions_used_nonneg   check (used_count >= 0); exception when duplicate_object then null; end $$;

@@ -1,6 +1,7 @@
 import { Router } from "express";
+import { z } from "zod";
 import { supabase } from "../lib/supabase.js";
-import { serverError } from "../lib/util.js";
+import { parseBody, serverError } from "../lib/util.js";
 import { mapProduct, PRODUCT_SELECT, type ProductRow } from "../lib/mappers.js";
 
 export const catalogRouter = Router();
@@ -73,4 +74,40 @@ catalogRouter.get("/order-status/:number", async (req, res) => {
   if (!data) return res.status(404).json({ error: "Nie znaleziono" });
   res.set("Cache-Control", "no-store");
   res.json({ paymentStatus: data.payment_status, status: data.status });
+});
+
+// Publiczne ustawienia sklepu (próg darmowej dostawy) — żeby sklep i backend liczyły TAK SAMO.
+catalogRouter.get("/settings/public", async (_req, res) => {
+  const { data } = await supabase.from("settings").select("value").eq("key", "store").maybeSingle();
+  const raw = Number((data?.value as { free_shipping_grosze?: number })?.free_shipping_grosze);
+  const freeShippingGrosze = Number.isFinite(raw) && raw >= 0 ? raw : 14900;
+  cache(res, 300);
+  res.json({ freeShippingGrosze });
+});
+
+// Walidacja kodu rabatowego PRZED kasą (podgląd rabatu) — NIE zwiększa licznika użyć.
+const validateSchema = z.object({ code: z.string().min(1).max(40), subtotal_grosze: z.number().int().min(0) });
+catalogRouter.post("/promo/validate", async (req, res) => {
+  const body = parseBody(validateSchema, req.body, res);
+  if (!body) return;
+  const { data: promo } = await supabase.from("promotions").select("*").eq("code", body.code.toUpperCase()).maybeSingle();
+  const now = Date.now();
+  const valid =
+    promo &&
+    promo.active &&
+    body.subtotal_grosze >= (promo.min_order_grosze ?? 0) &&
+    (!promo.starts_at || new Date(promo.starts_at).getTime() <= now) &&
+    (!promo.ends_at || new Date(promo.ends_at).getTime() >= now) &&
+    (promo.usage_limit == null || promo.used_count < promo.usage_limit);
+  if (!valid) {
+    res.set("Cache-Control", "no-store");
+    return res.json({ valid: false, discountGrosze: 0, message: "Kod nieprawidłowy lub niespełnione warunki." });
+  }
+  let discount =
+    promo.kind === "percent"
+      ? Math.floor((body.subtotal_grosze * Math.min(Math.max(promo.value, 0), 100)) / 100)
+      : Math.max(promo.value, 0);
+  discount = Math.max(0, Math.min(discount, body.subtotal_grosze));
+  res.set("Cache-Control", "no-store");
+  res.json({ valid: true, discountGrosze: discount, code: promo.code });
 });

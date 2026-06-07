@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { z } from "zod";
 import { supabase } from "../lib/supabase.js";
-import { orderNumber, parseBody, serverError } from "../lib/util.js";
+import { orderNumber, parseBody, serverError, zloty } from "../lib/util.js";
 import { stripe, siteUrl } from "../lib/stripe.js";
+import { sendPushToAll } from "../lib/push.js";
 
 export const checkoutRouter = Router();
 
@@ -12,16 +13,28 @@ const SHIPPING_GROSZE: Record<string, number> = {
   pickup: 0,
 };
 
-const schema = z.object({
-  items: z.array(z.object({ slug: z.string().min(1).max(100), qty: z.number().int().min(1).max(99) })).min(1).max(50),
-  email: z.string().email(),
-  phone: z.string().max(40).optional(),
-  name: z.string().max(120).optional(),
-  shipping_method: z.enum(["inpost_locker", "inpost_courier", "pickup"]).default("inpost_locker"),
-  shipping_address: z.record(z.string(), z.unknown()).optional(),
-  parcel_locker: z.string().max(60).optional(),
-  promo_code: z.string().max(40).optional(),
-});
+const schema = z
+  .object({
+    items: z.array(z.object({ slug: z.string().min(1).max(100), qty: z.number().int().min(1).max(99) })).min(1).max(50),
+    email: z.string().email(),
+    phone: z.string().max(40).optional(),
+    name: z.string().max(120).optional(),
+    shipping_method: z.enum(["inpost_locker", "inpost_courier", "pickup"]).default("inpost_locker"),
+    shipping_address: z.record(z.string(), z.unknown()).optional(),
+    parcel_locker: z.string().max(60).optional(),
+    promo_code: z.string().max(40).optional(),
+  })
+  // Cel dostawy musi pasować do metody — żeby nie powstało opłacone, niewysyłalne zamówienie.
+  .superRefine((b, ctx) => {
+    if (b.shipping_method === "inpost_locker" && !b.parcel_locker?.trim()) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["parcel_locker"], message: "Wybierz paczkomat" });
+    }
+    if (b.shipping_method === "inpost_courier") {
+      const a = (b.shipping_address ?? {}) as Record<string, unknown>;
+      const missing = ["street", "building_number", "city", "post_code"].some((k) => !String(a[k] ?? "").trim());
+      if (missing) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["shipping_address"], message: "Uzupełnij adres dostawy" });
+    }
+  });
 
 checkoutRouter.post("/", async (req, res) => {
   const body = parseBody(schema, req.body, res);
@@ -87,7 +100,8 @@ checkoutRouter.post("/", async (req, res) => {
 
   // 3) Dostawa (darmowa od progu — liczona od wartości produktów, przed rabatem)
   const { data: storeSetting } = await supabase.from("settings").select("value").eq("key", "store").maybeSingle();
-  const freeThreshold = Number((storeSetting?.value as { free_shipping_grosze?: number })?.free_shipping_grosze ?? 14900);
+  const rawThreshold = Number((storeSetting?.value as { free_shipping_grosze?: number })?.free_shipping_grosze);
+  const freeThreshold = Number.isFinite(rawThreshold) && rawThreshold >= 0 ? rawThreshold : 14900;
   const method = body.shipping_method ?? "inpost_locker";
   let shipping = SHIPPING_GROSZE[method] ?? 0;
   if (method !== "pickup" && subtotal >= freeThreshold) shipping = 0;
@@ -146,11 +160,14 @@ checkoutRouter.post("/", async (req, res) => {
 
   const order = result as { order_id: string; number: string };
 
-  // 6) Płatność Stripe (karta / BLIK / Przelewy24) — jeśli skonfigurowana i jest co płacić.
-  //    Kwotę bierze z policzonego total (grosze). Potwierdzenie przyjdzie webhookiem.
+  // 6) Płatność.
   let checkoutUrl: string | null = null;
   const base = siteUrl();
-  if (stripe && base && total > 0) {
+  if (total === 0) {
+    // Darmowe zamówienie (np. 100% rabat + odbiór) — od razu opłacone, bez Stripe.
+    await supabase.from("orders").update({ status: "paid", payment_status: "paid" }).eq("id", order.order_id);
+    void sendPushToAll({ title: "🛒 Opłacone zamówienie", body: `${order.number} — ${zloty(0)}`, url: "/#orders" });
+  } else if (stripe && base) {
     try {
       const session = await stripe.checkout.sessions.create({
         mode: "payment",

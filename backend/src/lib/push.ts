@@ -35,7 +35,8 @@ export async function sendPushToAll(payload: PushPayload): Promise<void> {
         await webpush.sendNotification(row.subscription as webpush.PushSubscription, body);
       } catch (e) {
         const code = (e as { statusCode?: number }).statusCode;
-        if (code === 404 || code === 410) {
+        // 401/403 = subskrypcja niezgodna z aktualnymi kluczami VAPID; 404/410 = wygasła.
+        if (code && [401, 403, 404, 410].includes(code)) {
           await supabase.from("push_subscriptions").delete().eq("id", row.id);
         } else {
           console.error("[push] wysyłka nieudana", code);

@@ -95,10 +95,15 @@ export async function getShipment(id: string): Promise<ShipmentResult | null> {
   return { id: String(data.id), tracking_number: data.tracking_number ?? null, status: data.status ?? "created" };
 }
 
-// Pobiera etykietę PDF. Zwraca Buffer albo null, jeśli jeszcze nieobsłużona.
+// Pobiera etykietę PDF. null = przesyłka jeszcze nieobsłużona (404/422/425).
+// Inne błędy (401 zły token / 429 / 500) RZUCAMY — żeby nie udawać „spróbuj później".
 export async function fetchLabel(id: string): Promise<Buffer | null> {
   const res = await fetch(`${BASE}/shipments/${id}/label?format=pdf&type=normal`, { headers: headers() });
-  if (!res.ok) return null;
+  if (res.status === 404 || res.status === 422 || res.status === 425) return null;
+  if (!res.ok) {
+    const txt = await res.text().catch(() => "");
+    throw new Error(`InPost ${res.status}: ${txt.slice(0, 200)}`);
+  }
   const buf = Buffer.from(await res.arrayBuffer());
   return buf.length ? buf : null;
 }

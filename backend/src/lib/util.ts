@@ -53,7 +53,9 @@ export function parseBody<T>(schema: ZodSchema<T>, body: unknown, res: Response)
     return schema.parse(body);
   } catch (e) {
     if (e instanceof ZodError) {
-      res.status(400).json({ error: "Błędne dane", issues: e.issues });
+      // tylko ścieżka + komunikat (bez ujawniania wewnętrznego schematu/typów/enumów)
+      const issues = e.issues.map((i) => ({ path: i.path.join("."), message: i.message }));
+      res.status(400).json({ error: "Błędne dane", issues });
     } else {
       res.status(400).json({ error: "Błędne dane" });
     }

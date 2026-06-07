@@ -55,14 +55,17 @@ ordersRouter.patch("/:id", async (req, res) => {
   const body = parseBody(patchSchema, req.body, res);
   if (!body) return;
 
-  // Czy to przejście na „opłacone"? (żeby wysłać push tylko raz, przy zmianie)
+  const patch: Record<string, unknown> = { ...body };
+  // Czy to przejście na „opłacone"? (push tylko raz, przy zmianie)
   let wasPaid = true;
   if (body.payment_status === "paid") {
-    const { data: prev } = await supabase.from("orders").select("payment_status").eq("id", req.params.id).maybeSingle();
+    const { data: prev } = await supabase.from("orders").select("payment_status, status").eq("id", req.params.id).maybeSingle();
     wasPaid = prev?.payment_status === "paid";
+    // operator oznaczył opłacone, nie wybrał statusu, a było 'pending' → podnieś na 'paid' (jak webhook)
+    if (body.status === undefined && prev?.status === "pending") patch.status = "paid";
   }
 
-  const { data, error } = await supabase.from("orders").update(body).eq("id", req.params.id).select(SELECT).maybeSingle();
+  const { data, error } = await supabase.from("orders").update(patch).eq("id", req.params.id).select(SELECT).maybeSingle();
   if (error) return serverError(res, "orders.update", error);
   if (!data) return res.status(404).json({ error: "Nie znaleziono" });
 
@@ -95,15 +98,24 @@ ordersRouter.post("/:id/label", async (req, res) => {
   try {
     // Jeśli przesyłka już istnieje — nie twórz duplikatu, tylko odśwież status.
     if (o.shipping_ref) {
-      const s = await getShipment(o.shipping_ref);
+      const s = await getShipment(o.shipping_ref); // rzuca przy 401/429/500; null tylko przy realnym 404
       if (s) {
         await supabase.from("orders").update({ tracking_number: s.tracking_number }).eq("id", o.id);
         return res.json({ shipment_id: s.id, tracking_number: s.tracking_number, status: s.status, reused: true });
       }
+      // 404 = przesyłka usunięta/anulowana w InPost → wyczyść stary ref i utwórz nową (zamiast osierocać)
+      await supabase.from("orders").update({ shipping_ref: null }).eq("id", o.id);
+      o.shipping_ref = null;
     }
     const method = o.shipping_method === "inpost_courier" ? "courier" : "locker";
     if (method === "locker" && !o.parcel_locker) {
       return res.status(400).json({ error: "Brak wybranego paczkomatu w zamówieniu" });
+    }
+    if (method === "courier") {
+      const a = (o.shipping_address ?? {}) as Addr;
+      if (!a.street || !a.city || !a.post_code) {
+        return res.status(400).json({ error: "Brak/niepełny adres dostawy — uzupełnij dane przed wygenerowaniem etykiety kuriera" });
+      }
     }
     const shipment = await createShipment({
       method,
