@@ -17,7 +17,6 @@ export default function ContactForm() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaRef = useRef<HCaptcha>(null);
 
   if (sent) {
@@ -31,12 +30,24 @@ export default function ContactForm() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (HCAPTCHA_SITEKEY && !captchaToken) {
-      setErr("Potwierdź, że nie jesteś robotem 🐾");
-      return;
-    }
     setErr("");
     setBusy(true);
+
+    let captchaToken: string | undefined;
+    if (HCAPTCHA_SITEKEY) {
+      try {
+        const r = await captchaRef.current?.execute({ async: true });
+        captchaToken = r?.response;
+      } catch {
+        /* zamknięto wyzwanie */
+      }
+      if (!captchaToken) {
+        setBusy(false);
+        setErr("Weryfikacja nie powiodła się — spróbuj ponownie 🐾");
+        return;
+      }
+    }
+
     try {
       if (API) {
         const res = await fetch(`${API}/api/contact`, {
@@ -54,7 +65,6 @@ export default function ContactForm() {
       setErr((e as Error).message);
     }
     captchaRef.current?.resetCaptcha();
-    setCaptchaToken(null);
     setBusy(false);
   }
 
@@ -74,7 +84,7 @@ export default function ContactForm() {
         onChange={(e) => setMessage(e.target.value)}
       />
       {HCAPTCHA_SITEKEY && (
-        <HCaptcha ref={captchaRef} sitekey={HCAPTCHA_SITEKEY} onVerify={(t) => setCaptchaToken(t)} onExpire={() => setCaptchaToken(null)} />
+        <HCaptcha ref={captchaRef} sitekey={HCAPTCHA_SITEKEY} size="invisible" theme="light" />
       )}
       {err && <p className="text-sm text-red-600">{err}</p>}
       <button
@@ -87,6 +97,13 @@ export default function ContactForm() {
       <p className="text-xs text-mist">
         Wysyłając wiadomość, zgadzasz się na przetwarzanie Twoich danych w celu udzielenia odpowiedzi — szczegóły w{" "}
         <Link href="/polityka-prywatnosci" className="underline hover:text-ink">polityce prywatności</Link>.
+        {HCAPTCHA_SITEKEY && (
+          <>
+            {" "}Formularz chroni hCaptcha (
+            <a href="https://hcaptcha.com/privacy" target="_blank" rel="noreferrer" className="underline">prywatność</a>,{" "}
+            <a href="https://hcaptcha.com/terms" target="_blank" rel="noreferrer" className="underline">warunki</a>).
+          </>
+        )}
       </p>
     </form>
   );

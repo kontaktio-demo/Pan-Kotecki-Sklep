@@ -19,7 +19,6 @@ export default function LoginForm() {
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const captchaRef = useRef<HCaptcha>(null);
 
   // Zalogowany? Od razu do panelu.
@@ -30,12 +29,25 @@ export default function LoginForm() {
   async function send(e: React.FormEvent) {
     e.preventDefault();
     if (!supabase) return;
-    if (HCAPTCHA_SITEKEY && !captchaToken) {
-      setErr("Potwierdź, że nie jesteś robotem 🐾");
-      return;
-    }
     setErr("");
     setBusy(true);
+
+    // hCaptcha „invisible" — odpalamy w tle dopiero przy wysyłce.
+    let captchaToken: string | undefined;
+    if (HCAPTCHA_SITEKEY) {
+      try {
+        const r = await captchaRef.current?.execute({ async: true });
+        captchaToken = r?.response;
+      } catch {
+        /* użytkownik zamknął wyzwanie */
+      }
+      if (!captchaToken) {
+        setBusy(false);
+        setErr("Weryfikacja nie powiodła się — spróbuj ponownie 🐾");
+        return;
+      }
+    }
+
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim().toLowerCase(),
       options: {
@@ -44,9 +56,7 @@ export default function LoginForm() {
         ...(captchaToken ? { captchaToken } : {}),
       },
     });
-    // token hCaptcha jest jednorazowy — resetujemy po każdej próbie
     captchaRef.current?.resetCaptcha();
-    setCaptchaToken(null);
     setBusy(false);
     if (error) setErr("Nie udało się wysłać linku. Sprawdź adres e-mail i spróbuj ponownie.");
     else setSent(true);
@@ -98,14 +108,7 @@ export default function LoginForm() {
               className="w-full rounded-xl border border-line bg-milk px-4 py-3.5 text-sm outline-none transition-colors focus:border-ink"
             />
             {HCAPTCHA_SITEKEY && (
-              <div className="mt-3">
-                <HCaptcha
-                  ref={captchaRef}
-                  sitekey={HCAPTCHA_SITEKEY}
-                  onVerify={(t) => setCaptchaToken(t)}
-                  onExpire={() => setCaptchaToken(null)}
-                />
-              </div>
+              <HCaptcha ref={captchaRef} sitekey={HCAPTCHA_SITEKEY} size="invisible" theme="light" />
             )}
             {err && <p className="mt-2 text-sm text-red-600">{err}</p>}
             <button
@@ -120,6 +123,13 @@ export default function LoginForm() {
               <Link href="/regulamin" className="underline hover:text-ink">regulamin</Link> i{" "}
               <Link href="/polityka-prywatnosci" className="underline hover:text-ink">politykę prywatności</Link>.
             </p>
+            {HCAPTCHA_SITEKEY && (
+              <p className="mt-2 text-center text-[0.68rem] text-mist">
+                Chronione przez hCaptcha —{" "}
+                <a href="https://hcaptcha.com/privacy" target="_blank" rel="noreferrer" className="underline">prywatność</a> i{" "}
+                <a href="https://hcaptcha.com/terms" target="_blank" rel="noreferrer" className="underline">warunki</a>.
+              </p>
+            )}
           </form>
         )}
 
