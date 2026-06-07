@@ -77,7 +77,10 @@ export default function LockerPicker({
       el.setAttribute("token", TOKEN);
       el.setAttribute("language", "pl");
       el.setAttribute("config", "parcelCollect");
-      el.setAttribute("onpoint", "window.__kotInpostPoint && window.__kotInpostPoint(point)");
+      // onpoint = NAZWA globalnej funkcji (tak jak w oficjalnym przykładzie InPost)
+      el.setAttribute("onpoint", "__kotInpostPoint");
+      el.style.position = "absolute";
+      el.style.inset = "0";
       el.style.width = "100%";
       el.style.height = "100%";
       el.style.display = "block";
@@ -170,7 +173,7 @@ export default function LockerPicker({
                 <div className="absolute inset-0 z-10 grid place-items-center text-ash">Ładuję mapę paczkomatów… 🐈</div>
               )}
               {/* mapę wstawia useEffect ręcznie (setAttribute) — patrz wyżej */}
-              <div ref={mapRef} className="h-full w-full" />
+              <div ref={mapRef} className="absolute inset-0" />
             </div>
           </div>
         </div>

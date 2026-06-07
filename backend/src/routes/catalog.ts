@@ -76,13 +76,16 @@ catalogRouter.get("/order-status/:number", async (req, res) => {
   res.json({ paymentStatus: data.payment_status, status: data.status });
 });
 
-// Publiczne ustawienia sklepu (próg darmowej dostawy) — żeby sklep i backend liczyły TAK SAMO.
+// Publiczne ustawienia sklepu (próg darmowej dostawy + czy sklep otwarty).
 catalogRouter.get("/settings/public", async (_req, res) => {
   const { data } = await supabase.from("settings").select("value").eq("key", "store").maybeSingle();
-  const raw = Number((data?.value as { free_shipping_grosze?: number })?.free_shipping_grosze);
+  const store = (data?.value ?? {}) as { free_shipping_grosze?: number; open?: boolean };
+  const raw = Number(store.free_shipping_grosze);
   const freeShippingGrosze = Number.isFinite(raw) && raw >= 0 ? raw : 14900;
-  cache(res, 300);
-  res.json({ freeShippingGrosze });
+  const open = store.open !== false; // domyślnie otwarty; zamknięty tylko gdy jawnie false
+  // krótki cache — żeby włącznik „Wkrótce/Otwarty" działał szybko (~30 s)
+  res.set("Cache-Control", "public, max-age=15, s-maxage=30, stale-while-revalidate=60");
+  res.json({ freeShippingGrosze, open });
 });
 
 // Walidacja kodu rabatowego PRZED kasą (podgląd rabatu) — NIE zwiększa licznika użyć.
