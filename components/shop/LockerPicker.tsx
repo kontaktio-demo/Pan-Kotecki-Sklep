@@ -144,7 +144,7 @@ export default function LockerPicker({
 
       {open && TOKEN && (
         <div
-          className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/55 sm:items-center sm:p-6"
+          className="fixed inset-0 z-[130] flex items-end justify-center bg-ink/55 sm:items-center sm:p-6"
           onClick={() => setOpen(false)}
         >
           <div
