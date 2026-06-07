@@ -28,13 +28,18 @@ export default function LockerPicker({
 
   useEffect(() => {
     if (!TOKEN) return;
-    window.__kotInpostPoint = (p) => {
+    const handlePoint = (p: Point) => {
       const code = (p?.name ?? "").toString();
       if (!code) return;
       const addr = p?.address?.line1 ?? p?.address_details?.street ?? "";
       onSelect(code, addr ? `${code} · ${addr}` : code);
       setOpen(false);
     };
+    window.__kotInpostPoint = handlePoint;
+    // druga droga odbioru punktu (zdarzenie) — na wypadek różnic w wersjach widgetu
+    const onSel = (e: Event) => handlePoint((e as CustomEvent).detail as Point);
+    document.addEventListener("onpointselect", onSel as EventListener);
+
     const cssId = "inpost-geo-css";
     const jsId = "inpost-geo-js";
     if (!document.getElementById(cssId)) {
@@ -54,6 +59,8 @@ export default function LockerPicker({
     } else {
       setReady(true);
     }
+
+    return () => document.removeEventListener("onpointselect", onSel as EventListener);
   }, [onSelect]);
 
   return (
@@ -139,7 +146,7 @@ export default function LockerPicker({
                 token: TOKEN,
                 language: "pl",
                 config: "parcelCollect",
-                onpoint: "__kotInpostPoint",
+                onpoint: "window.__kotInpostPoint && window.__kotInpostPoint(point)",
                 style: { width: "100%", height: "100%", display: "block" },
               } as never)}
             </div>
