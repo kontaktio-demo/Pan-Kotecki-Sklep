@@ -188,7 +188,8 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
     try {
       const params: Stripe.Checkout.SessionCreateParams = {
         mode: "payment",
-        payment_method_types: ["card", "blik", "p24"],
+        // Brak payment_method_types -> Stripe sam użyje metod włączonych na koncie
+        // (karta/BLIK/Przelewy24). Nie wywali się, gdy któraś nie jest aktywna.
         locale: "pl", // polski interfejs płatności
         customer_email: email,
         client_reference_id: order.order_id,
@@ -212,7 +213,9 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
         const pi = await stripe.paymentIntents.create({
           amount: total,
           currency: "pln",
-          payment_method_types: ["card", "blik", "p24"],
+          // automatyczne metody = Stripe pokaże to, co masz włączone na koncie
+          // (karta/BLIK/Przelewy24); nie rzuci błędem, gdy któraś nie jest aktywna.
+          automatic_payment_methods: { enabled: true },
           metadata: { order_id: order.order_id, number: order.number },
           receipt_email: email,
         });
@@ -235,10 +238,12 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
       }
     } catch (err) {
       console.error("[checkout.stripe]", err);
-      // Stripe włączony, ale sesja się nie utworzyła → zwolnij stan i zgłoś błąd
-      // (nie wysyłamy klienta na „dziękujemy" bez płatności).
+      // Stripe włączony, ale płatność się nie utworzyła → zwolnij stan i zgłoś błąd
+      // (nie wysyłamy klienta na „dziękujemy" bez płatności). Pokazujemy powód ze
+      // Stripe (np. „p24 not activated") - pomaga w konfiguracji.
       await supabase.rpc("release_order", { p_order: order.order_id });
-      return res.status(502).json({ error: "Płatność chwilowo niedostępna. Spróbuj ponownie za chwilę." });
+      const reason = err instanceof Error && err.message ? err.message : "spróbuj ponownie za chwilę";
+      return res.status(502).json({ error: `Płatność chwilowo niedostępna: ${reason}` });
     }
   } else {
     // total > 0, a płatność (Stripe/SITE_URL) niedostępna → NIE wysyłamy na „dziękujemy"
