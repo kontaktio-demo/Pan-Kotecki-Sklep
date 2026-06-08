@@ -34,7 +34,7 @@ export default function RegulaminPage() {
 
         <Section title="§1. Postanowienia ogólne">
           <p>
-            Sklep internetowy „Pan Kotecki” działający pod adresem kotecki.pl prowadzony jest przez{" "}
+            Sklep internetowy „Pan Kotecki” działający pod adresem pankotecki.pl prowadzony jest przez{" "}
             {SELLER.name}, {SELLER.address}, NIP: {SELLER.nip}, REGON: {SELLER.regon} (dalej „Sprzedawca”). Kontakt:{" "}
             {SELLER.email}, tel.: <RevealPhone className="font-medium text-ink" />.
           </p>

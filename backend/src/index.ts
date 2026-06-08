@@ -50,27 +50,13 @@ app.use(
   }),
 );
 
-// CORS: własne domeny marki są ZAWSZE dopuszczone (sklep na żywo nie może paść
-// przez literówkę/brak CLIENT_ORIGIN). Dodatkowo to, co w CLIENT_ORIGIN
-// (panele / preview Vercel), żądania bez Origin (server-to-server) oraz Origin
-// "null" (panel desktop Electron z file://). "*" = wszystko (tylko awaryjnie/dev).
-const CANON = [
-  "https://pankotecki.pl",
-  "https://www.pankotecki.pl",
-  "https://pankotecki.com",
-  "https://www.pankotecki.com",
-];
-const envOrigins = (process.env.CLIENT_ORIGIN ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-const allowAll = envOrigins.includes("*");
-const allowList = new Set([...CANON, ...envOrigins.filter((o) => o !== "*")]);
-if (isProd && allowAll) {
-  console.warn("[boot] ⚠️ CLIENT_ORIGIN zawiera '*' - CORS otwarty na wszystkich. Zostaw same konkretne adresy.");
-}
-app.use(
-  cors({
-    origin: allowAll ? true : (origin, cb) => cb(null, !origin || origin === "null" || allowList.has(origin)),
-  }),
-);
+// CORS: nasze API jest STATELESS i autoryzowane TOKENEM (Bearer dla kont /
+// x-admin-key dla paneli), BEZ ciasteczek. W takim modelu CORS nie jest granicą
+// bezpieczeństwa - obca strona i tak nie zdobędzie tokenu ofiary, a publiczne
+// trasy (katalog/checkout) są jawne. Dlatego dopuszczamy każdy origin, żeby sklep
+// i oba panele (mobilny, desktop) działały niezależnie od hostingu. Nadużycia
+// ogranicza rate-limit. (CLIENT_ORIGIN nie jest już potrzebny.)
+app.use(cors({ origin: true }));
 app.use(compression());
 
 // Webhook Stripe: surowe body (weryfikacja podpisu) + własny limit (publiczny, robi kryptografię).
