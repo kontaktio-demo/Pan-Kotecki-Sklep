@@ -431,7 +431,7 @@ export default function CheckoutForm() {
           {discount > 0 && (
             <div className="flex justify-between font-medium text-teal">
               <span>Rabat</span>
-              <span className="tabular-nums">−{formatPrice(discount)}</span>
+              <span className="tabular-nums">-{formatPrice(discount)}</span>
             </div>
           )}
           <div className="flex justify-between">

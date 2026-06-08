@@ -13,6 +13,8 @@ create index if not exists orders_email_plain_idx     on orders (email);
 create index if not exists orders_status_created_idx  on orders (status, created_at desc);
 -- partial: dominujący filtr raportów to payment_status='paid'
 create index if not exists orders_paid_created_idx    on orders (created_at) where payment_status = 'paid';
+-- webhook zwrotu/sporu: orders.select().eq('payment_ref', pi) - inaczej seq-scan na każdym zdarzeniu
+create index if not exists orders_payment_ref_idx     on orders (payment_ref);
 create index if not exists customers_email_plain_idx  on customers (email);
 
 -- Wyszukiwarka produktów ILIKE '%fraza%' - indeks trigramowy (GIN)

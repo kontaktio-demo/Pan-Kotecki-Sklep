@@ -23,10 +23,15 @@ export async function stripeWebhook(req: Request, res: Response) {
   }
 
   // Idempotencja - wstawiamy znacznik jako blokadę przed równoległym/powtórnym przetwarzaniem.
-  // Przy błędzie przetwarzania znacznik USUWAMY i zwracamy 5xx, żeby Stripe ponowił.
   const { error: dupErr } = await supabase.from("stripe_events").insert({ id: event.id });
   if (dupErr?.code === "23505") return res.json({ received: true, duplicate: true });
-  if (dupErr) console.error("[stripe.webhook] stripe_events insert", dupErr); // np. brak tabeli - i tak przetwarzamy
+  if (dupErr) {
+    // Nie udało się założyć blokady idempotencji - NIE przetwarzamy bez niej. Inaczej
+    // ponowienie tego samego zdarzenia przez Stripe mogłoby zdublować zwrot/restock.
+    // Zwracamy 5xx -> Stripe ponowi dostarczenie, gdy baza wróci do normy.
+    console.error("[stripe.webhook] stripe_events insert - przerywam, Stripe ponowi", dupErr);
+    return res.status(500).send("idempotency lock unavailable");
+  }
 
   // Wspólna logika potwierdzenia płatności (Checkout Session i PaymentIntent).
   const confirmPaid = async (orderId: string | null, amount: number | null, currency: string | null, ref: string) => {

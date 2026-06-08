@@ -110,7 +110,7 @@ export default function CartDrawer() {
                             aria-label="Mniej"
                             data-hover
                           >
-                            −
+                            -
                           </button>
                           <span className="min-w-6 text-center text-sm tabular-nums">{item.qty}</span>
                           <button

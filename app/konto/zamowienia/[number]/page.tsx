@@ -111,7 +111,7 @@ export default function OrderDetailPage() {
             {order.discount > 0 && (
               <div className="flex justify-between py-1 text-teal">
                 <span>Rabat {order.promoCode ? `(${order.promoCode})` : ""}</span>
-                <span className="tabular-nums">−{formatPrice(order.discount)}</span>
+                <span className="tabular-nums">-{formatPrice(order.discount)}</span>
               </div>
             )}
             <div className="flex justify-between py-1">

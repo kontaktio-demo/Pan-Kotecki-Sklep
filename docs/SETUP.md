@@ -1,22 +1,22 @@
-# Pan Kotecki — runbook (co kliknąć i gdzie wkleić)
+# Pan Kotecki - runbook (co kliknąć i gdzie wkleić)
 
-Idziemy etapami. Ten plik rośnie wraz z projektem. Jak skończysz etap — daj znać,
+Idziemy etapami. Ten plik rośnie wraz z projektem. Jak skończysz etap - daj znać,
 przejdziemy dalej.
 
 ---
 
-## Etap 0 — Załóż konta (darmowe)
+## Etap 0 - Załóż konta (darmowe)
 
-1. **Supabase** — https://supabase.com → „Start your project" (login GitHub).
-2. **Render** — https://render.com → załóż konto (login GitHub).
-3. *(Później)* **Stripe** — https://stripe.com (płatności).
-4. *(Później)* **InPost ShipX** — https://manager.paczkomaty.pl (dostawa).
+1. **Supabase** - https://supabase.com → „Start your project" (login GitHub).
+2. **Render** - https://render.com → załóż konto (login GitHub).
+3. *(Później)* **Stripe** - https://stripe.com (płatności).
+4. *(Później)* **InPost ShipX** - https://manager.paczkomaty.pl (dostawa).
 
 GitHub i repo już mamy: `kontaktio-demo/Pan-Kotecki-Sklep`.
 
 ---
 
-## Etap 1 — Baza danych (Supabase) + API (Render)
+## Etap 1 - Baza danych (Supabase) + API (Render)
 
 ### 1A. Utwórz projekt Supabase
 - New project → nazwa „pan-kotecki", **Region: Frankfurt (EU)**, ustaw hasło do bazy.
@@ -43,16 +43,16 @@ GitHub i repo już mamy: `kontaktio-demo/Pan-Kotecki-Sklep`.
 - **Environment** → dodaj zmienne (Add Environment Variable):
   - `SUPABASE_URL` = (Project URL z 1A)
   - `SUPABASE_SERVICE_ROLE_KEY` = (service_role z 1A)
-  - `ADMIN_API_KEY` = długi losowy ciąg (`openssl rand -hex 32`) — **klucz panelu**; ten sam wpiszesz w aplikacji desktopowej
+  - `ADMIN_API_KEY` = długi losowy ciąg (`openssl rand -hex 32`) - **klucz panelu**; ten sam wpiszesz w aplikacji desktopowej
   - `CLIENT_ORIGIN` = `https://pankotecki.pl,http://localhost:3000` (na razie może być samo `*`)
-  - **NIE** dodawaj `PORT` — Render ustawia sam.
+  - **NIE** dodawaj `PORT` - Render ustawia sam.
 - Create Web Service. Po zbudowaniu dostaniesz adres typu `https://pan-kotecki-backend.onrender.com`.
 
 ### 1E. Sprawdź, że działa
 - Otwórz w przeglądarce:
-  - `https://…onrender.com/health` → `{"ok":true,...}`
-  - `https://…onrender.com/api/categories` → lista 4 kategorii
-- **Podeślij mi ten adres `…onrender.com`** — podepnę pod niego sklep i przetestuję `/api/products`.
+  - `https://...onrender.com/health` → `{"ok":true,...}`
+  - `https://...onrender.com/api/categories` → lista 4 kategorii
+- **Podeślij mi ten adres `...onrender.com`** - podepnę pod niego sklep i przetestuję `/api/products`.
 
 > Uwaga: darmowy Render usypia usługę po ~15 min bezczynności (pierwsze wejście
 > po przerwie ~30 s). Na produkcję włączymy płatny plan albo „keep-alive".
@@ -61,49 +61,48 @@ GitHub i repo już mamy: `kontaktio-demo/Pan-Kotecki-Sklep`.
 
 ---
 
-## Etap 2 — Podłącz sklep do bazy (Vercel)
+## Etap 2 - Podłącz sklep do bazy (Vercel)
 
 Sklep (Next.js) domyślnie używa danych lokalnych. Żeby czytał z bazy przez API:
 - W projekcie sklepu na **Vercel → Settings → Environment Variables** dodaj:
   - `NEXT_PUBLIC_API_URL` = adres backendu z Render, np. `https://pan-kotecki-backend.onrender.com`
 - Redeploy. Od teraz produkty/kategorie na stronie pochodzą z bazy (panelu).
-- Lokalnie: w pliku `.env.local` w głównym folderze wpisz `NEXT_PUBLIC_API_URL=https://…onrender.com`.
+- Lokalnie: w pliku `.env.local` w głównym folderze wpisz `NEXT_PUBLIC_API_URL=https://...onrender.com`.
 
-> Gdy `NEXT_PUBLIC_API_URL` nie jest ustawione albo API nie odpowiada — sklep
+> Gdy `NEXT_PUBLIC_API_URL` nie jest ustawione albo API nie odpowiada - sklep
 > automatycznie pokazuje dane lokalne (nigdy nie jest pusty).
 
-## Etap 3 — Panel (aplikacja desktopowa, .exe)
+## Etap 3 - Panel (aplikacja desktopowa, .exe)
 
-Panel to **osobna aplikacja na pulpicie** (zwykły `.exe` z ikoną) — nie ma jej
+Panel to **osobna aplikacja na pulpicie** (zwykły `.exe` z ikoną) - nie ma jej
 w repozytorium. Bez logowania: przy pierwszym uruchomieniu wpisujesz raz:
-- **Adres API** = `https://…onrender.com`
+- **Adres API** = `https://...onrender.com`
 - **Klucz panelu** = ten sam `ADMIN_API_KEY`, który ustawiłeś w Render
 
 Potem aplikacja otwiera się prosto do pulpitu sprzedaży. Plik `.exe` możesz
-przekazać znajomemu — on u siebie wpisze ten sam adres i klucz.
+przekazać znajomemu - on u siebie wpisze ten sam adres i klucz.
 
-## Etap 4 — Zaktualizuj bazę (płatności + dostawa)
+## Etap 4 - Składanie zamówień + dostawa (już w setup_all)
 
-Dodaliśmy bezpieczne, atomowe składanie zamówień (bez „oversprzedaży") i kolumnę
-na przesyłki InPost. **To trzeba uruchomić raz**, inaczej składanie zamówienia
-po nowym wdrożeniu nie zadziała.
+Bezpieczne, atomowe składanie zamówień (bez „oversprzedaży"), kolumna na przesyłki
+InPost (`shipping_ref`) oraz tabela `push_subscriptions` są już zawarte w
+`supabase/setup_all.sql` z Etapu 1.
 
-- Supabase → **SQL Editor → New query** → wklej całą zawartość `supabase/order_rpc.sql` → **Run**.
-  (Dodaje funkcje `create_order`, `release_order` i kolumnę `shipping_ref`. Bezpieczne do ponownego uruchomienia.)
-- Alternatywnie: ponownie uruchom cały `supabase/setup_all.sql` — zawiera już te funkcje.
+- Jeśli baza powstała wcześniej (przed tymi funkcjami), po prostu uruchom ponownie
+  całą zawartość `supabase/setup_all.sql` → **Run**. Jest bezpieczny do powtórzenia.
 
 ---
 
-## Etap 5 — Płatności: Stripe (karta / BLIK / Przelewy24)
+## Etap 5 - Płatności: Stripe (karta / BLIK / Przelewy24)
 
 ### 5A. Konto i klucz
 1. Załóż konto na https://stripe.com (możesz zacząć w trybie **Test**).
-2. **Developers → API keys** → skopiuj **Secret key** (`sk_test_…` lub `sk_live_…`).
+2. **Developers → API keys** → skopiuj **Secret key** (`sk_test_...` lub `sk_live_...`).
 3. **Settings → Payment methods** → włącz **Karta**, **BLIK**, **Przelewy24** (PLN).
 
 ### 5B. Zmienne na Render (backend)
 Dodaj w usłudze backendu (Environment):
-- `STRIPE_SECRET_KEY` = `sk_…`
+- `STRIPE_SECRET_KEY` = `sk_...`
 - `SITE_URL` = adres sklepu z Vercela, np. `https://kotecki.pl` (powrót po płatności)
 - `NODE_ENV` = `production`
 - upewnij się, że `CLIENT_ORIGIN` zawiera adres sklepu (np. `https://kotecki.pl`)
@@ -111,12 +110,12 @@ Dodaj w usłudze backendu (Environment):
 ### 5C. Webhook (potwierdzenie płatności)
 1. Stripe → **Developers → Webhooks → Add endpoint**.
 2. **Endpoint URL:** `https://TWOJ-BACKEND.onrender.com/api/payments/webhook`
-3. **Events to send** — zaznacz:
+3. **Events to send** - zaznacz:
    - `checkout.session.completed`
    - `checkout.session.async_payment_succeeded`
    - `checkout.session.async_payment_failed`
    - `checkout.session.expired`
-4. Po utworzeniu → **Signing secret** (`whsec_…`) → dodaj na Render jako `STRIPE_WEBHOOK_SECRET`.
+4. Po utworzeniu → **Signing secret** (`whsec_...`) → dodaj na Render jako `STRIPE_WEBHOOK_SECRET`.
 5. **Zapisz / redeploy** backend.
 
 ### 5D. Test
@@ -129,7 +128,7 @@ Dodaj w usłudze backendu (Environment):
 
 ---
 
-## Etap 6 — Dostawa: InPost (paczkomaty + kurier)
+## Etap 6 - Dostawa: InPost (paczkomaty + kurier)
 
 ### 6A. Konto ShipX
 1. https://manager.paczkomaty.pl → konto firmowe → sekcja **API (ShipX)**.
@@ -145,7 +144,7 @@ Redeploy backend.
 
 ### 6C. Mapa paczkomatów na sklepie (opcjonalnie, ładniejszy wybór)
 - Vercel → Environment Variables → `NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN` = token Geowidgetu InPost → redeploy.
-- Bez tego klient po prostu wpisuje **kod paczkomatu** (np. `LOD01M`) — też działa.
+- Bez tego klient po prostu wpisuje **kod paczkomatu** (np. `LOD01M`) - też działa.
 
 ### 6D. Jak nadać paczkę (panel)
 - Panel → **Zamówienia** → otwórz zamówienie → **Generuj etykietę InPost**.
@@ -153,13 +152,13 @@ Redeploy backend.
 - **Pobierz etykietę (PDF)** → otwiera etykietę do druku.
 
 > Gdy `INPOST_TOKEN`/`INPOST_ORG_ID` nie są ustawione, panel pokaże komunikat
-> „InPost nie skonfigurowany" — reszta działa normalnie.
+> „InPost nie skonfigurowany" - reszta działa normalnie.
 
 ---
 
-## Etap 7 — Panel na telefon (iOS, PWA) + powiadomienia o zakupach
+## Etap 7 - Panel na telefon (iOS, PWA) + powiadomienia o zakupach
 
-Mobilny panel to osobna apka webowa (folder `panel-mobile/`) — wygląda i działa
+Mobilny panel to osobna apka webowa (folder `panel-mobile/`) - wygląda i działa
 jak natywna appka (własna ikona, pełny ekran), a przy **każdym opłaconym
 zamówieniu** dzwoni powiadomienie na telefon.
 
@@ -173,21 +172,21 @@ Dodaj na **Render → backend → Environment**:
 - `VAPID_PRIVATE_KEY` = (prywatny)
 - `VAPID_SUBJECT` = `mailto:twoj@email.pl`
 
-Upewnij się, że uruchomiłeś `supabase/order_rpc.sql` (zawiera tabelę
+Upewnij się, że uruchomiłeś `supabase/setup_all.sql` (zawiera tabelę
 `push_subscriptions`). Render się przeładuje.
 
 ### 7B. Postaw mobilny panel na Vercel (za darmo)
 - Vercel → **Add New → Project** → ten sam repo `Pan-Kotecki-Sklep`.
-- **Root Directory:** `panel-mobile`  · **Framework:** Vite (wykryje sam).
+- **Root Directory:** `panel-mobile`  - **Framework:** Vite (wykryje sam).
 - Deploy. Dostaniesz adres, np. `https://panel-pan-kotecki.vercel.app`.
 
 ### 7C. Zainstaluj na iPhone (obie osoby)
 1. Otwórz adres panelu w **Safari**.
 2. **Udostępnij** (kwadrat ze strzałką) → **Do ekranu głównego** → Dodaj.
-3. Otwórz apkę **z ikony na ekranie** (ważne — nie z Safari).
+3. Otwórz apkę **z ikony na ekranie** (ważne - nie z Safari).
 4. Wpisz raz **adres API** (Render) + **ADMIN_API_KEY** → Połącz.
 5. Zakładka **Powiadomienia** (dzwonek u góry) → **Włącz powiadomienia** → zezwól.
-6. Sprawdź: **Wyślij testowe 🔔** — powinno przyjść powiadomienie.
+6. Sprawdź: **Wyślij testowe 🔔** - powinno przyjść powiadomienie.
 
 Od teraz każde opłacone zamówienie = dzwonek na obu telefonach.
 
@@ -201,7 +200,7 @@ Od teraz każde opłacone zamówienie = dzwonek na obu telefonach.
 `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`.
 
 **Vercel (sklep):** `NEXT_PUBLIC_API_URL` (wymagane), `NEXT_PUBLIC_SUPABASE_URL`
-(zalecane — zawęża hosty zdjęć), `NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN` (opcjonalne).
+(zalecane - zawęża hosty zdjęć), `NEXT_PUBLIC_INPOST_GEOWIDGET_TOKEN` (opcjonalne).
 
 **Vercel (panel mobilny):** osobny projekt, Root Directory = `panel-mobile`. Bez zmiennych.
 

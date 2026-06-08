@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-// Host Supabase bierzemy ze zmiennej (jeśli ustawiona) — zawężamy do własnego
+// Host Supabase bierzemy ze zmiennej (jeśli ustawiona) - zawężamy do własnego
 // projektu i publicznego bucketu. Bez zmiennej fallback na subdomeny supabase.co.
 const supabaseHost = (() => {
   try {

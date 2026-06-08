@@ -50,6 +50,8 @@ function verifyLocalHs256(token: string): { id: string; email: string } | null {
   const now = Math.floor(Date.now() / 1000);
   if (typeof payload.exp === "number" && payload.exp < now) return null;
   if (!payload.sub) return null;
+  // Akceptuj tylko tokeny zalogowanych użytkowników (nie service/inne audytorium).
+  if (payload.aud !== "authenticated") return null;
   return { id: String(payload.sub), email: String(payload.email ?? "").toLowerCase() };
 }
 

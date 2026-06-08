@@ -86,7 +86,7 @@ export function AddToCartFull({ item }: { item: Item }) {
           className="px-5 py-3.5 text-ash transition-colors hover:text-ink"
           aria-label="Mniej"
         >
-          −
+          -
         </button>
         <span className="min-w-8 text-center tabular-nums">{qty}</span>
         <button

@@ -53,7 +53,7 @@ export default function CartView() {
               <div className="mt-auto flex items-center justify-between pt-4">
                 <div className="flex items-center rounded-full border border-ink/15">
                   <button onClick={() => setQty(item.slug, item.qty - 1)} className="px-4 py-2 text-ash hover:text-ink" data-hover>
-                    −
+                    -
                   </button>
                   <span className="min-w-7 text-center text-sm tabular-nums">{item.qty}</span>
                   <button onClick={() => setQty(item.slug, item.qty + 1)} className="px-4 py-2 text-ash hover:text-ink" data-hover>

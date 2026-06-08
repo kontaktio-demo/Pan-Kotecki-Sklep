@@ -11,11 +11,11 @@ export default defineConfig({
       filename: "sw.ts",
       registerType: "autoUpdate",
       injectManifest: {
-        // aplikacja online (panel) — nie precache'ujemy, SW służy do powiadomień push
+        // aplikacja online (panel) - nie precache'ujemy, SW służy do powiadomień push
         injectionPoint: undefined,
       },
       manifest: {
-        name: "Pan Kotecki — Panel",
+        name: "Pan Kotecki - Panel",
         short_name: "Pan Kotecki",
         description: "Panel zarządzania sklepem Pan Kotecki",
         lang: "pl",

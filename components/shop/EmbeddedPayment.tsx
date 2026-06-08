@@ -66,9 +66,18 @@ function PayForm({ total, orderNr }: { total: number; orderNr: string | null }) 
       return;
     }
     if (paymentIntent && (paymentIntent.status === "succeeded" || paymentIntent.status === "processing")) {
+      // Płatność zaakceptowana - czyścimy dane sesji, żeby powrót/odświeżenie nie
+      // pokazało ponownie formularza dla już opłaconego zamówienia.
+      try {
+        sessionStorage.removeItem("kotecki-pay");
+        sessionStorage.removeItem("kotecki-pay-summary");
+        sessionStorage.removeItem("kotecki-order");
+      } catch {}
       router.push(`/kasa/dziekujemy?order=${encodeURIComponent(orderNr ?? "")}`);
       return;
     }
+    // Stan nieterminalny (np. odrzucenie wymagające innej metody) - nie zostawiaj usera bez informacji.
+    setErr("Płatność nie została dokończona. Sprawdź dane płatności i spróbuj ponownie.");
     setBusy(false);
   }
 
@@ -186,7 +195,7 @@ export default function EmbeddedPayment() {
                 {summary.discount > 0 && (
                   <div className="flex justify-between font-medium text-teal">
                     <span>Rabat</span>
-                    <span className="tabular-nums">−{formatPrice(summary.discount)}</span>
+                    <span className="tabular-nums">-{formatPrice(summary.discount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
