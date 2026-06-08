@@ -4,9 +4,10 @@ import { getProducts, getCategories } from "@/lib/products";
 import ShopClient from "@/components/shop/ShopClient";
 
 export const metadata: Metadata = {
-  title: "Sklep",
+  title: "Sklep - zabawki i akcesoria dla kotów",
   description:
-    "Zabawki, akcesoria, kubki i drobiazgi dla właścicieli kotów. Filtruj, sortuj i zamawiaj - wysyłka w 24h.",
+    "Zabawki, akcesoria, kubki i drobiazgi dla właścicieli kotów. Filtruj, sortuj i zamawiaj - wysyłka w 24h, darmowa dostawa od 149 zł.",
+  alternates: { canonical: "/sklep" },
 };
 
 export default async function ShopPage({

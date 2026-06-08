@@ -7,6 +7,9 @@ import ProductGallery from "@/components/shop/ProductGallery";
 import ProductReviews from "@/components/shop/ProductReviews";
 import ProductCard from "@/components/shop/ProductCard";
 import { AddToCartFull } from "@/components/shop/AddToCart";
+import JsonLd from "@/components/seo/JsonLd";
+
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://pankotecki.pl";
 
 export async function generateStaticParams() {
   const products = await getProducts();
@@ -20,11 +23,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
-  if (!product) return { title: "Nie znaleziono produktu" };
+  if (!product) return { title: "Nie znaleziono produktu", robots: { index: false } };
+  const path = `/sklep/${product.slug}`;
+  const img = product.images?.[0];
   return {
     title: product.name,
     description: product.shortDescription,
-    openGraph: { title: product.name, description: product.shortDescription },
+    alternates: { canonical: path },
+    openGraph: {
+      title: product.name,
+      description: product.shortDescription,
+      url: path,
+      ...(img ? { images: [{ url: img }] } : {}),
+    },
   };
 }
 
@@ -69,8 +80,38 @@ export default async function ProductPage({
     inStock: product.inStock,
   };
 
+  // Dane strukturalne - bez aggregateRating (brak realnych opinii = ryzyko kary Google).
+  const productLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description || product.shortDescription,
+    ...(product.images?.length ? { image: product.images } : {}),
+    ...(product.category ? { category: categoryName(product.category) } : {}),
+    brand: { "@type": "Brand", name: "Pan Kotecki" },
+    offers: {
+      "@type": "Offer",
+      url: `${SITE}/sklep/${product.slug}`,
+      priceCurrency: "PLN",
+      price: product.price.toFixed(2),
+      availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      seller: { "@type": "Organization", name: "Pan Kotecki" },
+    },
+  };
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Strona główna", item: SITE },
+      { "@type": "ListItem", position: 2, name: "Sklep", item: `${SITE}/sklep` },
+      { "@type": "ListItem", position: 3, name: categoryName(product.category), item: `${SITE}/sklep?kategoria=${product.category}` },
+      { "@type": "ListItem", position: 4, name: product.name, item: `${SITE}/sklep/${product.slug}` },
+    ],
+  };
+
   return (
     <div className="pt-5 md:pt-7">
+      <JsonLd data={[productLd, breadcrumbLd]} />
       <div className="container-edge">
         <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-ash">
           <Link href="/" className="transition-colors hover:text-ink">Strona główna</Link>
