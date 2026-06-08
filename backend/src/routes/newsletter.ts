@@ -19,10 +19,6 @@ const schema = z.object({
   captchaToken: z.string().max(5000).optional(),
 });
 
-function baseUrl(req: { protocol: string; get: (h: string) => string | undefined }): string {
-  return `${req.protocol}://${req.get("host")}`;
-}
-
 // Zapis z DOWODEM zgody + double opt-in (mail z linkiem potwierdzającym).
 newsletterRouter.post("/", async (req, res) => {
   const body = parseBody(schema, req.body, res);
@@ -52,17 +48,17 @@ newsletterRouter.post("/", async (req, res) => {
       .maybeSingle();
     if (ex && !ex.confirmed) {
       await supabase.from("newsletter_subscribers").update({ confirm_token: confirmToken }).eq("email", email);
-      void sendNewsletterConfirm(email, `${baseUrl(req)}/api/newsletter/confirm?token=${confirmToken}`);
+      void sendNewsletterConfirm(email, `${shopUrl()}/newsletter/potwierdz?token=${confirmToken}`);
     }
     return res.status(201).json({ ok: true });
   }
 
-  void sendNewsletterConfirm(email, `${baseUrl(req)}/api/newsletter/confirm?token=${confirmToken}`);
+  void sendNewsletterConfirm(email, `${shopUrl()}/newsletter/potwierdz?token=${confirmToken}`);
   res.status(201).json({ ok: true });
 });
 
-// Potwierdzenie zapisu (klik z maila) → confirmed=true, potem PRZEKIEROWANIE
-// na ładną podstronę sklepu (pełny branding, favicon, czcionki).
+// Potwierdzenie zapisu (wywoływane przez podstronę sklepu /newsletter/potwierdz)
+// → confirmed=true, zwraca JSON z kodem powitalnym.
 newsletterRouter.get("/confirm", async (req, res) => {
   const token = String(req.query.token ?? "").slice(0, 80);
   let ok = false;
@@ -75,15 +71,14 @@ newsletterRouter.get("/confirm", async (req, res) => {
       .maybeSingle();
     ok = !!data;
   }
-  const url = ok
-    ? `${shopUrl()}/newsletter/potwierdzono?kod=${encodeURIComponent(WELCOME_CODE)}`
-    : `${shopUrl()}/newsletter/potwierdzono`;
-  res.redirect(302, url);
+  res.set("Cache-Control", "no-store");
+  res.json({ ok, code: ok ? WELCOME_CODE : null });
 });
 
-// Wypisanie (link ze stopki newslettera) → przekierowanie na podstronę sklepu.
+// Wypisanie (wywoływane przez podstronę sklepu /newsletter/wypisz) → JSON.
 newsletterRouter.get("/unsubscribe", async (req, res) => {
   const token = String(req.query.token ?? "").slice(0, 80);
   if (token) await supabase.from("newsletter_subscribers").delete().eq("unsub_token", token);
-  res.redirect(302, `${shopUrl()}/newsletter/wypisano`);
+  res.set("Cache-Control", "no-store");
+  res.json({ ok: true });
 });

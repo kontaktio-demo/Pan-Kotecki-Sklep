@@ -3,6 +3,7 @@ import { z } from "zod";
 import { supabase } from "../../lib/supabase.js";
 import { badId, parseBody, serverError } from "../../lib/util.js";
 import { sendBatch, newsletterHtml } from "../../lib/email.js";
+import { siteUrl } from "../../lib/stripe.js";
 
 export const newsletterAdminRouter = Router();
 
@@ -57,12 +58,12 @@ newsletterAdminRouter.post("/send", async (req, res) => {
   const subs = data ?? [];
   if (subs.length === 0) return res.json({ sent: 0, total: 0, message: "Brak potwierdzonych subskrybentów." });
 
-  const base = `${req.protocol}://${req.get("host")}`;
+  const shop = siteUrl() || "https://pankotecki.pl";
   const inner = contentToHtml(body.content);
   const messages = subs.map((s) => ({
     to: s.email,
     subject: body.subject,
-    html: newsletterHtml(inner, `${base}/api/newsletter/unsubscribe?token=${s.unsub_token ?? ""}`),
+    html: newsletterHtml(inner, `${shop}/newsletter/wypisz?token=${s.unsub_token ?? ""}`),
   }));
 
   const sent = await sendBatch(messages);
