@@ -30,6 +30,11 @@ export type Product = {
   badges?: string[];
   bestseller?: boolean;
   inStock: boolean;
+  // prawdziwe opinie (z backendu) - gdy brak, gwiazdki się nie renderują
+  ratingAvg?: number | null;
+  ratingCount?: number;
+  // "zostały X szt." - tylko gdy backend zgłasza niski stan (≤5)
+  lowStock?: number | null;
 };
 
 const CATEGORIES: Category[] = [
@@ -350,6 +355,9 @@ type ApiProduct = {
   bestseller: boolean;
   inStock: boolean;
   images: string[];
+  ratingAvg?: number | null;
+  ratingCount?: number;
+  lowStock?: number | null;
 };
 
 function fromApi(p: ApiProduct): Product {
@@ -367,6 +375,9 @@ function fromApi(p: ApiProduct): Product {
     badges: p.badges ?? [],
     bestseller: !!p.bestseller,
     inStock: p.inStock ?? true,
+    ratingAvg: p.ratingAvg ?? null,
+    ratingCount: p.ratingCount ?? 0,
+    lowStock: p.lowStock ?? null,
   };
 }
 
@@ -406,6 +417,17 @@ export async function getProductBySlug(slug: string): Promise<Product | undefine
 export async function getProductsByCategory(category: string): Promise<Product[]> {
   const data = await apiGet<ApiProduct[]>(`/api/products?kategoria=${encodeURIComponent(category)}`);
   return data ? data.map(fromApi) : PRODUCTS.filter((p) => p.category === category);
+}
+
+// Hydracja list slugów (ulubione, ostatnio oglądane) - zachowuje kolejność wejścia.
+// Filtr także po stronie klienta - gdyby backend nie znał parametru ?slugi=.
+export async function getProductsBySlugs(slugs: string[]): Promise<Product[]> {
+  if (slugs.length === 0) return [];
+  const wanted = slugs.slice(0, 50);
+  const data = await apiGet<ApiProduct[]>(`/api/products?slugi=${encodeURIComponent(wanted.join(","))}`);
+  const list = (data ? data.map(fromApi) : PRODUCTS).filter((p) => wanted.includes(p.slug));
+  const order = new Map(wanted.map((s, i) => [s, i]));
+  return list.slice().sort((a, b) => (order.get(a.slug) ?? 99) - (order.get(b.slug) ?? 99));
 }
 
 export async function getBestsellers(limit = 6): Promise<Product[]> {

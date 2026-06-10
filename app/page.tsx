@@ -6,6 +6,8 @@ import ProductRow from "@/components/sections/ProductRow";
 import FeatureBand from "@/components/sections/FeatureBand";
 import AboutTeaser from "@/components/sections/AboutTeaser";
 import Newsletter from "@/components/sections/Newsletter";
+import Announcement from "@/components/sections/Announcement";
+import RecentlyViewed from "@/components/shop/RecentlyViewed";
 
 export default async function Home() {
   const all = await getProducts();
@@ -17,6 +19,7 @@ export default async function Home() {
   return (
     <>
       <HeroBanner />
+      <Announcement />
       <TrustBar />
       <Categories />
       <ProductRow
@@ -32,6 +35,7 @@ export default async function Home() {
         products={forOwner}
         href="/sklep?kategoria=dla-wlasciciela"
       />
+      <RecentlyViewed limit={4} />
       <Newsletter />
     </>
   );

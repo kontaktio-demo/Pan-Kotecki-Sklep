@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Logo from "./Logo";
 import { useCart, cartCount } from "@/store/cart";
+import { useWishlist } from "@/store/wishlist";
 import { useAuth } from "@/components/account/AuthProvider";
+import { useSettings } from "@/components/providers/SettingsProvider";
+import SearchAutocomplete from "@/components/shop/SearchAutocomplete";
 
 function UserIcon() {
   return (
@@ -24,33 +26,11 @@ const CATEGORIES = [
   { href: "/sklep?kategoria=dla-wlasciciela", label: "Dla właściciela" },
 ];
 
-function SearchForm({ onSubmit, className = "" }: { onSubmit: () => void; className?: string }) {
-  const router = useRouter();
-  const [q, setQ] = useState("");
+function HeartIcon() {
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        router.push(q.trim() ? `/sklep?szukaj=${encodeURIComponent(q.trim())}` : "/sklep");
-        onSubmit();
-      }}
-      className={`flex items-center overflow-hidden rounded-lg border border-line bg-white focus-within:border-ink ${className}`}
-      role="search"
-    >
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Czego szuka Twój kot?"
-        aria-label="Szukaj produktów"
-        className="w-full bg-transparent px-4 py-2.5 text-sm outline-none placeholder:text-mist"
-      />
-      <button type="submit" className="flex h-full items-center px-4 text-ash transition-colors hover:text-coral" aria-label="Szukaj">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="1.8" />
-          <path d="m20 20-3.2-3.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      </button>
-    </form>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+    </svg>
   );
 }
 
@@ -58,6 +38,8 @@ export default function Header() {
   const items = useCart((s) => s.items);
   const openCart = useCart((s) => s.open);
   const bump = useCart((s) => s.bump);
+  const wishlistCount = useWishlist((s) => s.slugs.length);
+  const { freeShippingZl } = useSettings();
   const { user, configured } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -80,7 +62,7 @@ export default function Header() {
         </Link>
 
         <div className="hidden flex-1 justify-center px-2 md:flex">
-          <SearchForm onSubmit={() => {}} className="w-full max-w-xl" />
+          <SearchAutocomplete onNavigate={() => {}} className="w-full max-w-xl" />
         </div>
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
@@ -89,6 +71,18 @@ export default function Header() {
             className="hidden rounded-lg px-3 py-2 text-sm text-ink-soft transition-colors hover:text-coral lg:block"
           >
             Pomoc
+          </Link>
+          <Link
+            href="/ulubione"
+            className="tap relative hidden items-center rounded-xl border border-line bg-white p-2.5 hover:border-ink sm:inline-flex"
+            aria-label="Ulubione produkty"
+          >
+            <HeartIcon />
+            {mounted && wishlistCount > 0 && (
+              <span className="absolute -right-1.5 -top-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-coral px-1 text-[0.7rem] font-semibold text-white tabular-nums">
+                {wishlistCount}
+              </span>
+            )}
           </Link>
           {configured && (
             <Link
@@ -141,13 +135,13 @@ export default function Header() {
               {c.label}
             </Link>
           ))}
-          <span className="ml-auto text-xs text-ash">Darmowa dostawa od 149 zł - Wysyłka 24h</span>
+          <span className="ml-auto text-xs text-ash">Darmowa dostawa od {freeShippingZl} zł - Wysyłka 24h</span>
         </div>
       </nav>
 
       {menuOpen && (
         <div className="min-h-[calc(100dvh-4rem)] border-t border-line bg-milk px-[clamp(1.25rem,4vw,4rem)] py-6 md:hidden">
-          <SearchForm onSubmit={() => setMenuOpen(false)} className="mb-4" />
+          <SearchAutocomplete onNavigate={() => setMenuOpen(false)} className="mb-4" />
           <nav className="flex flex-col">
             {CATEGORIES.map((c) => (
               <Link
@@ -159,6 +153,9 @@ export default function Header() {
                 {c.label}
               </Link>
             ))}
+            <Link href="/ulubione" onClick={() => setMenuOpen(false)} className="border-b border-line py-3 text-base">
+              Ulubione{mounted && wishlistCount > 0 ? ` (${wishlistCount})` : ""}
+            </Link>
             <Link href="/o-nas" onClick={() => setMenuOpen(false)} className="border-b border-line py-3 text-base">
               O nas
             </Link>

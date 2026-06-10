@@ -1,5 +1,93 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Icon from "./icons";
+
+// ── Toasty (potwierdzenia akcji) ──────────────────────────────
+type ToastItem = { id: number; message: string; tone: "ok" | "err" };
+let toastListeners: ((items: ToastItem[]) => void)[] = [];
+let toastItems: ToastItem[] = [];
+let toastId = 1;
+
+export function toast(message: string, tone: "ok" | "err" = "ok") {
+  const id = toastId++;
+  toastItems = [...toastItems, { id, message, tone }].slice(-3);
+  toastListeners.forEach((l) => l(toastItems));
+  setTimeout(() => {
+    toastItems = toastItems.filter((t) => t.id !== id);
+    toastListeners.forEach((l) => l(toastItems));
+  }, 3000);
+}
+
+export function Toaster() {
+  const [items, setItems] = useState<ToastItem[]>([]);
+  useEffect(() => {
+    const l = (i: ToastItem[]) => setItems(i);
+    toastListeners.push(l);
+    return () => {
+      toastListeners = toastListeners.filter((x) => x !== l);
+    };
+  }, []);
+  if (items.length === 0) return null;
+  return (
+    <div
+      aria-live="polite"
+      style={{ bottom: "calc(env(safe-area-inset-bottom) + 86px)" }}
+      className="pointer-events-none fixed inset-x-0 z-[60] flex flex-col items-center gap-2 px-6"
+    >
+      {items.map((t) => (
+        <div
+          key={t.id}
+          className={`rounded-xl border px-4 py-2.5 text-sm font-medium shadow-lg ${
+            t.tone === "ok" ? "border-line bg-white text-ink" : "border-red-200 bg-red-50 text-red-700"
+          }`}
+        >
+          {t.message}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Potwierdzenie akcji (zamiast window.confirm) ──────────────
+export function ConfirmSheet({
+  title,
+  message,
+  confirmLabel = "Potwierdź",
+  danger = false,
+  onConfirm,
+  onClose,
+}: {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  danger?: boolean;
+  onConfirm: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[70] flex flex-col justify-end bg-ink/40" onClick={onClose}>
+      <div className="safe-bottom rounded-t-3xl bg-milk p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="text-base font-semibold">{title}</div>
+        <p className="mt-1.5 text-sm text-ash">{message}</p>
+        <div className="mt-5 flex gap-2">
+          <button onClick={onClose} className="btn-ghost flex-1">
+            Anuluj
+          </button>
+          <button
+            onClick={() => {
+              onConfirm();
+              onClose();
+            }}
+            className={`flex-1 rounded-xl px-4 py-3 font-semibold text-white active:scale-[0.98] ${
+              danger ? "bg-red-600" : "bg-orange"
+            }`}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function Spinner({ label = "Ładuję..." }: { label?: string }) {
   return (

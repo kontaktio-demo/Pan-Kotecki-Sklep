@@ -13,6 +13,12 @@ import { contactRouter } from "./routes/contact.js";
 import { newsletterRouter } from "./routes/newsletter.js";
 import { adminRouter } from "./routes/admin/index.js";
 import { stripeWebhook } from "./routes/payments.js";
+import { reviewsRouter } from "./routes/reviews.js";
+import { wishlistRouter } from "./routes/wishlist.js";
+import { supabase } from "./lib/supabase.js";
+import { stripe } from "./lib/stripe.js";
+import { inpostConfigured } from "./lib/inpost.js";
+import { pushEnabled } from "./lib/push.js";
 
 // Nie pozostawiaj wiszących odrzuconych promes bez logu.
 process.on("unhandledRejection", (e) => console.error("[unhandledRejection]", e));
@@ -65,7 +71,39 @@ app.post("/api/payments/webhook", express.raw({ type: "*/*" }), stripeWebhook);
 
 app.use(express.json({ limit: "1mb" }));
 
-app.get("/health", (_req, res) => res.json({ ok: true, service: "pan-kotecki-backend" }));
+// Krótki log każdego żądania (metoda, ścieżka, status, czas) - bez /health,
+// żeby nie zaśmiecać logów pingami monitoringu.
+app.use((req, res, next) => {
+  if (req.path === "/health") return next();
+  const t0 = Date.now();
+  res.on("finish", () => {
+    console.log(`${req.method} ${req.path} ${res.statusCode} ${Date.now() - t0}ms`);
+  });
+  next();
+});
+
+// Health z pingiem bazy i flagami integracji - od razu widać, czego brakuje.
+app.get("/health", async (_req, res) => {
+  let db = false;
+  try {
+    const { error } = await supabase.from("settings").select("key", { head: true, count: "exact" }).limit(1);
+    db = !error;
+  } catch {
+    db = false;
+  }
+  res.json({
+    ok: true,
+    service: "pan-kotecki-backend",
+    db,
+    integrations: {
+      stripe: Boolean(stripe),
+      inpost: inpostConfigured(),
+      resend: Boolean(process.env.RESEND_API_KEY),
+      push: pushEnabled,
+      captcha: Boolean(process.env.HCAPTCHA_SECRET),
+    },
+  });
+});
 
 // Limity (ochrona przed nadużyciem / brute-force klucza / spamem zamówień)
 app.use("/api", rateLimit({ windowMs: 60_000, max: 300, standardHeaders: true, legacyHeaders: false }));
@@ -78,9 +116,11 @@ app.use("/api/admin", rateLimit({ windowMs: 60_000, max: 100, standardHeaders: t
 
 // Publiczne (sklep)
 app.use("/api", catalogRouter);
+app.use("/api", reviewsRouter);
 app.use("/api/checkout", checkoutRouter);
 
 // Konta klientów (chronione tokenem Supabase - weryfikacja w routerze)
+app.use("/api/account/wishlist", wishlistRouter);
 app.use("/api/account", accountRouter);
 
 // Formularze publiczne (zapisywane do bazy - nic nie ginie)
@@ -108,4 +148,25 @@ const onError: ErrorRequestHandler = (err, _req, res, _next) => {
 app.use(onError);
 
 const port = Number(process.env.PORT ?? 10000);
-app.listen(port, () => console.log(`[pan-kotecki] API słucha na :${port}`));
+const server = app.listen(port, () => console.log(`[pan-kotecki] API słucha na :${port}`));
+
+// Retencja zdarzeń Stripe: czyść na starcie i raz dziennie (unref - nie blokuje wyjścia).
+async function cleanupStripeEvents() {
+  try {
+    const { data, error } = await supabase.rpc("cleanup_stripe_events", { p_days: 90 });
+    if (!error && typeof data === "number" && data > 0) console.log(`[cleanup] usunięto ${data} starych zdarzeń Stripe`);
+  } catch {
+    /* funkcja może jeszcze nie istnieć - nieszkodliwe */
+  }
+}
+void cleanupStripeEvents();
+setInterval(cleanupStripeEvents, 24 * 60 * 60_000).unref();
+
+// Łagodne zamknięcie: dokończ trwające żądania, nowych nie przyjmuj.
+function shutdown(signal: string) {
+  console.log(`[shutdown] ${signal} - zamykam serwer...`);
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(1), 10_000).unref();
+}
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

@@ -40,19 +40,30 @@ newsletterRouter.post("/", async (req, res) => {
   if (error && error.code !== "23505") return serverError(res, "newsletter", error);
 
   if (error?.code === "23505") {
-    // Już istnieje - jeśli niepotwierdzony, odśwież token i wyślij ponownie.
+    // Już istnieje - jeśli niepotwierdzony, odśwież token i wyślij ponownie,
+    // ale nie częściej niż co 10 minut (ochrona przed zasypywaniem skrzynki).
+    // Odpowiedź zawsze taka sama - bez sygnału, czy adres jest w bazie.
     const { data: ex } = await supabase
       .from("newsletter_subscribers")
-      .select("confirmed")
+      .select("confirmed, confirm_sent_at")
       .eq("email", email)
       .maybeSingle();
-    if (ex && !ex.confirmed) {
-      await supabase.from("newsletter_subscribers").update({ confirm_token: confirmToken }).eq("email", email);
+    const throttled =
+      ex?.confirm_sent_at != null && Date.now() - new Date(ex.confirm_sent_at).getTime() < 10 * 60_000;
+    if (ex && !ex.confirmed && !throttled) {
+      await supabase
+        .from("newsletter_subscribers")
+        .update({ confirm_token: confirmToken, confirm_sent_at: new Date().toISOString() })
+        .eq("email", email);
       void sendNewsletterConfirm(email, `${shopUrl()}/newsletter/potwierdz?token=${confirmToken}`);
     }
     return res.status(201).json({ ok: true });
   }
 
+  await supabase
+    .from("newsletter_subscribers")
+    .update({ confirm_sent_at: new Date().toISOString() })
+    .eq("email", email);
   void sendNewsletterConfirm(email, `${shopUrl()}/newsletter/potwierdz?token=${confirmToken}`);
   res.status(201).json({ ok: true });
 });

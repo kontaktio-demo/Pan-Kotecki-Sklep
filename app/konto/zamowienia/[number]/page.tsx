@@ -10,6 +10,7 @@ import { formatPrice } from "@/lib/format";
 import { useCart } from "@/store/cart";
 import { getProductBySlug } from "@/lib/products";
 import ProductMedia from "@/components/shop/ProductMedia";
+import OrderTimeline from "@/components/shop/OrderTimeline";
 
 const SHIPPING_LABEL: Record<string, string> = {
   inpost_locker: "Paczkomat InPost",
@@ -95,6 +96,14 @@ export default function OrderDetailPage() {
                   <span className="text-sm font-medium leading-snug">{it.name}</span>
                 )}
                 <p className="mt-0.5 text-sm text-ash">{it.qty} x {formatPrice(it.price)}</p>
+                {it.slug && order.paymentStatus === "paid" && (
+                  <Link
+                    href={`/sklep/${it.slug}#opinie`}
+                    className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-coral underline-offset-2 hover:underline"
+                  >
+                    ★ Oceń produkt
+                  </Link>
+                )}
               </div>
               <span className="shrink-0 text-sm font-semibold tabular-nums">{formatPrice(it.price * it.qty)}</span>
             </li>
@@ -103,6 +112,8 @@ export default function OrderDetailPage() {
 
         {/* Podsumowanie + dostawa */}
         <div className="flex flex-col gap-4">
+          <OrderTimeline status={order.status} history={order.history ?? []} />
+
           <div className="rounded-2xl border border-line bg-white p-5 text-sm">
             <div className="flex justify-between py-1">
               <span className="text-ink-soft">Produkty</span>
@@ -138,6 +149,14 @@ export default function OrderDetailPage() {
             {order.trackingNumber && (
               <p className="mt-2 text-ink-soft">
                 Nr przesyłki: <span className="font-medium text-ink">{order.trackingNumber}</span>
+                <a
+                  href={`https://inpost.pl/sledzenie-przesylek?number=${encodeURIComponent(order.trackingNumber)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-2 font-medium text-coral underline-offset-2 hover:underline"
+                >
+                  Śledź przesyłkę →
+                </a>
               </p>
             )}
           </div>

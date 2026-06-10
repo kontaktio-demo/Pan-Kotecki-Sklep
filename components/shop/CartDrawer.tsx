@@ -3,7 +3,8 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useCart, cartTotal } from "@/store/cart";
-import { formatPrice, FREE_SHIPPING_FROM } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
+import { useSettings } from "@/components/providers/SettingsProvider";
 import ProductMedia from "./ProductMedia";
 
 export default function CartDrawer() {
@@ -12,6 +13,7 @@ export default function CartDrawer() {
   const close = useCart((s) => s.close);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
+  const { freeShippingZl } = useSettings();
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? "hidden" : "";
@@ -27,8 +29,8 @@ export default function CartDrawer() {
   }, [close]);
 
   const total = cartTotal(items);
-  const toFree = Math.max(0, FREE_SHIPPING_FROM - total);
-  const freeProgress = Math.min(100, (total / FREE_SHIPPING_FROM) * 100);
+  const toFree = Math.max(0, freeShippingZl - total);
+  const freeProgress = Math.min(100, (total / freeShippingZl) * 100);
 
   return (
     <div className={`fixed inset-0 z-[150] ${isOpen ? "" : "pointer-events-none"}`} aria-hidden={!isOpen}>

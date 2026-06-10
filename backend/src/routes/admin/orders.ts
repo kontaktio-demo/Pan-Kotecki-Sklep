@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabase.js";
 import { badId, parseBody, serverError, zloty } from "../../lib/util.js";
 import { createShipment, fetchLabel, getShipment, inpostConfigured, type Receiver } from "../../lib/inpost.js";
 import { sendPushToAll } from "../../lib/push.js";
+import { sendCsv } from "../../lib/csv.js";
 
 export const ordersRouter = Router();
 
@@ -23,14 +24,100 @@ function receiverFromOrder(o: { email: string; phone: string | null; shipping_ad
 const SELECT = "*, items:order_items(*)";
 const STATUSES = new Set(["pending", "paid", "packed", "shipped", "delivered", "cancelled", "refunded"]);
 
+// czyści frazę do bezpiecznego użycia w .or(...ilike...) PostgREST
+function safeQ(input: string): string {
+  return input.replace(/[^\p{L}\p{N}\s@.\-_]/gu, " ").trim().slice(0, 80);
+}
+
+function parseDate(v: unknown): string | null {
+  if (typeof v !== "string" || !v) return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
+}
+
 ordersRouter.get("/", async (req, res) => {
   const raw = typeof req.query.status === "string" ? req.query.status : null;
   const status = raw && STATUSES.has(raw) ? raw : null;
-  let q = supabase.from("orders").select(SELECT).order("created_at", { ascending: false }).limit(500);
+  const search = typeof req.query.q === "string" ? safeQ(req.query.q) : "";
+  const from = parseDate(req.query.from);
+  const to = parseDate(req.query.to);
+  // Paginacja jest opt-in (parametr limit/offset) - bez parametrów zwracamy
+  // jak dawniej gołą tablicę, żeby stare buildy paneli dalej działały.
+  const paged = req.query.limit !== undefined || req.query.offset !== undefined;
+  const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 50));
+  const offset = Math.max(0, Number(req.query.offset) || 0);
+
+  let q = supabase
+    .from("orders")
+    .select(SELECT, paged ? { count: "exact" } : undefined)
+    .order("created_at", { ascending: false });
   if (status) q = q.eq("status", status);
-  const { data, error } = await q;
+  if (search) q = q.or(`number.ilike.%${search}%,email.ilike.%${search}%`);
+  if (from) q = q.gte("created_at", from);
+  if (to) q = q.lte("created_at", to);
+  q = paged ? q.range(offset, offset + limit - 1) : q.limit(500);
+
+  const { data, error, count } = await q;
   if (error) return serverError(res, "orders.list", error);
+  if (paged) return res.json({ items: data ?? [], total: count ?? 0 });
   res.json(data ?? []);
+});
+
+// Eksport CSV (księgowość / analiza). Rejestrowane PRZED /:id.
+ordersRouter.get("/export.csv", async (req, res) => {
+  const raw = typeof req.query.status === "string" ? req.query.status : null;
+  const status = raw && STATUSES.has(raw) ? raw : null;
+  const from = parseDate(req.query.from);
+  const to = parseDate(req.query.to);
+
+  let q = supabase
+    .from("orders")
+    .select("number, created_at, email, status, payment_status, subtotal_grosze, discount_grosze, shipping_grosze, total_grosze, promo_code, shipping_method, tracking_number")
+    .order("created_at", { ascending: false })
+    .limit(10000);
+  if (status) q = q.eq("status", status);
+  if (from) q = q.gte("created_at", from);
+  if (to) q = q.lte("created_at", to);
+
+  const { data, error } = await q;
+  if (error) return serverError(res, "orders.export", error);
+
+  sendCsv(
+    res,
+    "zamowienia.csv",
+    ["Numer", "Data", "E-mail", "Status", "Płatność", "Wartość netto (zł)", "Rabat (zł)", "Dostawa (zł)", "Razem (zł)", "Kod", "Dostawa metodą", "Nr śledzenia"],
+    (data ?? []).map((o) => [
+      o.number,
+      new Date(o.created_at).toLocaleString("pl-PL"),
+      o.email,
+      o.status,
+      o.payment_status,
+      (o.subtotal_grosze / 100).toFixed(2).replace(".", ","),
+      (o.discount_grosze / 100).toFixed(2).replace(".", ","),
+      (o.shipping_grosze / 100).toFixed(2).replace(".", ","),
+      (o.total_grosze / 100).toFixed(2).replace(".", ","),
+      o.promo_code ?? "",
+      o.shipping_method ?? "",
+      o.tracking_number ?? "",
+    ]),
+  );
+});
+
+// Masowa zmiana statusu (np. 12 zamówień → "shipped" jednym ruchem).
+const bulkSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1).max(100),
+  status: z.enum(["pending", "paid", "packed", "shipped", "delivered", "cancelled", "refunded"]),
+});
+ordersRouter.patch("/bulk", async (req, res) => {
+  const body = parseBody(bulkSchema, req.body, res);
+  if (!body) return;
+  const { data, error } = await supabase
+    .from("orders")
+    .update({ status: body.status })
+    .in("id", body.ids)
+    .select("id");
+  if (error) return serverError(res, "orders.bulk", error);
+  res.json({ ok: true, updated: data?.length ?? 0 });
 });
 
 ordersRouter.get("/:id", async (req, res) => {

@@ -36,12 +36,22 @@ const QUICK: { key: Page; label: string; icon: "orders" | "products" | "tag" | "
   { key: "stats", label: "Pulpit", icon: "stats", tone: "bg-sky-100 text-sky-700" },
 ];
 
+type LowStockInfo = { threshold: number; items: { id: string; name: string; stock_qty: number }[] };
+
 export default function Home({ go }: { go: (p: Page) => void }) {
   const [d, setD] = useState<Monthly | null>(null);
+  const [low, setLow] = useState<LowStockInfo | null>(null);
+  const [pendingReviews, setPendingReviews] = useState(0);
   const [err, setErr] = useState("");
 
   useEffect(() => {
     api.get("/api/admin/stats/monthly").then(setD).catch((e) => setErr(e.message));
+    // widgety pomocnicze - błędy ciche (starszy backend może ich nie mieć)
+    api.get("/api/admin/products/low-stock").then(setLow).catch(() => {});
+    api
+      .get("/api/admin/reviews?status=pending&limit=1")
+      .then((r: { total: number }) => setPendingReviews(r.total))
+      .catch(() => {});
   }, []);
 
   if (err) return <div className="p-4"><ErrorNote msg={`Błąd: ${err}`} /></div>;
@@ -90,6 +100,33 @@ export default function Home({ go }: { go: (p: Page) => void }) {
           </button>
         ))}
       </div>
+
+      {/* Alerty operacyjne: opinie do moderacji + niski stan magazynu */}
+      {pendingReviews > 0 && (
+        <button onClick={() => go("reviews")} className="card flex w-full items-center gap-3 border-amber-200 bg-amber-50 p-4 text-left">
+          <span className="text-2xl">⭐</span>
+          <span className="flex-1">
+            <span className="block font-semibold">
+              {pendingReviews} {pendingReviews === 1 ? "opinia czeka" : "opinie czekają"} na moderację
+            </span>
+            <span className="block text-xs text-ash">Zatwierdź lub odrzuć w 10 sekund</span>
+          </span>
+          <Icon name="chevron" size={18} className="text-ash" />
+        </button>
+      )}
+      {low && low.items.length > 0 && (
+        <button onClick={() => go("products")} className="card flex w-full items-center gap-3 border-red-200 bg-red-50 p-4 text-left">
+          <span className="text-2xl">📉</span>
+          <span className="flex-1">
+            <span className="block font-semibold">Niski stan: {low.items.length} {low.items.length === 1 ? "produkt" : "produkty"}</span>
+            <span className="block truncate text-xs text-ash">
+              {low.items.slice(0, 3).map((i) => `${i.name} (${i.stock_qty})`).join(", ")}
+              {low.items.length > 3 ? "..." : ""}
+            </span>
+          </span>
+          <Icon name="chevron" size={18} className="text-ash" />
+        </button>
+      )}
 
       {/* KPI */}
       <div className="grid grid-cols-2 gap-3">

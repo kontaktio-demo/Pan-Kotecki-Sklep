@@ -50,12 +50,90 @@ productsRouter.get("/", async (_req, res) => {
   res.json(data ?? []);
 });
 
+// Produkty z niskim stanem magazynowym (próg z ustawień albo ?threshold=).
+// Rejestrowane PRZED /:id ("low-stock" nie jest UUID).
+productsRouter.get("/low-stock", async (req, res) => {
+  let threshold = Number(req.query.threshold);
+  if (!Number.isFinite(threshold) || threshold < 0) {
+    const { data: s } = await supabase.from("settings").select("value").eq("key", "store").maybeSingle();
+    const t = Number((s?.value as { low_stock_threshold?: number } | null)?.low_stock_threshold);
+    threshold = Number.isFinite(t) && t >= 0 ? t : 5;
+  }
+  const { data, error } = await supabase
+    .from("products")
+    .select("id, slug, name, stock_qty, in_stock, active, images:product_images(url, sort_order)")
+    .not("stock_qty", "is", null)
+    .lte("stock_qty", threshold)
+    .eq("active", true)
+    .order("stock_qty", { ascending: true })
+    .limit(100);
+  if (error) return serverError(res, "products.lowstock", error);
+  res.json({ threshold, items: data ?? [] });
+});
+
 productsRouter.get("/:id", async (req, res) => {
   if (badId(res, req.params.id)) return;
   const { data, error } = await supabase.from("products").select(SELECT).eq("id", req.params.id).maybeSingle();
   if (error) return serverError(res, "products.get", error);
   if (!data) return res.status(404).json({ error: "Nie znaleziono" });
   res.json(data);
+});
+
+// Duplikuj produkt: kopia jako szkic (active=false), unikalny slug.
+// Zdjęcia kopiujemy TYLKO jako URL (storage_path=null) - usunięcie kopii
+// nigdy nie skasuje plików oryginału ze Storage.
+productsRouter.post("/:id/duplicate", async (req, res) => {
+  if (badId(res, req.params.id)) return;
+  const { data: src, error } = await supabase
+    .from("products")
+    .select("*, images:product_images(url, alt, sort_order)")
+    .eq("id", req.params.id)
+    .maybeSingle();
+  if (error) return serverError(res, "products.duplicate.get", error);
+  if (!src) return res.status(404).json({ error: "Nie znaleziono" });
+
+  const baseSlug = slugify(`${src.slug}-kopia`);
+  let slug = baseSlug;
+  for (let i = 2; i <= 20; i++) {
+    const { data: taken } = await supabase.from("products").select("id").eq("slug", slug).maybeSingle();
+    if (!taken) break;
+    slug = slugify(`${baseSlug}-${i}`);
+  }
+
+  const { data: copy, error: insErr } = await supabase
+    .from("products")
+    .insert({
+      slug,
+      name: `${src.name} (kopia)`,
+      category_id: src.category_id,
+      price_grosze: src.price_grosze,
+      sale_price_grosze: src.sale_price_grosze,
+      currency: src.currency,
+      short_description: src.short_description,
+      description: src.description,
+      details: src.details,
+      badges: src.badges,
+      bestseller: false,
+      in_stock: src.in_stock,
+      stock_qty: src.stock_qty,
+      active: false,
+      sort_order: (src.sort_order ?? 0) + 1,
+    })
+    .select("id")
+    .single();
+  if (insErr) return writeError(res, "products.duplicate", insErr);
+
+  const images = ((src.images ?? []) as { url: string; alt: string | null; sort_order: number }[]).map((i) => ({
+    product_id: copy.id,
+    url: i.url,
+    storage_path: null,
+    alt: i.alt,
+    sort_order: i.sort_order,
+  }));
+  if (images.length) await supabase.from("product_images").insert(images);
+
+  const { data: full } = await supabase.from("products").select(SELECT).eq("id", copy.id).maybeSingle();
+  res.status(201).json(full);
 });
 
 productsRouter.post("/", async (req, res) => {

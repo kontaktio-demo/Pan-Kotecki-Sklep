@@ -2,12 +2,13 @@ import { resetConnection } from "../App";
 import type { Page } from "../App";
 import Icon from "../icons";
 
-const ITEMS: { key: Page; label: string; icon: "tag" | "users" | "bell" | "settings"; desc: string }[] = [
+const ITEMS: { key: Page; label: string; icon: "tag" | "users" | "bell" | "settings" | "star"; desc: string }[] = [
+  { key: "reviews", label: "Opinie", icon: "star", desc: "Moderacja opinii klientów" },
   { key: "categories", label: "Kategorie", icon: "tag", desc: "Działy sklepu" },
   { key: "promotions", label: "Promocje", icon: "tag", desc: "Kody rabatowe" },
   { key: "customers", label: "Klienci", icon: "users", desc: "Baza klientów" },
   { key: "notifications", label: "Powiadomienia", icon: "bell", desc: "Push przy zakupie" },
-  { key: "settings", label: "Ustawienia", icon: "settings", desc: "Dostawa, kontakt" },
+  { key: "settings", label: "Ustawienia", icon: "settings", desc: "Dostawa, ogłoszenie, kontakt" },
 ];
 
 export default function More({ go }: { go: (p: Page) => void }) {

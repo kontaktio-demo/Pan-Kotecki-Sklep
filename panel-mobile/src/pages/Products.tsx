@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import { fromGrosze, toGrosze, zl } from "../format";
-import { Spinner, ErrorNote, Empty, Sheet, Fab } from "../ui";
+import { Spinner, ErrorNote, Empty, Sheet, Fab, toast, ConfirmSheet } from "../ui";
 import Icon from "../icons";
 
 type Img = { id: string; url: string; alt: string | null; sort_order: number };
@@ -47,8 +47,10 @@ export default function Products() {
   const [cats, setCats] = useState<Cat[]>([]);
   const [editing, setEditing] = useState<Product | null>(null);
   const [q, setQ] = useState("");
+  const [lowOnly, setLowOnly] = useState(false);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [toDelete, setToDelete] = useState<Product | null>(null);
 
   async function load() {
     setLoading(true);
@@ -67,16 +69,31 @@ export default function Products() {
   }, []);
 
   async function remove(p: Product) {
-    if (!confirm(`Usunąć produkt „${p.name}"? Tego nie da się cofnąć.`)) return;
     try {
       await api.del(`/api/admin/products/${p.id}`);
+      toast("Produkt usunięty");
       load();
     } catch (e) {
-      alert((e as Error).message);
+      toast((e as Error).message, "err");
     }
   }
 
-  const filtered = items.filter((p) => p.name.toLowerCase().includes(q.toLowerCase().trim()));
+  async function duplicate(p: Product) {
+    try {
+      const copy = (await api.post(`/api/admin/products/${p.id}/duplicate`, {})) as Product;
+      toast("Utworzono kopię (ukryta - edytuj i włącz)");
+      await load();
+      setEditing(copy);
+    } catch (e) {
+      toast((e as Error).message, "err");
+    }
+  }
+
+  const filtered = items.filter(
+    (p) =>
+      p.name.toLowerCase().includes(q.toLowerCase().trim()) &&
+      (!lowOnly || (p.stock_qty != null && p.stock_qty <= 5)),
+  );
 
   return (
     <div className="pb-24">
@@ -90,6 +107,14 @@ export default function Products() {
             className="w-full bg-transparent text-[15px] outline-none"
             autoCapitalize="none"
           />
+        </div>
+        <div className="noscrollbar mt-2 flex gap-2 overflow-x-auto">
+          <button onClick={() => setLowOnly(false)} className={`pill ${!lowOnly ? "pill-on" : "pill-off"}`}>
+            Wszystkie
+          </button>
+          <button onClick={() => setLowOnly(true)} className={`pill ${lowOnly ? "pill-on" : "pill-off"}`}>
+            Niski stan (≤5)
+          </button>
         </div>
       </div>
 
@@ -120,16 +145,38 @@ export default function Products() {
                     {p.sale_price_grosze != null && <span className="text-xs text-ash line-through">{zl(p.price_grosze)}</span>}
                     {!p.active && <span className="statuspill bg-cream text-ash">Ukryty</span>}
                     {p.bestseller && <span className="statuspill bg-orange/15 text-orange-deep">Bestseller</span>}
+                    {p.stock_qty != null && p.stock_qty <= 5 && (
+                      <span className="statuspill bg-red-50 text-red-600">Zostało {p.stock_qty}</span>
+                    )}
                   </div>
                 </div>
               </button>
-              <button onClick={() => remove(p)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-red-500 active:bg-red-50">
+              <button
+                onClick={() => duplicate(p)}
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-ash active:bg-cream"
+                aria-label={`Duplikuj ${p.name}`}
+                title="Duplikuj"
+              >
+                <Icon name="swap" size={18} />
+              </button>
+              <button onClick={() => setToDelete(p)} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-red-500 active:bg-red-50">
                 <Icon name="trash" size={18} />
               </button>
             </div>
           ))
         )}
       </div>
+
+      {toDelete && (
+        <ConfirmSheet
+          title={`Usunąć „${toDelete.name}"?`}
+          message="Produkt i jego zdjęcia znikną ze sklepu. Tego nie da się cofnąć."
+          confirmLabel="Usuń"
+          danger
+          onConfirm={() => void remove(toDelete)}
+          onClose={() => setToDelete(null)}
+        />
+      )}
 
       <Fab onClick={() => setEditing({ ...empty })} label="Dodaj" />
 

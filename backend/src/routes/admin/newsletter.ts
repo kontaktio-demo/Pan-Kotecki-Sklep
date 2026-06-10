@@ -4,23 +4,53 @@ import { supabase } from "../../lib/supabase.js";
 import { badId, parseBody, serverError } from "../../lib/util.js";
 import { sendBatch, newsletterHtml } from "../../lib/email.js";
 import { siteUrl } from "../../lib/stripe.js";
+import { sendCsv } from "../../lib/csv.js";
 
 export const newsletterAdminRouter = Router();
 
-// Lista subskrybentów (potwierdzeni + oczekujący).
-newsletterAdminRouter.get("/subscribers", async (_req, res) => {
+// Lista subskrybentów (potwierdzeni + oczekujący) z opcjonalną paginacją i szukajką.
+newsletterAdminRouter.get("/subscribers", async (req, res) => {
+  const search = typeof req.query.q === "string" ? req.query.q.replace(/[^\p{L}\p{N}@.\-_]/gu, "").slice(0, 80) : "";
+  const limit = Math.max(1, Math.min(5000, Number(req.query.limit) || 5000));
+  const offset = Math.max(0, Number(req.query.offset) || 0);
+
+  let q = supabase
+    .from("newsletter_subscribers")
+    .select("id, email, confirmed, consent_at, source, created_at", { count: "exact" })
+    .order("created_at", { ascending: false });
+  if (search) q = q.ilike("email", `%${search}%`);
+  const [{ data, error, count }, { count: confirmedCount }] = await Promise.all([
+    q.range(offset, offset + limit - 1),
+    supabase.from("newsletter_subscribers").select("*", { count: "exact", head: true }).eq("confirmed", true),
+  ]);
+  if (error) return serverError(res, "newsletter.subscribers", error);
+  res.json({
+    total: count ?? 0,
+    confirmed: confirmedCount ?? 0,
+    subscribers: data ?? [],
+  });
+});
+
+// Eksport CSV subskrybentów (np. do narzędzia mailingowego).
+newsletterAdminRouter.get("/subscribers/export.csv", async (_req, res) => {
   const { data, error } = await supabase
     .from("newsletter_subscribers")
-    .select("id, email, confirmed, consent_at, source, created_at")
+    .select("email, confirmed, consent_at, source, created_at")
     .order("created_at", { ascending: false })
-    .limit(5000);
-  if (error) return serverError(res, "newsletter.subscribers", error);
-  const list = data ?? [];
-  res.json({
-    total: list.length,
-    confirmed: list.filter((s) => s.confirmed).length,
-    subscribers: list,
-  });
+    .limit(20000);
+  if (error) return serverError(res, "newsletter.export", error);
+  sendCsv(
+    res,
+    "newsletter.csv",
+    ["E-mail", "Potwierdzony", "Zgoda (data)", "Źródło", "Zapis (data)"],
+    (data ?? []).map((s) => [
+      s.email,
+      s.confirmed ? "tak" : "nie",
+      s.consent_at ? new Date(s.consent_at).toLocaleString("pl-PL") : "",
+      s.source ?? "",
+      new Date(s.created_at).toLocaleString("pl-PL"),
+    ]),
+  );
 });
 
 // Usunięcie subskrybenta (RODO / zarządzanie).

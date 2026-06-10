@@ -5,13 +5,21 @@ import { badId, serverError } from "../../lib/util.js";
 export const messagesRouter = Router();
 
 // Wiadomości z formularza kontaktowego (do skrzynki w panelu).
-messagesRouter.get("/", async (_req, res) => {
-  const { data, error } = await supabase
+// Paginacja opt-in (limit/offset) - bez parametrów stara goła tablica.
+messagesRouter.get("/", async (req, res) => {
+  const paged = req.query.limit !== undefined || req.query.offset !== undefined;
+  const limit = Math.max(1, Math.min(200, Number(req.query.limit) || 50));
+  const offset = Math.max(0, Number(req.query.offset) || 0);
+
+  let q = supabase
     .from("contact_messages")
-    .select("id, name, email, subject, message, created_at")
-    .order("created_at", { ascending: false })
-    .limit(1000);
+    .select("id, name, email, subject, message, created_at", paged ? { count: "exact" } : undefined)
+    .order("created_at", { ascending: false });
+  q = paged ? q.range(offset, offset + limit - 1) : q.limit(1000);
+
+  const { data, error, count } = await q;
   if (error) return serverError(res, "messages.list", error);
+  if (paged) return res.json({ items: data ?? [], total: count ?? 0 });
   res.json(data ?? []);
 });
 

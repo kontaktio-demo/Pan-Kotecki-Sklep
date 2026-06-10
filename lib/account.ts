@@ -61,6 +61,7 @@ export type AccountOrderDetail = AccountOrder & {
   parcelLocker: string | null;
   shippingAddress: Record<string, unknown> | null;
   promoCode: string | null;
+  history: { status: string; at: string }[];
 };
 
 export async function getAccessToken(): Promise<string | null> {

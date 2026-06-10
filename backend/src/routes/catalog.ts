@@ -29,8 +29,17 @@ catalogRouter.get("/categories", async (_req, res) => {
 catalogRouter.get("/products", async (req, res) => {
   const kategoria = typeof req.query.kategoria === "string" ? req.query.kategoria.slice(0, 80) : null;
   const szukaj = typeof req.query.szukaj === "string" ? safeTerm(req.query.szukaj) : "";
+  // hydracja ulubionych / ostatnio oglądanych: ?slugi=a,b,c (max 50)
+  const slugi =
+    typeof req.query.slugi === "string"
+      ? req.query.slugi.split(",").map((s) => s.trim().slice(0, 80)).filter(Boolean).slice(0, 50)
+      : null;
 
   let query = supabase.from("products").select(PRODUCT_SELECT).eq("active", true);
+
+  if (slugi && slugi.length > 0) {
+    query = query.in("slug", slugi);
+  }
 
   if (kategoria) {
     const { data: cat } = await supabase.from("categories").select("id").eq("slug", kategoria).maybeSingle();
@@ -46,6 +55,35 @@ catalogRouter.get("/products", async (req, res) => {
   if (error) return serverError(res, "products", error);
   cache(res, 120);
   res.json((data as unknown as ProductRow[]).map(mapProduct));
+});
+
+// Podpowiedzi wyszukiwarki (dropdown w nagłówku sklepu). Musi być PRZED /products/:slug,
+// inaczej Express potraktuje "suggest" jako slug.
+catalogRouter.get("/products/suggest", async (req, res) => {
+  const q = typeof req.query.q === "string" ? safeTerm(req.query.q) : "";
+  if (q.length < 2) return res.json([]);
+  const { data, error } = await supabase
+    .from("products")
+    .select("slug, name, price_grosze, sale_price_grosze, images:product_images(url, sort_order)")
+    .eq("active", true)
+    .or(`name.ilike.%${q}%,short_description.ilike.%${q}%`)
+    .order("bestseller", { ascending: false })
+    .limit(8);
+  if (error) return serverError(res, "suggest", error);
+  cache(res, 60);
+  res.json(
+    (data ?? []).map((p) => ({
+      slug: p.slug,
+      name: p.name,
+      price: p.price_grosze / 100,
+      salePrice: p.sale_price_grosze != null ? p.sale_price_grosze / 100 : null,
+      image:
+        (p.images ?? [])
+          .slice()
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((i) => i.url)[0] ?? null,
+    })),
+  );
 });
 
 catalogRouter.get("/products/:slug", async (req, res) => {
@@ -67,25 +105,48 @@ catalogRouter.get("/order-status/:number", async (req, res) => {
   const number = String(req.params.number).slice(0, 40);
   const { data, error } = await supabase
     .from("orders")
-    .select("payment_status, status")
+    .select("payment_status, status, tracking_number, history:order_status_history(status, created_at)")
     .eq("number", number)
     .maybeSingle();
   if (error) return serverError(res, "order-status", error);
   if (!data) return res.status(404).json({ error: "Nie znaleziono" });
+  const history = ((data.history ?? []) as { status: string; created_at: string }[])
+    .slice()
+    .sort((a, b) => a.created_at.localeCompare(b.created_at))
+    .map((h) => ({ status: h.status, at: h.created_at }));
   res.set("Cache-Control", "no-store");
-  res.json({ paymentStatus: data.payment_status, status: data.status });
+  res.json({
+    paymentStatus: data.payment_status,
+    status: data.status,
+    trackingNumber: data.tracking_number ?? null,
+    history,
+  });
 });
 
-// Publiczne ustawienia sklepu (próg darmowej dostawy + czy sklep otwarty).
+// Publiczne ustawienia sklepu (próg darmowej dostawy, koszty dostawy, ogłoszenie).
 catalogRouter.get("/settings/public", async (_req, res) => {
   const { data } = await supabase.from("settings").select("value").eq("key", "store").maybeSingle();
-  const store = (data?.value ?? {}) as { free_shipping_grosze?: number; open?: boolean };
-  const raw = Number(store.free_shipping_grosze);
-  const freeShippingGrosze = Number.isFinite(raw) && raw >= 0 ? raw : 14900;
+  const store = (data?.value ?? {}) as {
+    free_shipping_grosze?: number;
+    open?: boolean;
+    shipping_locker_grosze?: number;
+    shipping_courier_grosze?: number;
+    announcement?: string;
+  };
+  const num = (v: unknown, fallback: number) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 ? n : fallback;
+  };
   const open = store.open !== false; // domyślnie otwarty; zamknięty tylko gdy jawnie false
   // krótki cache - żeby włącznik „Wkrótce/Otwarty" działał szybko (~30 s)
   res.set("Cache-Control", "public, max-age=15, s-maxage=30, stale-while-revalidate=60");
-  res.json({ freeShippingGrosze, open });
+  res.json({
+    freeShippingGrosze: num(store.free_shipping_grosze, 14900),
+    shippingLockerGrosze: num(store.shipping_locker_grosze, 1199),
+    shippingCourierGrosze: num(store.shipping_courier_grosze, 1499),
+    announcement: typeof store.announcement === "string" ? store.announcement.slice(0, 200) : "",
+    open,
+  });
 });
 
 // Walidacja kodu rabatowego PRZED kasą (podgląd rabatu) - NIE zwiększa licznika użyć.

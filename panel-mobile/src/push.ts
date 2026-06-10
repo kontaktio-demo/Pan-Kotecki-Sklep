@@ -44,7 +44,13 @@ async function subscribeFresh(reg: ServiceWorkerRegistration, keyB64: string) {
     await sub.unsubscribe(); // klucz VAPID się zmienił → subskrybuj od nowa
     sub = null;
   }
-  return sub ?? (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(keyB64) }));
+  return (
+    sub ??
+    (await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(keyB64) as unknown as BufferSource,
+    }))
+  );
 }
 
 // Wyrejestruj powiadomienia (przy zmianie połączenia).

@@ -16,6 +16,8 @@ import Promotions from "./pages/Promotions";
 import Customers from "./pages/Customers";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
+import Reviews from "./pages/Reviews";
+import { Toaster } from "./ui";
 
 export type Page =
   | "home"
@@ -27,7 +29,8 @@ export type Page =
   | "promotions"
   | "customers"
   | "settings"
-  | "notifications";
+  | "notifications"
+  | "reviews";
 
 const TITLES: Record<Page, string> = {
   home: "Podsumowanie",
@@ -40,9 +43,10 @@ const TITLES: Record<Page, string> = {
   customers: "Klienci",
   settings: "Ustawienia",
   notifications: "Powiadomienia",
+  reviews: "Opinie",
 };
 
-const SUBPAGES: Page[] = ["categories", "promotions", "customers", "settings", "notifications"];
+const SUBPAGES: Page[] = ["categories", "promotions", "customers", "settings", "notifications", "reviews"];
 
 const TABS: { key: Page; label: string; icon: "home" | "orders" | "products" | "stats" | "more" }[] = [
   { key: "home", label: "Start", icon: "home" },
@@ -145,7 +149,10 @@ export default function App() {
         {page === "customers" && <Customers />}
         {page === "settings" && <Settings />}
         {page === "notifications" && <Notifications />}
+        {page === "reviews" && <Reviews />}
       </main>
+
+      <Toaster />
 
       {/* Dolny pasek zakładek */}
       <nav className="safe-bottom z-20 shrink-0 border-t border-line bg-white">

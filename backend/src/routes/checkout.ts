@@ -14,7 +14,8 @@ export const checkoutRouter = Router();
 // zamówienie z jego kontem - bez wymuszania logowania.
 checkoutRouter.use(withCustomer);
 
-const SHIPPING_GROSZE: Record<string, number> = {
+// Domyślne koszty dostawy - nadpisywane wartościami z ustawień sklepu (panel).
+const SHIPPING_FALLBACK: Record<string, number> = {
   inpost_locker: 1199,
   inpost_courier: 1499,
   pickup: 0,
@@ -30,6 +31,7 @@ const schema = z
     shipping_address: z.record(z.string(), z.unknown()).optional(),
     parcel_locker: z.string().max(60).optional(),
     promo_code: z.string().max(40).optional(),
+    gift_note: z.string().max(200).optional(), // liścik do prezentu (drukujemy i wkładamy do paczki)
     ui: z.enum(["hosted", "embedded"]).optional(), // tryb płatności (embedded = na naszej stronie)
   })
   // Cel dostawy musi pasować do metody - żeby nie powstało opłacone, niewysyłalne zamówienie.
@@ -112,10 +114,23 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
   if ((storeSetting?.value as { open?: boolean })?.open === false) {
     return res.status(503).json({ error: "Sklep jest chwilowo zamknięty - zajrzyj wkrótce." });
   }
-  const rawThreshold = Number((storeSetting?.value as { free_shipping_grosze?: number })?.free_shipping_grosze);
-  const freeThreshold = Number.isFinite(rawThreshold) && rawThreshold >= 0 ? rawThreshold : 14900;
+  const store = (storeSetting?.value ?? {}) as {
+    free_shipping_grosze?: number;
+    shipping_locker_grosze?: number;
+    shipping_courier_grosze?: number;
+  };
+  const num = (v: unknown, fallback: number) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 ? n : fallback;
+  };
+  const freeThreshold = num(store.free_shipping_grosze, 14900);
+  const shippingCosts: Record<string, number> = {
+    inpost_locker: num(store.shipping_locker_grosze, SHIPPING_FALLBACK.inpost_locker),
+    inpost_courier: num(store.shipping_courier_grosze, SHIPPING_FALLBACK.inpost_courier),
+    pickup: 0,
+  };
   const method = body.shipping_method ?? "inpost_locker";
-  let shipping = SHIPPING_GROSZE[method] ?? 0;
+  let shipping = shippingCosts[method] ?? 0;
   if (method !== "pickup" && subtotal >= freeThreshold) shipping = 0;
 
   const total = subtotal - discount + shipping;
@@ -173,6 +188,12 @@ checkoutRouter.post("/", async (req: CustomerRequest, res) => {
   }
 
   const order = result as { order_id: string; number: string };
+
+  // Liścik prezentowy → notatka zamówienia (widoczna w panelu przy pakowaniu).
+  const gift = body.gift_note?.trim();
+  if (gift) {
+    await supabase.from("orders").update({ notes: `🎁 Prezent: ${gift}` }).eq("id", order.order_id);
+  }
 
   // 6) Płatność.
   let checkoutUrl: string | null = null;

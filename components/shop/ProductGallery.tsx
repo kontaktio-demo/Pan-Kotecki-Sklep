@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ProductMedia from "./ProductMedia";
 import ProductVisual from "@/components/ui/ProductVisual";
+import Lightbox from "./Lightbox";
 
 type Props = {
   image?: string;
@@ -16,6 +17,7 @@ export default function ProductGallery({ image, images, name, motif, badge }: Pr
   const pics = (images && images.length ? images : image ? [image] : []).slice(0, 6);
   const hasReal = pics.length > 0;
   const [active, setActive] = useState(0);
+  const [zoomed, setZoomed] = useState(false);
   const main = pics[active] ?? image;
 
   return (
@@ -48,9 +50,26 @@ export default function ProductGallery({ image, images, name, motif, badge }: Pr
       </div>
 
       <div className="relative order-1 aspect-square flex-1 overflow-hidden rounded-2xl border border-line bg-cream md:order-2">
-        <ProductMedia image={main} name={name} motif={motif} sizes="(min-width: 1024px) 36rem, 100vw" priority />
+        {hasReal ? (
+          <button
+            type="button"
+            onClick={() => setZoomed(true)}
+            aria-label="Powiększ zdjęcie"
+            className="group/zoom relative block h-full w-full cursor-zoom-in"
+          >
+            <ProductMedia image={main} name={name} motif={motif} sizes="(min-width: 1024px) 36rem, 100vw" priority />
+            <span className="absolute bottom-4 right-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-milk/90 text-ash opacity-0 shadow-sm backdrop-blur transition-opacity group-hover/zoom:opacity-100">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.2-3.2M8 11h6M11 8v6" />
+              </svg>
+            </span>
+          </button>
+        ) : (
+          <ProductMedia image={main} name={name} motif={motif} sizes="(min-width: 1024px) 36rem, 100vw" priority />
+        )}
         {badge && (
-          <span className="absolute left-4 top-4 rounded-md bg-orange px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+          <span className="pointer-events-none absolute left-4 top-4 rounded-md bg-orange px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
             {badge}
           </span>
         )}
@@ -60,6 +79,10 @@ export default function ProductGallery({ image, images, name, motif, badge }: Pr
           </span>
         )}
       </div>
+
+      {zoomed && hasReal && (
+        <Lightbox images={pics} startIndex={active} alt={name} onClose={() => setZoomed(false)} />
+      )}
     </div>
   );
 }

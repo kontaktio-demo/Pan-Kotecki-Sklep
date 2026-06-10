@@ -7,6 +7,8 @@ import CartDrawer from "@/components/shop/CartDrawer";
 import CatPeek from "@/components/shop/CatPeek";
 import CookieConsent from "@/components/CookieConsent";
 import { AuthProvider } from "@/components/account/AuthProvider";
+import { SettingsProvider } from "@/components/providers/SettingsProvider";
+import Toaster from "@/components/ui/Toaster";
 import JsonLd from "@/components/seo/JsonLd";
 
 const inter = Inter({
@@ -106,12 +108,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="flex min-h-full flex-col bg-milk text-ink">
         <JsonLd data={[ORG_LD, WEBSITE_LD]} />
         <AuthProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <CartDrawer />
-          <CatPeek />
-          <CookieConsent />
+          <SettingsProvider>
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <CartDrawer />
+            <CatPeek />
+            <CookieConsent />
+            <Toaster />
+          </SettingsProvider>
         </AuthProvider>
       </body>
     </html>

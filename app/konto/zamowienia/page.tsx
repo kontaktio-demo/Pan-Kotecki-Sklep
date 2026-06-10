@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/account/AuthProvider";
 import { CenterSpinner, StatusBadge, formatDate, ErrorNote } from "@/components/account/ui";
+import { OrderRowSkeleton } from "@/components/ui/Skeleton";
 import { getOrders, type AccountOrder } from "@/lib/account";
 import { formatPrice } from "@/lib/format";
 
@@ -17,7 +18,20 @@ export default function ZamowieniaPage() {
     getOrders().then(setOrders).catch((e) => { setErr(e.message); setOrders([]); });
   }, [user, loading]);
 
-  if (loading || !user || orders === null) return <CenterSpinner />;
+  if (loading || !user) return <CenterSpinner />;
+  if (orders === null) {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold md:text-3xl">Zamówienia</h1>
+        <p className="mt-2 text-ink-soft">Historia Twoich zakupów w Pan Kotecki.</p>
+        <div className="mt-6 flex flex-col gap-3">
+          <OrderRowSkeleton />
+          <OrderRowSkeleton />
+          <OrderRowSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

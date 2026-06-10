@@ -1,22 +1,29 @@
+"use client";
+
 import Link from "next/link";
 import type { Product } from "@/lib/products";
 import { categoryName } from "@/lib/products";
-import { formatPrice, productRating, FREE_SHIPPING_FROM } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
+import { useSettings } from "@/components/providers/SettingsProvider";
 import ProductMedia from "./ProductMedia";
+import WishlistButton from "./WishlistButton";
 import { AddToCartCompact } from "./AddToCart";
 
-function Stars({ rating }: { rating: number }) {
+export function Stars({ rating, className = "" }: { rating: number; className?: string }) {
+  const full = Math.round(rating);
   return (
-    <span className="inline-flex items-center gap-1 text-xs text-ash">
+    <span className={`inline-flex items-center gap-1 text-xs text-ash ${className}`}>
       <span className="text-coral" aria-hidden="true">
-        {"★".repeat(Math.round(rating))}
-        <span className="text-line">{"★".repeat(5 - Math.round(rating))}</span>
+        {"★".repeat(full)}
+        <span className="text-line">{"★".repeat(5 - full)}</span>
       </span>
+      <span className="sr-only">Ocena {rating.toFixed(1)} na 5</span>
     </span>
   );
 }
 
 export default function ProductCard({ product }: { product: Product }) {
+  const { freeShippingZl } = useSettings();
   const item = {
     slug: product.slug,
     name: product.name,
@@ -26,8 +33,8 @@ export default function ProductCard({ product }: { product: Product }) {
     image: product.images?.[0],
     inStock: product.inStock,
   };
-  const { rating, reviews } = productRating(product.slug);
-  const freeShipping = product.price >= FREE_SHIPPING_FROM;
+  const freeShipping = product.price >= freeShippingZl;
+  const ratingCount = product.ratingCount ?? 0;
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-line bg-white transition-all duration-300 hover:-translate-y-1 hover:border-line hover:shadow-[0_22px_44px_-26px_rgba(20,14,6,0.4)]">
@@ -42,13 +49,14 @@ export default function ProductCard({ product }: { product: Product }) {
           sizes="(min-width: 1024px) 22rem, 50vw"
           className="transition-transform duration-[600ms] ease-out group-hover:scale-[1.05]"
         />
+        <WishlistButton slug={product.slug} name={product.name} />
         {product.badges && product.badges.length > 0 && (
           <span className="absolute left-3 top-3 rounded-full bg-orange px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-wide text-white shadow-sm">
             {product.badges[0]}
           </span>
         )}
         {product.originalPrice && (
-          <span className="absolute right-3 top-3 rounded-full bg-coral px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-wide text-white shadow-sm">
+          <span className="absolute left-3 bottom-3 rounded-full bg-coral px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-wide text-white shadow-sm">
             Promocja
           </span>
         )}
@@ -68,10 +76,17 @@ export default function ProductCard({ product }: { product: Product }) {
           {product.name}
         </Link>
 
-        <div className="mt-2 flex items-center gap-1.5">
-          <Stars rating={rating} />
-          <span className="text-xs text-mist">({reviews})</span>
-        </div>
+        {ratingCount > 0 && product.ratingAvg != null && (
+          <div className="mt-2 flex items-center gap-1.5">
+            <Stars rating={product.ratingAvg} />
+            <span className="text-xs text-mist">({ratingCount})</span>
+          </div>
+        )}
+        {product.inStock && product.lowStock != null && (
+          <p className="mt-2 text-xs font-medium text-orange-deep">
+            {product.lowStock === 1 ? "Ostatnia sztuka!" : `Zostały ${product.lowStock} szt.`}
+          </p>
+        )}
 
         <div className="mt-auto pt-3">
           <p className="flex items-baseline gap-2">

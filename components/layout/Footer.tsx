@@ -23,6 +23,7 @@ const COLS = [
   {
     title: "Informacje",
     links: [
+      { href: "/faq", label: "Najczęstsze pytania" },
       { href: "/regulamin", label: "Regulamin" },
       { href: "/zwroty", label: "Zwroty i reklamacje" },
       { href: "/polityka-prywatnosci", label: "Polityka prywatności" },

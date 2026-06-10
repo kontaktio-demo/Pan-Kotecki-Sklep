@@ -2,17 +2,20 @@
 
 import Link from "next/link";
 import { useCart, cartTotal } from "@/store/cart";
-import { formatPrice, FREE_SHIPPING_FROM } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
+import { useSettings } from "@/components/providers/SettingsProvider";
 import ProductMedia from "./ProductMedia";
+import CartCrossSell from "./CartCrossSell";
 import { Button } from "@/components/ui/Button";
 
 export default function CartView() {
   const items = useCart((s) => s.items);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
+  const { freeShippingZl } = useSettings();
   const total = cartTotal(items);
-  const toFree = Math.max(0, FREE_SHIPPING_FROM - total);
-  const freeProgress = Math.min(100, (total / FREE_SHIPPING_FROM) * 100);
+  const toFree = Math.max(0, freeShippingZl - total);
+  const freeProgress = Math.min(100, (total / freeShippingZl) * 100);
 
   if (items.length === 0) {
     return (
@@ -122,6 +125,10 @@ export default function CartView() {
           Kontynuuj zakupy
         </Link>
       </aside>
+
+      <div className="lg:col-span-2">
+        <CartCrossSell />
+      </div>
     </div>
   );
 }

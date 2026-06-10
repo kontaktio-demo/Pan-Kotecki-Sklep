@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getProducts, getProductBySlug, getRelated, categoryName } from "@/lib/products";
-import { formatPrice, productRating, FREE_SHIPPING_FROM } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
+import { getPublicSettings } from "@/lib/settings";
+import WishlistButton from "@/components/shop/WishlistButton";
+import RecentlyViewed from "@/components/shop/RecentlyViewed";
 import ProductGallery from "@/components/shop/ProductGallery";
 import ProductReviews from "@/components/shop/ProductReviews";
 import ProductCard from "@/components/shop/ProductCard";
@@ -67,9 +70,10 @@ export default async function ProductPage({
   const product = await getProductBySlug(slug);
   if (!product) notFound();
 
-  const related = await getRelated(slug, 4);
-  const { rating, reviews } = productRating(product.slug);
-  const freeShipping = product.price >= FREE_SHIPPING_FROM;
+  const [related, settings] = await Promise.all([getRelated(slug, 4), getPublicSettings()]);
+  const ratingCount = product.ratingCount ?? 0;
+  const ratingAvg = product.ratingAvg ?? null;
+  const freeShipping = product.price >= settings.freeShippingZl;
   const item = {
     slug: product.slug,
     name: product.name,
@@ -80,7 +84,8 @@ export default async function ProductPage({
     inStock: product.inStock,
   };
 
-  // Dane strukturalne - bez aggregateRating (brak realnych opinii = ryzyko kary Google).
+  // Dane strukturalne. aggregateRating TYLKO przy prawdziwych opiniach
+  // (fałszywe oceny w schema.org = ryzyko kary Google).
   const productLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -89,6 +94,17 @@ export default async function ProductPage({
     ...(product.images?.length ? { image: product.images } : {}),
     ...(product.category ? { category: categoryName(product.category) } : {}),
     brand: { "@type": "Brand", name: "Pan Kotecki" },
+    ...(ratingCount > 0 && ratingAvg != null
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: ratingAvg.toFixed(1),
+            reviewCount: ratingCount,
+            bestRating: "5",
+            worstRating: "1",
+          },
+        }
+      : {}),
     offers: {
       "@type": "Offer",
       url: `${SITE}/sklep/${product.slug}`,
@@ -138,10 +154,17 @@ export default async function ProductPage({
             <p className="text-sm text-ash">{categoryName(product.category)}</p>
             <h1 className="mt-1 text-3xl font-semibold leading-tight md:text-4xl">{product.name}</h1>
 
-            <div className="mt-3 flex items-center gap-2 text-sm">
-              <span className="tracking-wide text-coral" aria-hidden="true">★★★★★</span>
-              <span className="text-ash">{rating.toFixed(1)} - {reviews} opinii</span>
-            </div>
+            {ratingCount > 0 && ratingAvg != null && (
+              <a href="#opinie" className="mt-3 flex items-center gap-2 text-sm transition-colors hover:text-ink">
+                <span className="tracking-wide text-coral" aria-hidden="true">
+                  {"★".repeat(Math.round(ratingAvg))}
+                  <span className="text-line">{"★".repeat(5 - Math.round(ratingAvg))}</span>
+                </span>
+                <span className="text-ash">
+                  {ratingAvg.toFixed(1)} - {ratingCount} {ratingCount === 1 ? "opinia" : ratingCount < 5 ? "opinie" : "opinii"}
+                </span>
+              </a>
+            )}
 
             <div className="mt-5 flex items-end gap-3">
               <p className="text-3xl font-semibold tabular-nums">{formatPrice(product.price)}</p>
@@ -149,20 +172,31 @@ export default async function ProductPage({
                 <span className="mb-1 text-lg text-ash line-through tabular-nums">{formatPrice(product.originalPrice)}</span>
               )}
               <span className={`mb-1 text-sm font-medium ${freeShipping ? "text-teal" : "text-ash"}`}>
-                {freeShipping ? "+ darmowa dostawa" : `darmowa dostawa od ${FREE_SHIPPING_FROM} zł`}
+                {freeShipping ? "+ darmowa dostawa" : `darmowa dostawa od ${settings.freeShippingZl} zł`}
               </span>
             </div>
 
             <p className="mt-5 text-lg leading-relaxed text-ink-soft">{product.shortDescription}</p>
 
-            <div className="mt-7">
-              <AddToCartFull item={item} />
+            <div className="mt-7 flex items-start gap-3">
+              <div className="flex-1">
+                <AddToCartFull item={item} />
+              </div>
+              <WishlistButton slug={product.slug} name={product.name} variant="button" />
             </div>
 
             <p className="mt-4 flex items-center gap-2 text-sm text-ash">
               <span className={`h-2 w-2 rounded-full ${product.inStock ? "bg-emerald-500" : "bg-mist"}`} />
               {product.inStock ? "Dostępny - wysyłamy w 24h" : "Chwilowo niedostępny"}
             </p>
+            {product.inStock && product.lowStock != null && (
+              <p className="mt-2 flex items-center gap-2 text-sm font-medium text-orange-deep">
+                <span aria-hidden="true">⏳</span>
+                {product.lowStock === 1
+                  ? "Została ostatnia sztuka - wysyłamy w 24h"
+                  : `Zostały tylko ${product.lowStock} szt. - wysyłamy w 24h`}
+              </p>
+            )}
 
             <p className="mt-2 flex items-center gap-2 text-sm text-ash">
               <span aria-hidden="true">🐾</span>
@@ -198,7 +232,7 @@ export default async function ProductPage({
         </div>
       </div>
 
-      <ProductReviews />
+      <ProductReviews slug={product.slug} />
 
       {related.length > 0 && (
         <section className="container-edge mt-20 md:mt-28">
@@ -210,6 +244,8 @@ export default async function ProductPage({
           </div>
         </section>
       )}
+
+      <RecentlyViewed currentSlug={product.slug} record />
     </div>
   );
 }

@@ -131,7 +131,7 @@ accountRouter.get("/orders", async (req: CustomerRequest, res) => {
 });
 
 const ORDER_DETAIL_SELECT =
-  "number, status, payment_status, subtotal_grosze, discount_grosze, shipping_grosze, total_grosze, currency, created_at, shipping_method, parcel_locker, shipping_address, tracking_number, email, user_id, promo_code, items:order_items(name, qty, slug, price_grosze, image_url)";
+  "number, status, payment_status, subtotal_grosze, discount_grosze, shipping_grosze, total_grosze, currency, created_at, shipping_method, parcel_locker, shipping_address, tracking_number, email, user_id, promo_code, items:order_items(name, qty, slug, price_grosze, image_url), history:order_status_history(status, created_at)";
 
 accountRouter.get("/orders/:number", async (req: CustomerRequest, res) => {
   const { id, email } = req.customer!;
@@ -151,7 +151,12 @@ accountRouter.get("/orders/:number", async (req: CustomerRequest, res) => {
   const o = data as unknown as OrderRow & {
     subtotal_grosze: number; discount_grosze: number; shipping_grosze: number;
     parcel_locker: string | null; shipping_address: Record<string, unknown> | null; promo_code: string | null;
+    history: { status: string; created_at: string }[] | null;
   };
+  const history = (o.history ?? [])
+    .slice()
+    .sort((a, b) => a.created_at.localeCompare(b.created_at))
+    .map((h) => ({ status: h.status, at: h.created_at }));
   res.json({
     ...mapOrder(o),
     subtotal: o.subtotal_grosze / 100,
@@ -160,6 +165,7 @@ accountRouter.get("/orders/:number", async (req: CustomerRequest, res) => {
     parcelLocker: o.parcel_locker,
     shippingAddress: o.shipping_address,
     promoCode: o.promo_code,
+    history,
   });
 });
 

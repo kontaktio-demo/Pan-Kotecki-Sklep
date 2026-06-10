@@ -1,45 +1,68 @@
 import { Router } from "express";
 import { supabase } from "../../lib/supabase.js";
 import { badId, serverError } from "../../lib/util.js";
+import { sendCsv } from "../../lib/csv.js";
 
 export const customersRouter = Router();
 
-customersRouter.get("/", async (_req, res) => {
-  const { data, error } = await supabase
+function safeQ(input: string): string {
+  return input.replace(/[^\p{L}\p{N}\s@.\-_]/gu, " ").trim().slice(0, 80);
+}
+
+customersRouter.get("/", async (req, res) => {
+  const search = typeof req.query.q === "string" ? safeQ(req.query.q) : "";
+  const paged = req.query.limit !== undefined || req.query.offset !== undefined;
+  const limit = Math.max(1, Math.min(200, Number(req.query.limit) || 100));
+  const offset = Math.max(0, Number(req.query.offset) || 0);
+
+  let q = supabase
     .from("customers")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(1000);
+    .select("*", paged ? { count: "exact" } : undefined)
+    .order("created_at", { ascending: false });
+  if (search) q = q.or(`email.ilike.%${search}%,name.ilike.%${search}%`);
+  q = paged ? q.range(offset, offset + limit - 1) : q.limit(1000);
+
+  const { data, error, count } = await q;
   if (error) return serverError(res, "customers.list", error);
+  if (paged) return res.json({ items: data ?? [], total: count ?? 0 });
   res.json(data ?? []);
 });
 
+// Eksport CSV (np. do mailingu / CRM). Rejestrowane PRZED /:id.
+customersRouter.get("/export.csv", async (_req, res) => {
+  const { data, error } = await supabase
+    .from("customers")
+    .select("email, name, phone, created_at")
+    .order("created_at", { ascending: false })
+    .limit(10000);
+  if (error) return serverError(res, "customers.export", error);
+  sendCsv(
+    res,
+    "klienci.csv",
+    ["E-mail", "Imię i nazwisko", "Telefon", "Data pierwszego zamówienia"],
+    (data ?? []).map((c) => [c.email, c.name ?? "", c.phone ?? "", new Date(c.created_at).toLocaleString("pl-PL")]),
+  );
+});
+
 // ── Zarejestrowane KONTA klientów (Supabase Auth + profil) ────
-// Dla paneli: kto założył konto, zgoda marketingowa, liczba i wartość zamówień.
+// Statystyki zamówień liczy SQL (RPC admin_account_stats) - bez pętli w JS.
 customersRouter.get("/accounts", async (_req, res) => {
   try {
     const { data: list, error } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
     if (error) return serverError(res, "accounts.list", error);
     const users = list?.users ?? [];
 
-    const { data: profiles } = await supabase
-      .from("account_profiles")
-      .select("user_id, full_name, phone, marketing_consent");
+    const [{ data: profiles }, { data: statRows }] = await Promise.all([
+      supabase.from("account_profiles").select("user_id, full_name, phone, marketing_consent"),
+      supabase.rpc("admin_account_stats"),
+    ]);
     const profById = new Map((profiles ?? []).map((p) => [p.user_id, p]));
-
-    const { data: orders } = await supabase
-      .from("orders")
-      .select("user_id, total_grosze, payment_status")
-      .not("user_id", "is", null)
-      .limit(5000);
-    const stats = new Map<string, { orders: number; spentGrosze: number }>();
-    for (const o of orders ?? []) {
-      const uid = o.user_id as string;
-      const s = stats.get(uid) ?? { orders: 0, spentGrosze: 0 };
-      s.orders += 1;
-      if (o.payment_status === "paid") s.spentGrosze += o.total_grosze ?? 0;
-      stats.set(uid, s);
-    }
+    const stats = new Map(
+      ((statRows ?? []) as { user_id: string; orders: number; spent_grosze: number }[]).map((s) => [
+        s.user_id,
+        { orders: s.orders, spentGrosze: Number(s.spent_grosze) },
+      ]),
+    );
 
     const accounts = users
       .map((u) => {
@@ -84,10 +107,23 @@ customersRouter.get("/:id", async (req, res) => {
   const { data: customer, error } = await supabase.from("customers").select("*").eq("id", req.params.id).maybeSingle();
   if (error) return serverError(res, "customers.get", error);
   if (!customer) return res.status(404).json({ error: "Nie znaleziono" });
-  const { data: orders } = await supabase
-    .from("orders")
-    .select("id, number, status, payment_status, total_grosze, created_at")
-    .eq("customer_id", req.params.id)
-    .order("created_at", { ascending: false });
-  res.json({ ...customer, orders: orders ?? [] });
+  const [{ data: orders }, { data: reviews }] = await Promise.all([
+    supabase
+      .from("orders")
+      .select("id, number, status, payment_status, total_grosze, created_at")
+      .eq("customer_id", req.params.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("product_reviews")
+      .select("id, rating, body, status, created_at, product:products(name, slug)")
+      .in(
+        "order_id",
+        (
+          await supabase.from("orders").select("id").eq("customer_id", req.params.id)
+        ).data?.map((o) => o.id) ?? [],
+      )
+      .order("created_at", { ascending: false })
+      .limit(50),
+  ]);
+  res.json({ ...customer, orders: orders ?? [], reviews: reviews ?? [] });
 });

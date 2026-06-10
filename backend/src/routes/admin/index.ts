@@ -10,6 +10,7 @@ import { settingsRouter } from "./settings.js";
 import { pushRouter } from "./push.js";
 import { newsletterAdminRouter } from "./newsletter.js";
 import { messagesRouter } from "./messages.js";
+import { reviewsAdminRouter } from "./reviews.js";
 
 export const adminRouter = Router();
 
@@ -27,3 +28,4 @@ adminRouter.use("/settings", settingsRouter);
 adminRouter.use("/push", pushRouter);
 adminRouter.use("/newsletter", newsletterAdminRouter);
 adminRouter.use("/messages", messagesRouter);
+adminRouter.use("/reviews", reviewsAdminRouter);

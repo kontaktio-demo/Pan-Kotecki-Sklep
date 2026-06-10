@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart, cartTotal } from "@/store/cart";
-import { formatPrice, FREE_SHIPPING_FROM } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
+import { useSettings } from "@/components/providers/SettingsProvider";
 import ProductMedia from "./ProductMedia";
 import LockerPicker from "./LockerPicker";
 import { Button } from "@/components/ui/Button";
@@ -15,10 +16,7 @@ const API = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
 // Gdy ustawisz klucz publiczny Stripe → płatność osadzona NA naszej stronie (embedded).
 const STRIPE_PK = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
-const DELIVERY = [
-  { id: "paczkomat", label: "Paczkomat InPost 24/7", sub: "1-2 dni robocze", cost: 11.99, method: "inpost_locker" },
-  { id: "kurier", label: "Kurier InPost", sub: "1-2 dni robocze", cost: 14.99, method: "inpost_courier" },
-] as const;
+type DeliveryId = "paczkomat" | "kurier";
 
 const inputCls =
   "w-full rounded-xl border border-line bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-ink";
@@ -29,7 +27,12 @@ export default function CheckoutForm() {
   const clear = useCart((s) => s.clear);
   const subtotal = cartTotal(items);
 
-  const [delivery, setDelivery] = useState<(typeof DELIVERY)[number]["id"]>("paczkomat");
+  const { freeShippingZl, lockerCostZl, courierCostZl } = useSettings();
+  const DELIVERY = [
+    { id: "paczkomat", label: "Paczkomat InPost 24/7", sub: "1-2 dni robocze", cost: lockerCostZl, method: "inpost_locker" },
+    { id: "kurier", label: "Kurier InPost", sub: "1-2 dni robocze", cost: courierCostZl, method: "inpost_courier" },
+  ] as const;
+  const [delivery, setDelivery] = useState<DeliveryId>("paczkomat");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -43,7 +46,8 @@ export default function CheckoutForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [canceled, setCanceled] = useState(false);
-  const [freeFrom, setFreeFrom] = useState(FREE_SHIPPING_FROM);
+  const [isGift, setIsGift] = useState(false);
+  const [giftNote, setGiftNote] = useState("");
   const [promoCode, setPromoCode] = useState("");
   const [promoDiscount, setPromoDiscount] = useState(0); // zł
   const [promoOk, setPromoOk] = useState(false);
@@ -93,14 +97,6 @@ export default function CheckoutForm() {
     try {
       if (new URLSearchParams(window.location.search).get("anulowano") === "1") setCanceled(true);
     } catch {}
-    if (API) {
-      fetch(`${API}/api/settings/public`)
-        .then((r) => (r.ok ? r.json() : null))
-        .then((d) => {
-          if (d?.freeShippingGrosze != null) setFreeFrom(d.freeShippingGrosze / 100);
-        })
-        .catch(() => {});
-    }
   }, []);
 
   async function applyPromo() {
@@ -145,7 +141,7 @@ export default function CheckoutForm() {
   }
 
   const selected = DELIVERY.find((d) => d.id === delivery)!;
-  const freeShipping = subtotal >= freeFrom;
+  const freeShipping = subtotal >= freeShippingZl;
   const deliveryCost = freeShipping ? 0 : selected.cost;
   const discount = promoOk ? Math.min(promoDiscount, subtotal) : 0;
   const total = Math.max(0, subtotal + deliveryCost - discount);
@@ -175,6 +171,7 @@ export default function CheckoutForm() {
       },
       ...(selected.method === "inpost_locker" ? { parcel_locker: locker } : {}),
       ...(promoOk && promoCode.trim() ? { promo_code: promoCode.trim().toUpperCase() } : {}),
+      ...(isGift && giftNote.trim() ? { gift_note: giftNote.trim().slice(0, 200) } : {}),
     };
 
     // Tryb demo TYLKO poza produkcją (lokalnie bez backendu). W produkcji brak API
@@ -293,7 +290,7 @@ export default function CheckoutForm() {
           <legend className="mb-3 text-lg font-semibold">Sposób dostawy</legend>
           <div className="flex flex-col gap-2">
             {DELIVERY.map((d) => {
-              const cost = subtotal >= freeFrom ? 0 : d.cost;
+              const cost = subtotal >= freeShippingZl ? 0 : d.cost;
               return (
                 <label
                   key={d.id}
@@ -374,6 +371,37 @@ export default function CheckoutForm() {
             )}
           </fieldset>
         )}
+
+        <fieldset>
+          <label
+            className={`tap flex cursor-pointer items-center justify-between rounded-xl border px-4 py-3.5 text-sm ${
+              isGift ? "border-ink bg-cream" : "border-line hover:border-ink/40"
+            }`}
+          >
+            <span className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={isGift}
+                onChange={(e) => setIsGift(e.target.checked)}
+                className="h-4 w-4 accent-coral"
+              />
+              <span>
+                <span className="block font-medium">To prezent 🎁</span>
+                <span className="block text-xs text-ash">Dołączymy liścik z Twoją wiadomością</span>
+              </span>
+            </span>
+          </label>
+          {isGift && (
+            <textarea
+              value={giftNote}
+              onChange={(e) => setGiftNote(e.target.value)}
+              maxLength={200}
+              rows={3}
+              placeholder="np. Wszystkiego mruczącego w dniu urodzin! - Ania"
+              className="mt-2 w-full resize-y rounded-xl border border-line bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-ink"
+            />
+          )}
+        </fieldset>
 
         <div className="rounded-lg border border-line bg-cream/60 px-4 py-3 text-sm text-ink-soft">
           Płatność: <span className="font-medium text-ink">karta, BLIK lub Przelewy24</span> - wybierzesz ją na
